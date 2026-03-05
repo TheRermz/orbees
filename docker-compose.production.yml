@@ -1,0 +1,47 @@
+services:
+  # a definir se vai fazer um CI/CD ou se vai rodar localmente
+  api:
+    build:
+      context: ./orbees-api
+      dockerfile: Dockerfile
+    container_name: orbees-api
+    env_file:
+      - ./orbees-api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      ports:
+        - "5210:5210"
+      restart: unless-stopped
+      networks:
+        - orbees-network
+      volumes:
+        - ./orbees-api:/app
+        - /app/obj
+        - /app/bin
+
+  webapp:
+    build:
+      context: ./orbees-frontend
+      dockerfile: Dockerfile
+    container_name: orbees-frontend
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - apparmor=unconfined
+    networks:
+      - orbees-network
+    volumes:
+      - ./orbees-frontend:/app
+      - /app/node_modules
+
+networks:
+  orbees-network:
+    - driver: bridge
+
+volumes:
+  pgdata:
