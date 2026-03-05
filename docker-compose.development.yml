@@ -8,15 +8,14 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart:
-      - unless-stopped
+    restart: unless-stopped
     stop_grace_period: 10s
     security_opt:
       - apparmor=unconfined
     networks:
       - orbees-network
     healthcheck:
-      tests: ["CMD-SHELL", "pg_isreadyy -U $$POSTGRES_USER"]
+      test: ["CMD-SHELL", "pg_isreadyy -U $$POSTGRES_USER"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -31,15 +30,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      ports:
-        - "5210:5210"
-      restart: unless-stopped
-      networks:
-        - orbees-network
-      volumes:
-        - ./orbees-api:/app
-        - /app/obj
-        - /app/bin
+    ports:
+      - "5210:5210"
+    restart: unless-stopped
+    networks:
+      - orbees-network
+    volumes:
+      - ./orbees-api:/app
+      - /app/obj
+      - /app/bin
 
   webapp:
     build:
@@ -62,7 +61,7 @@ services:
 
 networks:
   orbees-network:
-    - driver: bridge
+    driver: bridge
 
 volumes:
   pgdata:
