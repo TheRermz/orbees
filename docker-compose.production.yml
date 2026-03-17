@@ -10,15 +10,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      ports:
-        - "5210:5210"
-      restart: unless-stopped
-      networks:
-        - orbees-network
-      volumes:
-        - ./orbees-api:/app
-        - /app/obj
-        - /app/bin
+    ports:
+      - "5210:5210"
+    restart: unless-stopped
+    networks:
+      - orbees-network
+    volumes:
+      - ./orbees-api:/app
+      - /app/obj
+      - /app/bin
 
   webapp:
     build:
@@ -41,7 +41,7 @@ services:
 
 networks:
   orbees-network:
-    - driver: bridge
+    driver: bridge
 
 volumes:
   pgdata:
