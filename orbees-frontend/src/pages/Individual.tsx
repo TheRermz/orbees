@@ -11,9 +11,9 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import { monthlyData, categoryExpenses, transactions, categories } from '../data/mockData';
+import CategoriesPage from './CategoriesPage';
 import './Individual.css';
 
-type CatSubTab = 'view' | 'create';
 type UploadStep = 'select' | 'preview' | 'categorize' | 'done';
 
 const uploadCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Salário', 'Outros'];
@@ -40,7 +40,7 @@ export default function Individual() {
 
 export function IndividualDashboard() { return <DashboardTab />; }
 export function IndividualTransactions() { return <TransactionsTab />; }
-export function IndividualCategories() { return <CategoriesTab />; }
+export function IndividualCategories() { return <CategoriesPage />; }
 export function IndividualUpload() { return <UploadTab />; }
 
 /* ─── DASHBOARD TAB ─── */
@@ -419,81 +419,7 @@ function TransactionsTab() {
   );
 }
 
-/* ─── CATEGORIES TAB ─── */
-function CategoriesTab() {
-  const [subTab, setSubTab] = useState<CatSubTab>('view');
-  const [newName, setNewName] = useState('');
-  const [newColor, setNewColor] = useState('#F5A623');
-  const [success, setSuccess] = useState(false);
-
-  const handleCreate = () => {
-    if (!newName.trim()) return;
-    setSuccess(true);
-    setNewName('');
-    setNewColor('#F5A623');
-    setTimeout(() => setSuccess(false), 3000);
-  };
-
-  return (
-    <div className="ind-categories">
-      <div className="sub-tabs-mini">
-        <button
-          className={`sub-tab-mini ${subTab === 'view' ? 'active' : ''}`}
-          onClick={() => setSubTab('view')}
-        >Visualizar</button>
-        <button
-          className={`sub-tab-mini ${subTab === 'create' ? 'active' : ''}`}
-          onClick={() => setSubTab('create')}
-        >Criar</button>
-      </div>
-
-      {subTab === 'view' && (
-        <div className="categories-grid">
-          {categories.map(cat => (
-            <div key={cat.id} className="category-chip-item">
-              <span className="category-chip-circle" style={{ background: cat.color }}></span>
-              <span className="category-chip-icon">{cat.icon}</span>
-              <span className="category-chip-name">{cat.name}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {subTab === 'create' && (
-        <div className="create-form">
-          <h3>Criar Nova Categoria</h3>
-          {success && (
-            <div className="success-msg">
-              <CheckCircle size={16} />
-              Categoria criada com sucesso!
-            </div>
-          )}
-          <div className="form-field">
-            <label>Nome</label>
-            <input
-              type="text"
-              placeholder="Ex: Pets, Viagens..."
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label>Cor</label>
-            <input
-              type="color"
-              value={newColor}
-              onChange={e => setNewColor(e.target.value)}
-            />
-          </div>
-          <button className="btn-primary" onClick={handleCreate}>
-            <Tag size={14} />
-            Criar Categoria
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+/* CategoriesTab replaced by CategoriesPage component */
 
 /* ─── UPLOAD TAB ─── */
 function UploadTab() {

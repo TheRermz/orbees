@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Users, Upload, Crown, Eye, Plus, FileText, CheckCircle, Tag, Lock } from 'lucide-react';
+import CategoriesPage from './CategoriesPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { categories } from '../data/mockData';
+import '../data/mockData';
 import './Group.css';
 
 const currentUserRole: 'admin' | 'viewer' = 'admin';
@@ -174,64 +175,22 @@ export function GroupTransactions() {
 
 /* ─── CATEGORIAS ─── */
 export function GroupCategories() {
-  const [subTab, setSubTab] = useState<'view' | 'create'>('view');
-  const [newName, setNewName] = useState('');
-  const [newColor, setNewColor] = useState('#F5A623');
-  const [success, setSuccess] = useState(false);
-
-  const handleCreate = () => {
-    if (!newName.trim()) return;
-    setSuccess(true);
-    setNewName('');
-    setNewColor('#F5A623');
-    setTimeout(() => setSuccess(false), 3000);
-  };
-
   return (
     <div className="group-page">
       <GroupHeader />
-      <div className="group-content">
-        <div className="group-cat-subtabs">
-          <button className={`group-cat-subtab ${subTab === 'view' ? 'active' : ''}`} onClick={() => setSubTab('view')}>Visualizar</button>
-          <button className={`group-cat-subtab ${subTab === 'create' ? 'active' : ''}`} onClick={() => setSubTab('create')}>Criar</button>
-        </div>
-
-        {subTab === 'view' && (
-          <div className="group-categories-grid">
-            {categories.map(cat => (
-              <div key={cat.id} className="group-category-chip">
-                <span className="gcat-circle" style={{ background: cat.color }}></span>
-                <span className="gcat-name">{cat.name}</span>
-              </div>
-            ))}
+      {currentUserRole === 'viewer' ? (
+        <div className="group-content">
+          <div className="group-no-perm">
+            <Lock size={20} />
+            <span>Somente administradores podem criar categorias. Abaixo estão as categorias do grupo.</span>
           </div>
-        )}
-
-        {subTab === 'create' && (
-          currentUserRole === 'viewer' ? (
-            <div className="group-no-perm">
-              <Lock size={20} />
-              <span>Somente administradores podem criar categorias.</span>
-            </div>
-          ) : (
-            <div className="group-create-form">
-              <h3>Criar Nova Categoria</h3>
-              {success && (
-                <div className="group-success-msg"><CheckCircle size={16} /> Categoria criada com sucesso!</div>
-              )}
-              <div className="gform-field">
-                <label>Nome</label>
-                <input type="text" placeholder="Ex: Pets, Viagens..." value={newName} onChange={e => setNewName(e.target.value)} />
-              </div>
-              <div className="gform-field">
-                <label>Cor</label>
-                <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} />
-              </div>
-              <button className="btn-primary" onClick={handleCreate}><Tag size={14} /> Criar Categoria</button>
-            </div>
-          )
-        )}
-      </div>
+          <CategoriesPage />
+        </div>
+      ) : (
+        <div className="group-content">
+          <CategoriesPage />
+        </div>
+      )}
     </div>
   );
 }
