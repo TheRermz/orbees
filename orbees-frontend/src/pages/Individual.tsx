@@ -1,10 +1,10 @@
 import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, Wallet, CalendarClock,
   AlertTriangle, CheckCircle, Info, ArrowUpRight, ArrowDownRight,
-  LayoutDashboard, List, Tag, FolderOpen,
   FileText, Table, ArrowLeft, ArrowRight,
-  Search, Download,
+  Search, Download, Tag, FolderOpen,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -13,7 +13,6 @@ import {
 import { monthlyData, categoryExpenses, transactions, categories } from '../data/mockData';
 import './Individual.css';
 
-type IndTab = 'dashboard' | 'transactions' | 'categories' | 'upload';
 type CatSubTab = 'view' | 'create';
 type UploadStep = 'select' | 'preview' | 'categorize' | 'done';
 
@@ -32,42 +31,17 @@ const budgets: Record<string, number> = {
 };
 
 export default function Individual() {
-  const [activeTab, setActiveTab] = useState<IndTab>('dashboard');
-
-  const tabs = [
-    { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { key: 'transactions', label: 'Transações', icon: List },
-    { key: 'categories', label: 'Categorias', icon: Tag },
-    { key: 'upload', label: 'Importar Extrato', icon: FolderOpen },
-  ];
-
   return (
     <div className="individual-page">
-      <div className="page-header">
-        <h1>Controle Individual</h1>
-        <p>Gestão completa das suas finanças pessoais</p>
-      </div>
-
-      <div className="individual-tabs">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            className={`individual-tab ${activeTab === t.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(t.key as IndTab)}
-          >
-            <t.icon size={15} />
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'dashboard' && <DashboardTab />}
-      {activeTab === 'transactions' && <TransactionsTab />}
-      {activeTab === 'categories' && <CategoriesTab />}
-      {activeTab === 'upload' && <UploadTab />}
+      <Outlet />
     </div>
   );
 }
+
+export function IndividualDashboard() { return <DashboardTab />; }
+export function IndividualTransactions() { return <TransactionsTab />; }
+export function IndividualCategories() { return <CategoriesTab />; }
+export function IndividualUpload() { return <UploadTab />; }
 
 /* ─── DASHBOARD TAB ─── */
 function DashboardTab() {

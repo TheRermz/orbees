@@ -1,41 +1,48 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Calculator, FileText, BookOpen } from 'lucide-react';
+import { Outlet } from 'react-router-dom';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import './Education.css';
 
-type MainTab = 'calculadoras' | 'irpf' | 'guias';
+function EducationHeader() {
+  return (
+    <div className="page-header">
+      <h1>Educação Financeira</h1>
+      <p>Ferramentas e conhecimento para decisões financeiras mais inteligentes</p>
+    </div>
+  );
+}
 
 export default function Education() {
-  const [mainTab, setMainTab] = useState<MainTab>('calculadoras');
-
-  const mainTabs = [
-    { key: 'calculadoras', label: 'Calculadoras', icon: Calculator },
-    { key: 'irpf', label: 'Imposto de Renda', icon: FileText },
-    { key: 'guias', label: 'Guias Financeiros', icon: BookOpen },
-  ];
-
   return (
     <div className="education-page">
-      <div className="page-header">
-        <h1>Educação Financeira</h1>
-        <p>Ferramentas e conhecimento para decisões financeiras mais inteligentes</p>
-      </div>
+      <Outlet />
+    </div>
+  );
+}
 
-      <div className="main-tabs">
-        {mainTabs.map(t => (
-          <button
-            key={t.key}
-            className={`main-tab ${mainTab === t.key ? 'active' : ''}`}
-            onClick={() => setMainTab(t.key as MainTab)}
-          >
-            <t.icon size={16} />
-            {t.label}
-          </button>
-        ))}
-      </div>
+export function EducationCalculadoras() {
+  return (
+    <div className="education-page">
+      <EducationHeader />
+      <CalcSection />
+    </div>
+  );
+}
 
-      {mainTab === 'calculadoras' && <CalcSection />}
-      {mainTab === 'irpf' && <IrpfSection />}
-      {mainTab === 'guias' && <GuiasSection />}
+export function EducationIrpf() {
+  return (
+    <div className="education-page">
+      <EducationHeader />
+      <IrpfSection />
+    </div>
+  );
+}
+
+export function EducationGuias() {
+  return (
+    <div className="education-page">
+      <EducationHeader />
+      <GuiasSection />
     </div>
   );
 }
