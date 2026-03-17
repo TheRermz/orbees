@@ -14,10 +14,9 @@ export default function Login() {
 
   return (
     <div className="login-page">
+      {/* LEFT — white */}
       <div className="login-left">
-        <div className="login-brand">
-          <img src="/orbees-logo.png" alt="Orbees" className="brand-logo" />
-        </div>
+        <img src="/orbees-logo.png" alt="Orbees" className="brand-logo" />
         <div className="login-hero">
           <h1>Controle suas finanças <span className="highlight">sem esforço</span></h1>
           <p>Importe seu extrato bancário e tenha uma visão completa da sua vida financeira em segundos.</p>
@@ -30,6 +29,7 @@ export default function Login() {
         </div>
       </div>
 
+      {/* RIGHT — black */}
       <div className="login-right">
         <div className="login-form-card">
           <h2>Entrar na conta</h2>
