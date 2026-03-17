@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Calculator, TrendingUp, FileText, BookOpen, Target } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calculator, FileText, BookOpen } from 'lucide-react';
 import './Education.css';
 
 type MainTab = 'calculadoras' | 'irpf' | 'guias';
-type IrpfTab = 'oque' | 'tabela' | 'simulador';
 
 export default function Education() {
   const [mainTab, setMainTab] = useState<MainTab>('calculadoras');
-  const [irpfTab, setIrpfTab] = useState<IrpfTab>('oque');
 
   const mainTabs = [
     { key: 'calculadoras', label: 'Calculadoras', icon: Calculator },
@@ -36,7 +34,7 @@ export default function Education() {
       </div>
 
       {mainTab === 'calculadoras' && <CalcSection />}
-      {mainTab === 'irpf' && <IrpfSection tab={irpfTab} setTab={setIrpfTab} />}
+      {mainTab === 'irpf' && <IrpfSection />}
       {mainTab === 'guias' && <GuiasSection />}
     </div>
   );
@@ -44,33 +42,13 @@ export default function Education() {
 
 /* ─── CALCULADORAS ─── */
 function CalcSection() {
-  const [active, setActive] = useState('simple');
-  const calcTabs = [
-    { key: 'simple', label: 'Juros Simples', icon: Calculator },
-    { key: 'compound', label: 'Juros Compostos', icon: TrendingUp },
-    { key: 'ferias', label: 'Férias CLT', icon: FileText },
-    { key: 'parcelamento', label: 'Custo do Parcelamento', icon: Target },
-    { key: 'meta', label: 'Simulador de Metas', icon: TrendingUp },
-  ];
-
   return (
     <div className="calc-section">
-      <div className="calc-tabs">
-        {calcTabs.map(t => (
-          <button
-            key={t.key}
-            className={`calc-tab ${active === t.key ? 'active' : ''}`}
-            onClick={() => setActive(t.key)}
-          >
-            <t.icon size={14} /> {t.label}
-          </button>
-        ))}
-      </div>
-      {active === 'simple' && <SimpleInterest />}
-      {active === 'compound' && <CompoundInterest />}
-      {active === 'ferias' && <FeriasCalc />}
-      {active === 'parcelamento' && <ParcelamentoCalc />}
-      {active === 'meta' && <MetaCalc />}
+      <SimpleInterest />
+      <CompoundInterest />
+      <FeriasCalc />
+      <ParcelamentoCalc />
+      <MetaCalc />
     </div>
   );
 }
@@ -172,7 +150,7 @@ function ParcelamentoCalc() {
           <div className="result-item"><span>Valor à vista</span><span className="result-value">{fmt(PV)}</span></div>
           <div className="result-item highlight"><span>Parcela mensal ({n}x)</span><span className="result-value yellow">{fmt(PMT)}</span></div>
           <div className="result-item"><span>Total a pagar</span><span className="result-value">{fmt(total)}</span></div>
-          {juros !== null && juros > 0 && <div className="result-item"><span>Juros pagos</span><span className="result-value red">{fmt(juros)} ({((juros/PV)*100).toFixed(1)}% a mais)</span></div>}
+          {juros !== null && juros > 0 && <div className="result-item"><span>Juros pagos</span><span className="result-value red">{fmt(juros)} ({((juros / PV) * 100).toFixed(1)}% a mais)</span></div>}
         </div>
       )}
     </CalcCard>
@@ -210,25 +188,15 @@ function MetaCalc() {
   );
 }
 
-/* ─── IRPF ─── */
-function IrpfSection({ tab, setTab }: { tab: IrpfTab; setTab: (t: IrpfTab) => void }) {
-  const irpfTabs = [
-    { key: 'oque', label: 'O que é' },
-    { key: 'tabela', label: 'Tabela e Alíquotas' },
-    { key: 'simulador', label: 'Simulador IRPF' },
-  ];
+/* ─── IRPF (tudo em uma tela) ─── */
+function IrpfSection() {
   return (
     <div className="irpf-section">
-      <div className="sub-tabs">
-        {irpfTabs.map(t => (
-          <button key={t.key} className={`sub-tab ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key as IrpfTab)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      {tab === 'oque' && <IrpfOque />}
-      {tab === 'tabela' && <IrpfTabela />}
-      {tab === 'simulador' && <IrpfSimulador />}
+      <IrpfOque />
+      <div className="irpf-block-title">Tabela de Alíquotas 2024</div>
+      <IrpfTabela />
+      <div className="irpf-block-title">Simulador IRPF</div>
+      <IrpfSimulador />
     </div>
   );
 }
@@ -333,11 +301,11 @@ function IrpfSimulador() {
         {irCompleta !== null && irSimplificada !== null && (
           <div className="calc-result">
             <div className={`result-item ${melhor === 'completa' ? 'highlight' : ''}`}>
-              <span>Declaração Completa {melhor === 'completa' ? '✓ Recomendada' : ''}</span>
+              <span>Declaração Completa {melhor === 'completa' ? '(Recomendada)' : ''}</span>
               <span className="result-value">{fmt(irCompleta)}</span>
             </div>
             <div className={`result-item ${melhor === 'simplificada' ? 'highlight' : ''}`}>
-              <span>Declaração Simplificada {melhor === 'simplificada' ? '✓ Recomendada' : ''}</span>
+              <span>Declaração Simplificada {melhor === 'simplificada' ? '(Recomendada)' : ''}</span>
               <span className="result-value">{fmt(irSimplificada)}</span>
             </div>
             <div className="result-item"><span>Alíquota efetiva (completa)</span>
@@ -408,7 +376,25 @@ function GuiaCard({ title, audience, color, content }: { title: string; audience
         </div>
         {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
       </button>
-      {open && <div className="guia-content">{content}</div>}
+      {open && (
+        <>
+          <div className="guia-content">{content}</div>
+          <div className="guia-videos">
+            <div className="guia-videos-title">Vídeos Recomendados</div>
+            <div className="guia-videos-grid">
+              <div className="video-placeholder">
+                <span className="video-play-icon">&#9654;</span>
+                <span className="video-label">Vídeo: {title}</span>
+              </div>
+              <div className="video-placeholder">
+                <span className="video-play-icon">&#9654;</span>
+                <span className="video-label">Vídeo: {title}</span>
+              </div>
+            </div>
+            <p className="video-note">* Substitua VIDEO_ID_AQUI pelos IDs dos vídeos desejados</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

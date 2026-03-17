@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard,
-  List,
-  Upload,
   BookOpen,
   Users,
   Settings,
@@ -14,11 +12,9 @@ import {
 import './Layout.css';
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/transactions', icon: List, label: 'Transações' },
-  { to: '/upload', icon: Upload, label: 'Importar Extrato' },
-  { to: '/education', icon: BookOpen, label: 'Educação Financeira' },
+  { to: '/individual', icon: LayoutDashboard, label: 'Controle Individual' },
   { to: '/group', icon: Users, label: 'Controle em Grupo' },
+  { to: '/education', icon: BookOpen, label: 'Educação Financeira' },
 ];
 
 export default function Layout() {

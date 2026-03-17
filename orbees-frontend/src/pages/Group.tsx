@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Users, Upload, LayoutDashboard, List, Crown, Eye, Plus, FileText, CheckCircle, Tag } from 'lucide-react';
+import { Users, Upload, LayoutDashboard, List, Crown, Eye, Plus, FileText, CheckCircle, Tag, Lock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { categories } from '../data/mockData';
 import './Group.css';
 
-type GroupTab = 'dashboard' | 'transactions' | 'upload' | 'members';
+type GroupTab = 'dashboard' | 'transactions' | 'categories' | 'upload' | 'members';
+
+const currentUserRole: 'admin' | 'viewer' = 'admin'; // mock: troque para 'viewer' para testar
 
 const members = [
   { id: '1', name: 'Gabriella', initials: 'G', color: '#F5A623', role: 'admin', income: 4500, expense: 2200 },
@@ -36,6 +39,7 @@ export default function Group() {
   const tabs = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { key: 'transactions', label: 'Transações', icon: List },
+    { key: 'categories', label: 'Categorias', icon: Tag },
     { key: 'upload', label: 'Importar Extrato', icon: Upload },
     { key: 'members', label: 'Membros', icon: Users },
   ];
@@ -59,7 +63,7 @@ export default function Group() {
   ];
 
   const needsCat = previewData.filter(r => !r.category);
-  const categories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Outros'];
+  const uploadCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Outros'];
 
   return (
     <div className="group-page">
@@ -120,9 +124,9 @@ export default function Group() {
                   <div className="mstat"><span>Saldo</span><span>{fmt(m.income - m.expense)}</span></div>
                 </div>
                 <div className="member-bar-wrap">
-                  <div className="member-bar" style={{ width: `${Math.min(100,(m.expense/m.income)*100)}%`, background: m.color }}></div>
+                  <div className="member-bar" style={{ width: `${Math.min(100, (m.expense / m.income) * 100)}%`, background: m.color }}></div>
                 </div>
-                <div className="member-bar-label">{((m.expense/m.income)*100).toFixed(0)}% comprometido</div>
+                <div className="member-bar-label">{((m.expense / m.income) * 100).toFixed(0)}% comprometido</div>
               </div>
             ))}
           </div>
@@ -134,10 +138,10 @@ export default function Group() {
                 <BarChart data={memberData} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
                   <Tooltip formatter={(v) => [fmt(Number(v ?? 0)), '']} />
-                  <Bar dataKey="receitas" fill="#27AE60" radius={[4,4,0,0]} name="Receitas" />
-                  <Bar dataKey="despesas" fill="#E74C3C" radius={[4,4,0,0]} name="Despesas" />
+                  <Bar dataKey="receitas" fill="#27AE60" radius={[4, 4, 0, 0]} name="Receitas" />
+                  <Bar dataKey="despesas" fill="#E74C3C" radius={[4, 4, 0, 0]} name="Despesas" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -199,6 +203,11 @@ export default function Group() {
         </div>
       )}
 
+      {/* CATEGORIES TAB */}
+      {activeTab === 'categories' && (
+        <GroupCategoriesTab currentUserRole={currentUserRole} />
+      )}
+
       {/* UPLOAD TAB */}
       {activeTab === 'upload' && (
         <div className="group-content">
@@ -239,7 +248,7 @@ export default function Group() {
                         <td className="date-cell">{new Date(r.date).toLocaleDateString('pt-BR')}</td>
                         <td>{r.desc}</td>
                         <td className={r.amount > 0 ? 'positive' : 'negative'}>{r.amount > 0 ? '+' : '-'}{fmt(r.amount)}</td>
-                        <td>{r.category ? <span className="cat-auto"><CheckCircle size={11}/> {r.category}</span> : <span className="cat-pending"><Tag size={11}/> A categorizar</span>}</td>
+                        <td>{r.category ? <span className="cat-auto"><CheckCircle size={11} /> {r.category}</span> : <span className="cat-pending"><Tag size={11} /> A categorizar</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -250,9 +259,9 @@ export default function Group() {
                   {needsCat.map((r, i) => (
                     <div key={i} className="cat-item">
                       <div><div className="cat-desc">{r.desc}</div><div className="cat-amount">{fmt(r.amount)}</div></div>
-                      <select className="cat-select" value={cats[i] || ''} onChange={e => setCats(p => ({...p, [i]: e.target.value}))}>
+                      <select className="cat-select" value={cats[i] || ''} onChange={e => setCats(p => ({ ...p, [i]: e.target.value }))}>
                         <option value="">Selecione a categoria...</option>
-                        {categories.map(c => <option key={c}>{c}</option>)}
+                        {uploadCategories.map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
                   ))}
@@ -295,7 +304,7 @@ export default function Group() {
                   <div className="member-email">{m.name.toLowerCase()}@email.com</div>
                 </div>
                 <div className={`member-role-badge ${m.role}`}>
-                  {m.role === 'admin' ? <><Crown size={11}/> Administrador</> : <><Eye size={11}/> Visualizador</>}
+                  {m.role === 'admin' ? <><Crown size={11} /> Administrador</> : <><Eye size={11} /> Visualizador</>}
                 </div>
               </div>
             ))}
@@ -303,7 +312,95 @@ export default function Group() {
           <div className="invite-info">
             <strong>Permissões:</strong> Administradores podem importar extratos e gerenciar categorias. Visualizadores podem ver o dashboard e as transações.
           </div>
+          <div className="invite-info" style={{ marginTop: 0 }}>
+            Cada usuário pode pertencer a apenas um grupo.
+          </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── GROUP CATEGORIES TAB ─── */
+function GroupCategoriesTab({ currentUserRole }: { currentUserRole: 'admin' | 'viewer' }) {
+  const [subTab, setSubTab] = useState<'view' | 'create'>('view');
+  const [newName, setNewName] = useState('');
+  const [newColor, setNewColor] = useState('#F5A623');
+  const [success, setSuccess] = useState(false);
+
+  const handleCreate = () => {
+    if (!newName.trim()) return;
+    setSuccess(true);
+    setNewName('');
+    setNewColor('#F5A623');
+    setTimeout(() => setSuccess(false), 3000);
+  };
+
+  return (
+    <div className="group-content">
+      <div className="group-cat-subtabs">
+        <button
+          className={`group-cat-subtab ${subTab === 'view' ? 'active' : ''}`}
+          onClick={() => setSubTab('view')}
+        >Visualizar</button>
+        <button
+          className={`group-cat-subtab ${subTab === 'create' ? 'active' : ''}`}
+          onClick={() => setSubTab('create')}
+        >Criar</button>
+      </div>
+
+      {subTab === 'view' && (
+        <div className="group-categories-grid">
+          {categories.map(cat => (
+            <div key={cat.id} className="group-category-chip">
+              <span className="gcat-circle" style={{ background: cat.color }}></span>
+              <span className="gcat-icon">{cat.icon}</span>
+              <span className="gcat-name">{cat.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {subTab === 'create' && (
+        <>
+          {currentUserRole === 'viewer' ? (
+            <div className="group-no-perm">
+              <Lock size={20} />
+              <span>Somente administradores podem criar categorias.</span>
+            </div>
+          ) : (
+            <div className="group-create-form">
+              <h3>Criar Nova Categoria</h3>
+              {success && (
+                <div className="group-success-msg">
+                  <CheckCircle size={16} />
+                  Categoria criada com sucesso!
+                </div>
+              )}
+              <div className="gform-field">
+                <label>Nome</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Pets, Viagens..."
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                />
+              </div>
+              <div className="gform-field">
+                <label>Cor</label>
+                <input
+                  type="color"
+                  value={newColor}
+                  onChange={e => setNewColor(e.target.value)}
+                />
+              </div>
+              <button className="btn-primary" onClick={handleCreate}>
+                <Tag size={14} />
+                Criar Categoria
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

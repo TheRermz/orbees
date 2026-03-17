@@ -109,4 +109,39 @@
 .guia-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .guia-title { font-size: 14px; font-weight: 600; }
 .guia-audience { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
-.guia-content { padding: 0 16px 16px 38px; font-size: 13px; color: var(--gray-700); line-height: 1.6; border-top: 1px solid var(--gray-100); padding-top: 12px; }
+.guia-content { padding: 12px 16px 0 38px; font-size: 13px; color: var(--gray-700); line-height: 1.6; border-top: 1px solid var(--gray-100); }
+
+/* GUIA VIDEOS */
+.guia-videos { padding: 12px 16px 16px 38px; }
+.guia-videos-title { font-size: 12px; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+.guia-videos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.video-placeholder {
+  background: #111;
+  border-radius: 8px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.video-play-icon {
+  font-size: 32px;
+  color: #FFD600;
+  line-height: 1;
+}
+
+.video-label {
+  font-size: 12px;
+  color: #FFD600;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.video-note { font-size: 10px; color: var(--gray-400); margin-top: 8px; font-style: italic; }
+
+/* IRPF block titles */
+.irpf-block-title { font-size: 16px; font-weight: 700; color: var(--black); padding-bottom: 4px; border-bottom: 2px solid var(--yellow); width: fit-content; }
