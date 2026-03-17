@@ -16,7 +16,7 @@ export default function Login() {
     <div className="login-page">
       {/* LEFT — white */}
       <div className="login-left">
-        <img src="/orbees-logo.png" alt="Orbees" className="brand-logo" />
+        <img src="/orbees-logo-full.png" alt="Orbees" className="brand-logo" />
         <div className="login-hero">
           <h1>Controle suas finanças <span className="highlight">sem esforço</span></h1>
           <p>Importe seu extrato bancário e tenha uma visão completa da sua vida financeira em segundos.</p>
