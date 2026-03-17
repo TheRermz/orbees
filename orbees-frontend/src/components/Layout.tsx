@@ -37,7 +37,6 @@ const navStructure = [
       { to: '/group/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/group/transactions', icon: List, label: 'Transações' },
       { to: '/group/categories', icon: Tag, label: 'Categorias' },
-      { to: '/group/upload', icon: FolderOpen, label: 'Importar Extrato' },
       { to: '/group/members', icon: Crown, label: 'Membros' },
     ],
   },

@@ -10,7 +10,6 @@ import Group, {
   GroupDashboard,
   GroupTransactions,
   GroupCategories,
-  GroupUpload,
   GroupMembers,
 } from './pages/Group';
 import Education, {
@@ -39,7 +38,6 @@ export default function App() {
             <Route path="dashboard" element={<GroupDashboard />} />
             <Route path="transactions" element={<GroupTransactions />} />
             <Route path="categories" element={<GroupCategories />} />
-            <Route path="upload" element={<GroupUpload />} />
             <Route path="members" element={<GroupMembers />} />
           </Route>
           <Route path="/education" element={<Education />}>

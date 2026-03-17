@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, Wallet, CalendarClock,
   AlertTriangle, CheckCircle, Info, ArrowUpRight, ArrowDownRight,
   FileText, Table, ArrowLeft, ArrowRight,
-  Search, Download, Tag, FolderOpen,
+  Search, Download, Tag, FolderOpen, Users,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +17,12 @@ import './Individual.css';
 type UploadStep = 'select' | 'preview' | 'categorize' | 'done';
 
 const uploadCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Salário', 'Outros'];
+
+// Categorias do grupo criadas pelo administrador (mock)
+const groupCategories = ['Aluguel Compartilhado', 'Mercado do Mês', 'Conta de Luz', 'Internet', 'Streaming Compartilhado', 'Outros do Grupo'];
+
+// Mock: usuário atual pertence ao grupo "Família / Grupo"
+const userGroupName = 'Família / Grupo';
 
 const previewData = [
   { date: '2026-03-01', desc: 'PIX RECEBIDO MARIA SILVA', amount: 500.00, category: null as string | null },
@@ -431,6 +437,9 @@ function UploadTab() {
   const [newCatName, setNewCatName] = useState<Record<number, string>>({});
   const [newCatColor, setNewCatColor] = useState<Record<number, string>>({});
   const [extraCats, setExtraCats] = useState<string[]>([]);
+  // Compartilhamento com grupo
+  const [sharedWithGroup, setSharedWithGroup] = useState<Record<number, boolean>>({});
+  const [groupCat, setGroupCat] = useState<Record<number, string>>({});
 
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -563,8 +572,9 @@ function UploadTab() {
           </div>
           <div className="cat-list">
             {needsCat.map((r, i) => (
-              <div key={i} className="cat-item" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div key={i} className="cat-item-full">
+                {/* Linha principal: descrição + categoria individual */}
+                <div className="cat-item-row">
                   <div className="cat-item-info">
                     <div className="cat-desc">{r.desc}</div>
                     <div className="cat-amount">{fmt(r.amount)}</div>
@@ -574,11 +584,13 @@ function UploadTab() {
                     value={showNewCat[i] ? '__new__' : (cats[i] || '')}
                     onChange={e => handleCatChange(i, e.target.value)}
                   >
-                    <option value="">Selecione a categoria...</option>
+                    <option value="">Selecione a categoria individual...</option>
                     {allUploadCats.map(c => <option key={c} value={c}>{c}</option>)}
                     <option value="__new__">+ Criar nova categoria...</option>
                   </select>
                 </div>
+
+                {/* Criar categoria inline */}
                 {showNewCat[i] && (
                   <div className="inline-new-cat">
                     <input
@@ -595,6 +607,35 @@ function UploadTab() {
                     <button className="btn-create-mini" onClick={() => handleCreateInline(i)}>Criar</button>
                   </div>
                 )}
+
+                {/* Toggle: compartilhar com grupo */}
+                <div className="group-share-row">
+                  <label className="group-share-toggle">
+                    <input
+                      type="checkbox"
+                      checked={!!sharedWithGroup[i]}
+                      onChange={e => setSharedWithGroup(prev => ({ ...prev, [i]: e.target.checked }))}
+                    />
+                    <span className="toggle-track">
+                      <span className="toggle-thumb" />
+                    </span>
+                    <span className="group-share-label">
+                      <Users size={13} />
+                      Compartilhar com <strong>{userGroupName}</strong>
+                    </span>
+                  </label>
+
+                  {sharedWithGroup[i] && (
+                    <select
+                      className="cat-select group-cat-select"
+                      value={groupCat[i] || ''}
+                      onChange={e => setGroupCat(prev => ({ ...prev, [i]: e.target.value }))}
+                    >
+                      <option value="">Categoria do grupo...</option>
+                      {groupCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -608,33 +649,44 @@ function UploadTab() {
       )}
 
       {/* STEP 4: Done */}
-      {step === 'done' && (
-        <div className="done-section">
-          <div><CheckCircle size={64} color="#27AE60" /></div>
-          <h2>Extrato importado com sucesso!</h2>
-          <p>{previewData.length} transações foram adicionadas à sua conta.</p>
-          <div className="done-stats">
-            <div className="done-stat">
-              <span className="stat-num green">{previewData.filter(r => r.amount > 0).length}</span>
-              <span className="stat-label">Receitas</span>
+      {step === 'done' && (() => {
+        const sharedCount = Object.values(sharedWithGroup).filter(Boolean).length;
+        return (
+          <div className="done-section">
+            <div><CheckCircle size={64} color="#27AE60" /></div>
+            <h2>Extrato importado com sucesso!</h2>
+            <p>{previewData.length} transações foram adicionadas à sua conta.</p>
+            <div className="done-stats">
+              <div className="done-stat">
+                <span className="stat-num green">{previewData.filter(r => r.amount > 0).length}</span>
+                <span className="stat-label">Receitas</span>
+              </div>
+              <div className="done-stat">
+                <span className="stat-num red">{previewData.filter(r => r.amount < 0).length}</span>
+                <span className="stat-label">Despesas</span>
+              </div>
+              <div className="done-stat">
+                <span className="stat-num">{previewData.length}</span>
+                <span className="stat-label">Total</span>
+              </div>
             </div>
-            <div className="done-stat">
-              <span className="stat-num red">{previewData.filter(r => r.amount < 0).length}</span>
-              <span className="stat-label">Despesas</span>
-            </div>
-            <div className="done-stat">
-              <span className="stat-num">{previewData.length}</span>
-              <span className="stat-label">Total</span>
+            {sharedCount > 0 && (
+              <div className="group-share-summary">
+                <Users size={16} />
+                <span>
+                  <strong>{sharedCount} transaç{sharedCount === 1 ? 'ão foi compartilhada' : 'ões foram compartilhadas'}</strong> com o grupo <strong>{userGroupName}</strong> e já aparecem em Controle em Grupo &gt; Transações.
+                </span>
+              </div>
+            )}
+            <div className="action-bar center">
+              <button className="btn-secondary" onClick={() => setStep('select')}>Importar Outro</button>
+              <button className="btn-primary" onClick={() => setStep('select')}>
+                Ver Dashboard <ArrowRight size={16} />
+              </button>
             </div>
           </div>
-          <div className="action-bar center">
-            <button className="btn-secondary" onClick={() => setStep('select')}>Importar Outro</button>
-            <button className="btn-primary" onClick={() => setStep('select')}>
-              Ver Dashboard <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Users, Upload, Crown, Eye, Plus, FileText, CheckCircle, Tag, Lock } from 'lucide-react';
+import { Users, Upload, Crown, Eye, Plus, Lock } from 'lucide-react';
 import CategoriesPage from './CategoriesPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import '../data/mockData';
@@ -196,108 +195,6 @@ export function GroupCategories() {
 }
 
 /* ─── IMPORTAR EXTRATO ─── */
-export function GroupUpload() {
-  const [uploadStep, setUploadStep] = useState<'select' | 'preview' | 'done'>('select');
-  const [dragging, setDragging] = useState(false);
-  const [fileName, setFileName] = useState('');
-  const [cats, setCats] = useState<Record<number, string>>({});
-
-  const previewData = [
-    { date: '2026-03-01', desc: 'PIX RECEBIDO', amount: 1200, category: null as string | null },
-    { date: '2026-03-02', desc: 'SUPERMERCADO GRUPO', amount: -480, category: 'Alimentação' as string | null },
-    { date: '2026-03-03', desc: 'CONTA DE AGUA', amount: -90, category: 'Moradia' as string | null },
-    { date: '2026-03-04', desc: 'PAGTO DESCONHECIDO', amount: -200, category: null as string | null },
-  ];
-  const needsCat = previewData.filter(r => !r.category);
-  const uploadCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Outros'];
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) { setFileName(file.name); setUploadStep('preview'); }
-  };
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) { setFileName(file.name); setUploadStep('preview'); }
-  };
-
-  return (
-    <div className="group-page">
-      <GroupHeader />
-      <div className="group-content">
-        <div className="upload-notice"><Crown size={14} /><span>Somente administradores podem importar extratos para a conta do grupo.</span></div>
-
-        {uploadStep === 'select' && (
-          <div
-            className={`drop-zone ${dragging ? 'dragging' : ''}`}
-            onDragOver={e => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-          >
-            <FileText size={52} strokeWidth={1.2} />
-            <h3>Arraste o extrato do grupo aqui</h3>
-            <p>Suporta arquivos <strong>OFX</strong> e <strong>CSV</strong> da conta compartilhada</p>
-            <label className="upload-btn">Selecionar Arquivo<input type="file" accept=".ofx,.csv" hidden onChange={handleFile} /></label>
-          </div>
-        )}
-
-        {uploadStep === 'preview' && (
-          <div className="preview-section">
-            <div className="file-info-bar">
-              <span>Arquivo: {fileName}</span>
-              <span className="badge-green">{previewData.length} transações encontradas</span>
-            </div>
-            <div className="gtable-card">
-              <table className="gtx-table">
-                <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Categoria</th></tr></thead>
-                <tbody>
-                  {previewData.map((r, i) => (
-                    <tr key={i}>
-                      <td className="date-cell">{new Date(r.date).toLocaleDateString('pt-BR')}</td>
-                      <td>{r.desc}</td>
-                      <td className={r.amount > 0 ? 'positive' : 'negative'}>{r.amount > 0 ? '+' : '-'}{fmt(r.amount)}</td>
-                      <td>{r.category ? <span className="cat-auto"><CheckCircle size={11} /> {r.category}</span> : <span className="cat-pending"><Tag size={11} /> A categorizar</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {needsCat.length > 0 && (
-              <div className="cat-list">
-                {needsCat.map((r, i) => (
-                  <div key={i} className="cat-item">
-                    <div><div className="cat-desc">{r.desc}</div><div className="cat-amount">{fmt(r.amount)}</div></div>
-                    <select className="cat-select" value={cats[i] || ''} onChange={e => setCats(p => ({ ...p, [i]: e.target.value }))}>
-                      <option value="">Selecione a categoria...</option>
-                      {uploadCategories.map(c => <option key={c}>{c}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="action-bar">
-              <button className="btn-secondary" onClick={() => setUploadStep('select')}>Voltar</button>
-              <button className="btn-primary" onClick={() => setUploadStep('done')}>Importar para o Grupo</button>
-            </div>
-          </div>
-        )}
-
-        {uploadStep === 'done' && (
-          <div className="done-section">
-            <CheckCircle size={56} strokeWidth={1.5} color="#27AE60" />
-            <h2>Extrato importado com sucesso!</h2>
-            <p>{previewData.length} transações adicionadas à conta do grupo.</p>
-            <div className="action-bar center">
-              <button className="btn-secondary" onClick={() => setUploadStep('select')}>Importar Outro</button>
-              <button className="btn-primary" onClick={() => setUploadStep('select')}>Ver Dashboard</button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /* ─── MEMBROS ─── */
 export function GroupMembers() {
   return (
