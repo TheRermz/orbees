@@ -1,4 +1,5 @@
 using System.Text;
+using Api.Data;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -109,7 +110,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ApiDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
