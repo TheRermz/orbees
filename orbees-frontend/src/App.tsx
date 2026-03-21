@@ -13,11 +13,13 @@ import Group, {
   GroupMembers,
 } from './pages/Group';
 import Education, {
+  EducationInicio,
+  EducationFundamentos,
+  EducationVidaAdulta,
   EducationCalculadoras,
-  EducationIrpf,
-  EducationGuias,
 } from './pages/Education';
 import Login from './pages/Login';
+import Settings from './pages/Settings';
 
 export default function App() {
   return (
@@ -41,12 +43,16 @@ export default function App() {
             <Route path="members" element={<GroupMembers />} />
           </Route>
           <Route path="/education" element={<Education />}>
-            <Route index element={<Navigate to="calculadoras" replace />} />
+            <Route index element={<Navigate to="inicio" replace />} />
+            <Route path="inicio" element={<EducationInicio />} />
+            <Route path="fundamentos" element={<EducationFundamentos />} />
+            <Route path="vida-adulta" element={<EducationVidaAdulta />} />
             <Route path="calculadoras" element={<EducationCalculadoras />} />
-            <Route path="irpf" element={<EducationIrpf />} />
-            <Route path="guias" element={<EducationGuias />} />
+            <Route path="investimentos" element={<Navigate to="/education/calculadoras" replace />} />
+            <Route path="irpf" element={<Navigate to="/education/vida-adulta" replace />} />
+            <Route path="guias" element={<Navigate to="/education/fundamentos" replace />} />
           </Route>
-          <Route path="/settings" element={<Navigate to="/individual/dashboard" replace />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<Navigate to="/individual/dashboard" />} />
       </Routes>

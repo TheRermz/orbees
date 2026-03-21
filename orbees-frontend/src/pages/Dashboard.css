@@ -3,16 +3,9 @@
 .page-header h1 { font-size: 22px; font-weight: 700; color: var(--black); }
 .page-header p { color: var(--gray-500); font-size: 13px; margin-top: 2px; }
 
-.dashboard-top {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  align-items: start;
-}
-
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
@@ -50,26 +43,8 @@
 
 .kpi-change.positive { color: var(--green); }
 .kpi-change.negative { color: var(--red); }
+.kpi-change.neutral { color: var(--gray-500); }
 
-/* HEALTH SCORE */
-.health-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--gray-200);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 180px;
-  text-align: center;
-}
-
-.health-title { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.4px; }
-.health-score-ring { margin: 4px 0; }
-.health-label { font-size: 15px; font-weight: 700; }
-.health-desc { font-size: 10px; color: var(--gray-400); line-height: 1.4; max-width: 140px; }
 
 /* INSIGHTS */
 .section-title { font-size: 14px; font-weight: 600; color: var(--black); margin-bottom: 10px; }
@@ -164,9 +139,7 @@
 .tx-amount.positive { color: var(--green); }
 .tx-amount.negative { color: var(--red); }
 
-@media (max-width: 1300px) {
-  .dashboard-top { grid-template-columns: 1fr; }
-  .health-card { flex-direction: row; min-width: unset; text-align: left; justify-content: flex-start; }
-  .cards-grid { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
   .charts-row { grid-template-columns: 1fr; }
 }

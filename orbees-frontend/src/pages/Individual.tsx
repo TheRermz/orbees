@@ -1,18 +1,51 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import {
-  TrendingUp, TrendingDown, Wallet, CalendarClock,
-  AlertTriangle, CheckCircle, Info, ArrowUpRight, ArrowDownRight,
+  TrendingUp, TrendingDown, Wallet,
+  AlertTriangle, CheckCircle, Info, RefreshCw, Bell, ArrowUpRight, ArrowDownRight,
   FileText, Table, ArrowLeft, ArrowRight,
   Search, Download, Tag, FolderOpen, Users,
+  UtensilsCrossed, Car, Home, Pill, BookOpen, Gamepad2, Banknote, Package,
+  ShoppingCart, ShoppingBag, Coffee, Apple, Milk, Sandwich, Wine, Building,
+  Building2, Lightbulb, Wrench, Hammer, Bed, Sofa, Lamp, Bus, Plane, Train,
+  Bike, Fuel, Truck, Ship, Heart, Activity, Stethoscope, Dumbbell, Baby, Eye,
+  DollarSign, CreditCard, PiggyBank, Receipt, Coins,
+  GraduationCap, Pencil, School, Backpack, Music, Film, Headphones, Camera,
+  Tv, Star, Smartphone, Laptop, Monitor, Wifi, Briefcase, BarChart2,
+  Globe, Gift, Scissors, Shirt, Palette, TreePine, Sun, Zap, Cat, Dog,
+  Flower2, Pizza,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
-import { monthlyData, categoryExpenses, transactions, categories } from '../data/mockData';
+import { transactions, categories } from '../data/mockData';
 import CategoriesPage from './CategoriesPage';
 import './Individual.css';
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  ShoppingCart, ShoppingBag, UtensilsCrossed, Coffee, Pizza, Apple,
+  Milk, Sandwich, Wine, Home, Building, Building2, Lightbulb, Wrench,
+  Hammer, Bed, Sofa, Lamp, Car, Bus, Plane, Train, Bike, Fuel, Truck,
+  Ship, Heart, Activity, Pill, Stethoscope, Dumbbell, Baby, Eye,
+  DollarSign, CreditCard, Banknote, PiggyBank, Wallet, TrendingUp,
+  Receipt, Coins, BookOpen, GraduationCap, Pencil, School, Backpack,
+  Music, Film, Gamepad2, Headphones, Camera, Tv, Star,
+  Smartphone, Laptop, Monitor, Wifi, Briefcase, Users, BarChart2,
+  Globe, Package, Gift, Scissors, Shirt, Palette, TreePine, Sun,
+  Zap, Cat, Dog, Flower2, Tag,
+};
+
+const NAME_TO_ICON: Record<string, string> = {
+  'Alimentação': 'UtensilsCrossed',
+  'Transporte': 'Car',
+  'Moradia': 'Home',
+  'Saúde': 'Pill',
+  'Educação': 'BookOpen',
+  'Lazer': 'Gamepad2',
+  'Salário': 'Banknote',
+  'Outros': 'Package',
+};
 
 type UploadStep = 'select' | 'preview' | 'categorize' | 'done';
 
@@ -54,105 +87,186 @@ function DashboardTab() {
   const [catView, setCatView] = useState<'value' | 'qty'>('value');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
 
-  const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const totalExpense = Math.abs(transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
+  // ─── Period filter ───
+  const availableMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
+
+  const lastDayOf = (ym: string) => {
+    const [y, mo] = ym.split('-').map(Number);
+    return new Date(y, mo, 0).toISOString().slice(0, 10);
+  };
+
+  const defaultMonth = availableMonths.at(-1) ?? new Date().toISOString().slice(0, 7);
+  const [dateFrom, setDateFrom] = useState(defaultMonth + '-01');
+  const [dateTo, setDateTo] = useState(lastDayOf(defaultMonth));
+
+  const selectMonth = (m: string) => { setDateFrom(m + '-01'); setDateTo(lastDayOf(m)); };
+  const selectAll = () => {
+    setDateFrom(availableMonths[0] + '-01');
+    setDateTo(lastDayOf(availableMonths.at(-1)!));
+  };
+  const isMonthActive = (m: string) => dateFrom === m + '-01' && dateTo === lastDayOf(m);
+  const isAllActive = availableMonths.length > 1
+    && dateFrom === availableMonths[0] + '-01'
+    && dateTo === lastDayOf(availableMonths.at(-1)!);
+
+  const monthLabel = (m: string) => {
+    const [y, mo] = m.split('-').map(Number);
+    const s = new Date(y, mo - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    return s.charAt(0).toUpperCase() + s.slice(1) + ' ' + String(y).slice(2);
+  };
+
+  // ─── Filtered transactions ───
+  const filtered = transactions.filter(t => t.date >= dateFrom && t.date <= dateTo + 'T23:59:59');
+
+  // ─── KPI metrics ───
+  const totalIncome  = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const totalExpense = Math.abs(filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const balance = totalIncome - totalExpense;
 
-  const prevIncome = 5100;
-  const prevExpense = 3900;
+  // ─── Previous period ───
+  const fromMs    = new Date(dateFrom).getTime();
+  const periodMs  = new Date(dateTo).getTime() - fromMs + 86400000;
+  const prevToStr = new Date(fromMs - 86400000).toISOString().slice(0, 10);
+  const prevFromStr = new Date(fromMs - periodMs).toISOString().slice(0, 10);
+  const prevFiltered = transactions.filter(t => t.date >= prevFromStr && t.date <= prevToStr + 'T23:59:59');
+  const prevIncome  = prevFiltered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const prevExpense = Math.abs(prevFiltered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const prevBalance = prevIncome - prevExpense;
 
-  const incomeChange = ((totalIncome - prevIncome) / prevIncome) * 100;
-  const expenseChange = ((totalExpense - prevExpense) / prevExpense) * 100;
-  const balanceChange = ((balance - prevBalance) / prevBalance) * 100;
-  const savingsRate = (balance / totalIncome) * 100;
+  const pctChange = (curr: number, prev: number) => prev !== 0 ? ((curr - prev) / Math.abs(prev)) * 100 : 0;
+  const incomeChange  = pctChange(totalIncome,  prevIncome);
+  const expenseChange = pctChange(totalExpense, prevExpense);
+  const balanceChange = pctChange(balance,      prevBalance);
 
-  const healthScore = Math.min(100, Math.round(
-    (savingsRate > 20 ? 40 : savingsRate * 2) +
-    (totalExpense / totalIncome < 0.7 ? 30 : (1 - totalExpense / totalIncome) * 43) +
-    30
-  ));
-  const scoreColor = healthScore >= 70 ? '#27AE60' : healthScore >= 40 ? '#F5A623' : '#E74C3C';
-  const scoreLabel = healthScore >= 70 ? 'Ótima' : healthScore >= 40 ? 'Regular' : 'Atenção';
+  // ─── Category data from filtered ───
+  const catMapFiltered: Record<string, number> = {};
+  filtered.filter(t => t.type === 'expense').forEach(t => {
+    catMapFiltered[t.category] = (catMapFiltered[t.category] ?? 0) + Math.abs(t.amount);
+  });
+  const filteredCatExpenses = Object.entries(catMapFiltered)
+    .map(([name, value]) => ({ name, value, color: categories.find(c => c.name === name)?.color ?? '#888' }))
+    .sort((a, b) => b.value - a.value);
 
-  const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const topCategory    = filteredCatExpenses[0] ?? { name: '—', value: 0, color: '#888' };
+  const topCategoryPct = totalExpense > 0 ? Math.round((topCategory.value / totalExpense) * 100) : 0;
+
+  // ─── Bar chart data from filtered ───
+  const filteredMonths = [...new Set(filtered.map(t => t.date.slice(0, 7)))].sort();
+  const barData = filteredMonths.length > 1
+    ? filteredMonths.map(m => {
+        const mTx = filtered.filter(t => t.date.startsWith(m));
+        return {
+          month: monthLabel(m),
+          receitas: mTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+          despesas: Math.abs(mTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)),
+        };
+      })
+    : (() => {
+        const monthEnd = new Date(dateTo).getDate();
+        const weeks = [
+          { label: 'Dias 1–7',            start: 1,  end: 7         },
+          { label: 'Dias 8–14',           start: 8,  end: 14        },
+          { label: 'Dias 15–21',          start: 15, end: 21        },
+          { label: `Dias 22–${monthEnd}`, start: 22, end: monthEnd  },
+        ];
+        return weeks.map(({ label, start, end }) => {
+          const wTx = filtered.filter(t => { const d = new Date(t.date).getDate(); return d >= start && d <= end; });
+          return {
+            month: label,
+            receitas: wTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+            despesas: Math.abs(wTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)),
+          };
+        });
+      })();
+
+  // ─── Category chart ───
+  const catQty = categories.map(cat => ({
+    name: cat.name,
+    value: filtered.filter(t => t.category === cat.name).length,
+    color: cat.color,
+  })).filter(c => c.value > 0);
+  const catData = catView === 'value' ? filteredCatExpenses : catQty;
+
+  // ─── Insights — sempre dos últimos 3 meses, não afetados pelo filtro ───
+  const txMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
+  const insightCurrent = txMonths.at(-1)!;
+  const insightPrev    = txMonths.slice(-3, -1);
+
+  const catAvgInsight: Record<string, number> = {};
+  for (const m of insightPrev) {
+    transactions.filter(t => t.date.startsWith(m) && t.type === 'expense')
+      .forEach(t => { catAvgInsight[t.category] = (catAvgInsight[t.category] ?? 0) + Math.abs(t.amount); });
+  }
+  for (const cat of Object.keys(catAvgInsight)) catAvgInsight[cat] /= insightPrev.length || 1;
+
+  const currentCatTotals: Record<string, number> = {};
+  transactions.filter(t => t.date.startsWith(insightCurrent) && t.type === 'expense')
+    .forEach(t => { currentCatTotals[t.category] = (currentCatTotals[t.category] ?? 0) + Math.abs(t.amount); });
+
+  let topVarCat = '', topVarPct = 0;
+  for (const [cat, val] of Object.entries(currentCatTotals)) {
+    const avg = catAvgInsight[cat] ?? 0;
+    if (avg > 0) { const pct = ((val - avg) / avg) * 100; if (pct > topVarPct) { topVarPct = pct; topVarCat = cat; } }
+  }
+
+  const descsByMonth: Record<string, Set<string>> = {};
+  for (const m of txMonths.slice(-3)) {
+    descsByMonth[m] = new Set(transactions.filter(t => t.date.startsWith(m)).map(t => t.description));
+  }
+  const recurring = [...new Set(transactions.map(t => t.description))].filter(desc =>
+    txMonths.slice(-3).filter(m => descsByMonth[m]?.has(desc)).length >= 2
+  );
+  const recNames = recurring.slice(0, 3);
+  const recExtra  = recurring.length > 3 ? ` e mais ${recurring.length - 3}` : '';
+  const recStr    = recNames.length === 1 ? recNames[0]
+    : recNames.length === 2 ? `${recNames[0]} e ${recNames[1]}`
+    : `${recNames[0]}, ${recNames[1]} e ${recNames[2]}`;
+
+  const latestTxDate   = new Date(Math.max(...transactions.map(t => new Date(t.date).getTime())));
+  const daysSinceLastTx = Math.floor((Date.now() - latestTxDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  const insights: { type: string; icon: React.ElementType; text: string }[] = [];
+  if (topVarPct > 10)    insights.push({ type: 'warning', icon: AlertTriangle, text: `Gastos com ${topVarCat} ${topVarPct.toFixed(0)}% acima da sua média dos últimos 3 meses.` });
+  if (recurring.length)  insights.push({ type: 'info',    icon: RefreshCw,    text: `${recurring.length} transaç${recurring.length === 1 ? 'ão recorrente identificada' : 'ões recorrentes identificadas'} este mês: ${recStr}${recExtra}.` });
+  if (daysSinceLastTx > 7) insights.push({ type: 'neutral', icon: Bell, text: 'Nenhuma transação registrada nos últimos 7 dias. Seu extrato está atualizado?' });
+
+  const fmt    = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
-
-  const insights = [
-    { type: 'warning', icon: AlertTriangle, text: 'Gastos com Alimentação 18% acima da sua média dos últimos 3 meses.' },
-    { type: 'success', icon: CheckCircle, text: 'Sua taxa de poupança de 54% está acima da meta recomendada (20%).' },
-    { type: 'info', icon: Info, text: '3 transações recorrentes identificadas este mês: Aluguel, Netflix e Academia.' },
-  ];
-
-  // Category data for qty view
-  const catQty = categories.map(cat => {
-    const count = transactions.filter(t => t.category === cat.name).length;
-    return { name: cat.name, value: count, color: cat.color };
-  }).filter(c => c.value > 0);
-
-  const catData = catView === 'value' ? categoryExpenses : catQty;
 
   return (
     <div className="ind-dashboard">
-      {/* Top KPIs + Health */}
-      <div className="dashboard-top">
-        <div className="cards-grid">
-          <KpiCard
-            label="Último Saldo Registrado"
-            value={fmt(balance)}
-            change={fmtPct(balanceChange)}
-            positive={balanceChange >= 0}
-            icon={<Wallet size={20} />}
-            accent="#F5A623"
-          />
-          <KpiCard
-            label="Receitas"
-            value={fmt(totalIncome)}
-            change={fmtPct(incomeChange)}
-            positive={incomeChange >= 0}
-            icon={<TrendingUp size={20} />}
-            accent="#27AE60"
-          />
-          <KpiCard
-            label="Despesas"
-            value={fmt(totalExpense)}
-            change={fmtPct(expenseChange)}
-            positive={expenseChange <= 0}
-            icon={<TrendingDown size={20} />}
-            accent="#E74C3C"
-          />
-          <KpiCard
-            label="Previsão de Fim de Mês"
-            value={fmt(balance + 1200)}
-            change="+R$ 1.200 em recorrências previstas"
-            positive={true}
-            icon={<CalendarClock size={20} />}
-            accent="#2980B9"
-          />
-        </div>
 
-        <div className="health-card">
-          <div className="health-title">Saúde Financeira</div>
-          <div className="health-score-ring">
-            <svg viewBox="0 0 100 100" width="110" height="110">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" strokeWidth="10" />
-              <circle
-                cx="50" cy="50" r="40" fill="none"
-                stroke={scoreColor} strokeWidth="10"
-                strokeDasharray={`${2 * Math.PI * 40 * healthScore / 100} ${2 * Math.PI * 40 * (1 - healthScore / 100)}`}
-                strokeLinecap="round"
-                transform="rotate(-90 50 50)"
-              />
-              <text x="50" y="46" textAnchor="middle" fontSize="18" fontWeight="800" fill={scoreColor}>{healthScore}</text>
-              <text x="50" y="60" textAnchor="middle" fontSize="9" fill="#999">/100</text>
-            </svg>
-          </div>
-          <div className="health-label" style={{ color: scoreColor }}>{scoreLabel}</div>
-          <div className="health-desc">Baseado em poupança, comprometimento de renda e recorrências</div>
+      {/* ── Filtro de Período ── */}
+      <div className="period-filter">
+        <span className="period-label">Período</span>
+        <div className="period-months">
+          {availableMonths.map(m => (
+            <button key={m} className={`period-month-btn${isMonthActive(m) ? ' active' : ''}`} onClick={() => selectMonth(m)}>
+              {monthLabel(m)}
+            </button>
+          ))}
+          {availableMonths.length > 1 && (
+            <button className={`period-month-btn${isAllActive ? ' active' : ''}`} onClick={selectAll}>Todos</button>
+          )}
+        </div>
+        <div className="period-divider" />
+        <div className="period-dates">
+          <span className="period-date-label">De</span>
+          <input type="date" className="period-date-input" value={dateFrom} max={dateTo} onChange={e => setDateFrom(e.target.value)} />
+          <span className="period-date-label">até</span>
+          <input type="date" className="period-date-input" value={dateTo}   min={dateFrom} onChange={e => setDateTo(e.target.value)} />
         </div>
       </div>
 
-      {/* Insights */}
+      {/* ── KPI Cards ── */}
+      <div className="cards-grid ind-cards-grid">
+        <KpiCard label="Saldo do Mês"    value={fmt(balance)}      change={fmtPct(balanceChange)}  positive={balanceChange >= 0}  icon={<Wallet size={20} />}      accent="#F5A623" valueColor={balance >= 0 ? '#27AE60' : '#E74C3C'} />
+        <KpiCard label="Receitas"        value={fmt(totalIncome)}  change={fmtPct(incomeChange)}   positive={incomeChange >= 0}   icon={<TrendingUp size={20} />}   accent="#27AE60" />
+        <KpiCard label="Despesas"        value={fmt(totalExpense)} change={fmtPct(expenseChange)}  positive={expenseChange <= 0}  icon={<TrendingDown size={20} />} accent="#E74C3C" />
+        <KpiCard label="Maior Categoria" value={topCategory.name} change={`${fmt(topCategory.value)} · ${topCategoryPct}% das despesas`} positive={false} icon={<Tag size={20} />} accent={topCategory.color} noChangeArrow noChangeSuffix />
+      </div>
+
+      {/* ── Insights ── */}
       <div className="insights-section">
         <h3 className="section-title">Insights do Mês</h3>
         <div className="insights-list">
@@ -165,17 +279,21 @@ function DashboardTab() {
         </div>
       </div>
 
-      {/* Charts Row 1 */}
+      {/* ── Charts Row ── */}
       <div className="charts-row">
         <div className="chart-card">
-          <div className="chart-header">
-            <h3>Receitas vs Despesas</h3>
-            <span className="badge">Últimos 6 meses</span>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={monthlyData} barGap={4}>
+          <div className="chart-header"><h3>Receitas vs Despesas</h3></div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={barData} barGap={4} margin={{ bottom: filteredMonths.length <= 1 ? 20 : 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+              <XAxis
+                dataKey="month"
+                tick={{ fontSize: 10, fill: '#666' }}
+                angle={filteredMonths.length <= 1 ? -25 : 0}
+                textAnchor={filteredMonths.length <= 1 ? 'end' : 'middle'}
+                height={filteredMonths.length <= 1 ? 50 : 30}
+                interval={0}
+              />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(v) => [fmt(Number(v ?? 0)), '']} />
               <Bar dataKey="receitas" fill="#27AE60" radius={[4, 4, 0, 0]} name="Receitas" />
@@ -189,24 +307,12 @@ function DashboardTab() {
             <h3>Gastos por Categoria</h3>
             <div className="chart-controls">
               <div className="toggle-group">
-                <button
-                  className={`toggle-btn ${catView === 'value' ? 'active' : ''}`}
-                  onClick={() => setCatView('value')}
-                >Valor</button>
-                <button
-                  className={`toggle-btn ${catView === 'qty' ? 'active' : ''}`}
-                  onClick={() => setCatView('qty')}
-                >Qtd</button>
+                <button className={`toggle-btn ${catView === 'value' ? 'active' : ''}`} onClick={() => setCatView('value')}>Valor</button>
+                <button className={`toggle-btn ${catView === 'qty'   ? 'active' : ''}`} onClick={() => setCatView('qty')}>Qtd</button>
               </div>
               <div className="toggle-group">
-                <button
-                  className={`toggle-btn ${chartType === 'bar' ? 'active' : ''}`}
-                  onClick={() => setChartType('bar')}
-                >Barra</button>
-                <button
-                  className={`toggle-btn ${chartType === 'pie' ? 'active' : ''}`}
-                  onClick={() => setChartType('pie')}
-                >Pizza</button>
+                <button className={`toggle-btn ${chartType === 'bar' ? 'active' : ''}`} onClick={() => setChartType('bar')}>Barra</button>
+                <button className={`toggle-btn ${chartType === 'pie' ? 'active' : ''}`} onClick={() => setChartType('pie')}>Pizza</button>
               </div>
             </div>
           </div>
@@ -215,25 +321,14 @@ function DashboardTab() {
             <div className="category-bars">
               {catData.map(c => {
                 const budget = budgets[c.name] || 300;
-                const pct = catView === 'value'
-                  ? Math.min(100, (c.value / budget) * 100)
-                  : Math.min(100, (c.value / 5) * 100);
+                const pct = catView === 'value' ? Math.min(100, (c.value / budget) * 100) : Math.min(100, (c.value / 5) * 100);
                 const over = catView === 'value' && pct >= 90;
                 return (
                   <div key={c.name} className="cat-bar-row">
-                    <div className="cat-bar-label">
-                      <span className="cat-dot" style={{ background: c.color }}></span>
-                      <span>{c.name}</span>
-                    </div>
-                    <div className="cat-bar-track">
-                      <div className="cat-bar-fill" style={{ width: `${pct}%`, background: over ? '#E74C3C' : c.color }}></div>
-                    </div>
+                    <div className="cat-bar-label"><span className="cat-dot" style={{ background: c.color }} /><span>{c.name}</span></div>
+                    <div className="cat-bar-track"><div className="cat-bar-fill" style={{ width: `${pct}%`, background: over ? '#E74C3C' : c.color }} /></div>
                     <div className="cat-bar-values">
-                      <span className={over ? 'over' : ''}>
-                        {catView === 'value'
-                          ? fmt(c.value)
-                          : `${c.value} transação${c.value !== 1 ? 'ões' : ''}`}
-                      </span>
+                      <span className={over ? 'over' : ''}>{catView === 'value' ? fmt(c.value) : `${c.value} transaç${c.value !== 1 ? 'ões' : 'ão'}`}</span>
                     </div>
                   </div>
                 );
@@ -246,17 +341,24 @@ function DashboardTab() {
                   <Pie data={catData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={2}>
                     {catData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip formatter={(v) => [catView === 'value' ? fmt(Number(v ?? 0)) : `${v} transações`, '']} />
+                  <Tooltip content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const e = payload[0];
+                    return (
+                      <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 6, padding: '8px 12px', fontSize: 13 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 2 }}>{e.name as string}</div>
+                        <div>{catView === 'value' ? fmt(Number(e.value ?? 0)) : `${e.value} ${Number(e.value) === 1 ? 'transação' : 'transações'}`}</div>
+                      </div>
+                    );
+                  }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="pie-legend">
                 {catData.map(c => (
                   <div key={c.name} className="legend-item">
-                    <span className="legend-dot" style={{ background: c.color }}></span>
+                    <span className="legend-dot" style={{ background: c.color }} />
                     <span className="legend-name">{c.name}</span>
-                    <span className="legend-value">
-                      {catView === 'value' ? fmt(c.value) : c.value}
-                    </span>
+                    <span className="legend-value">{catView === 'value' ? fmt(c.value) : c.value}</span>
                   </div>
                 ))}
               </div>
@@ -265,17 +367,17 @@ function DashboardTab() {
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* ── Transações Recentes (do período filtrado) ── */}
       <div className="chart-card">
         <div className="chart-header">
           <h3>Transações Recentes</h3>
           <span className="see-all" style={{ cursor: 'pointer' }}>Ver todas</span>
         </div>
         <div className="tx-list">
-          {transactions.slice(0, 5).map(tx => (
+          {filtered.slice(0, 5).map(tx => (
             <div key={tx.id} className="tx-item">
               <div className="tx-left">
-                <div className="tx-category-dot" style={{ background: tx.amount > 0 ? '#27AE60' : '#E74C3C' }}></div>
+                <div className="tx-category-dot" style={{ background: tx.amount > 0 ? '#27AE60' : '#E74C3C' }} />
                 <div>
                   <div className="tx-desc">{tx.description}</div>
                   <div className="tx-meta">{tx.category} · {new Date(tx.date).toLocaleDateString('pt-BR')}</div>
@@ -290,8 +392,9 @@ function DashboardTab() {
   );
 }
 
-function KpiCard({ label, value, change, positive, icon, accent }: {
+function KpiCard({ label, value, change, positive, icon, accent, valueColor, noChangeArrow, noChangeSuffix }: {
   label: string; value: string; change: string; positive: boolean; icon: React.ReactNode; accent: string;
+  valueColor?: string; noChangeArrow?: boolean; noChangeSuffix?: boolean;
 }) {
   return (
     <div className="kpi-card" style={{ borderTopColor: accent }}>
@@ -299,10 +402,10 @@ function KpiCard({ label, value, change, positive, icon, accent }: {
         <span className="kpi-label">{label}</span>
         <span className="kpi-icon" style={{ background: accent + '18', color: accent }}>{icon}</span>
       </div>
-      <div className="kpi-value">{value}</div>
-      <div className={`kpi-change ${positive ? 'positive' : 'negative'}`}>
-        {positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-        {change}
+      <div className="kpi-value" style={valueColor ? { color: valueColor } : undefined}>{value}</div>
+      <div className={`kpi-change ${noChangeArrow ? 'neutral' : positive ? 'positive' : 'negative'}`}>
+        {!noChangeArrow && (positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />)}
+        {change}{!noChangeSuffix && ' vs mês anterior'}
       </div>
     </div>
   );
@@ -316,109 +419,183 @@ function TransactionsTab() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
+  // ─── Period filter ───
+  const availableMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
+  const lastDayOf = (ym: string) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).toISOString().slice(0, 10); };
+  const selectMonth = (m: string) => { setDateFrom(m + '-01'); setDateTo(lastDayOf(m)); };
+  const selectAll = () => { setDateFrom(''); setDateTo(''); };
+  const isMonthActive = (m: string) => dateFrom === m + '-01' && dateTo === lastDayOf(m);
+  const isAllActive = dateFrom === '' && dateTo === '';
+  const monthLabel = (m: string) => {
+    const [y, mo] = m.split('-').map(Number);
+    const s = new Date(y, mo - 1).toLocaleString('pt-BR', { month: 'short' }).replace('.', '');
+    return s.charAt(0).toUpperCase() + s.slice(1) + ' ' + String(y).slice(2);
+  };
+
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const filtered = transactions.filter(t => {
     const matchSearch = t.description.toLowerCase().includes(search.toLowerCase());
     const matchType = filterType === 'all' || t.type === filterType;
     const matchCat = filterCat === 'all' || t.category === filterCat;
-    const txDate = new Date(t.date);
-    const matchFrom = !dateFrom || txDate >= new Date(dateFrom);
-    const matchTo = !dateTo || txDate <= new Date(dateTo);
+    const matchFrom = !dateFrom || t.date >= dateFrom;
+    const matchTo = !dateTo || t.date <= dateTo + 'T23:59:59';
     return matchSearch && matchType && matchCat && matchFrom && matchTo;
   });
 
-  const exportCSV = () => {
-    const header = 'Data,Descrição,Categoria,Tipo,Valor';
-    const rows = filtered.map(t =>
-      `${t.date},"${t.description}",${t.category},${t.type === 'income' ? 'Receita' : 'Despesa'},${t.amount}`
-    );
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'transacoes.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  const doExport = (format: 'csv' | 'xlsx') => {
+    const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor'];
+    const rows = filtered.map(t => [
+      new Date(t.date).toLocaleDateString('pt-BR'),
+      t.description,
+      t.category,
+      t.type === 'income' ? 'Receita' : 'Despesa',
+      t.amount.toFixed(2).replace('.', ','),
+    ]);
+
+    if (format === 'csv') {
+      const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'transacoes.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } else {
+      // XLSX via tab-separated (opens correctly in Excel)
+      const tsv = [header, ...rows].map(r => r.join('\t')).join('\n');
+      const blob = new Blob([tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'transacoes.xlsx';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    setShowExportModal(false);
   };
 
   return (
     <div className="ind-transactions">
-      <div className="page-header">
-        <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Transações</h2>
-        <p>Histórico completo de movimentações</p>
-      </div>
-
-      <div className="filters-bar">
-        <div className="search-input-wrap">
-          <Search size={14} />
-          <input
-            type="text"
-            placeholder="Buscar transação..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <div className="ind-tx-header">
+        <div>
+          <h2>Transações</h2>
+          <p>Histórico completo de movimentações</p>
         </div>
-        <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
-          <option value="all">Todos os tipos</option>
-          <option value="income">Receitas</option>
-          <option value="expense">Despesas</option>
-        </select>
-        <select className="filter-select" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
-          <option value="all">Todas as categorias</option>
-          {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-        </select>
-        <div className="date-filters">
-          <span>De</span>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
-          <span>Até</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
-        </div>
-        <button className="export-btn" onClick={exportCSV}>
-          <Download size={14} />
-          Exportar CSV
+        <button className="export-btn" onClick={() => setShowExportModal(true)}>
+          <Download size={14} /> Exportar
         </button>
       </div>
 
+      {/* Export modal */}
+      {showExportModal && (
+        <div className="modal-overlay" onClick={() => setShowExportModal(false)}>
+          <div className="export-modal" onClick={e => e.stopPropagation()}>
+            <div className="export-modal-header">
+              <span>Exportar transações</span>
+              <button className="export-modal-close" onClick={() => setShowExportModal(false)}>✕</button>
+            </div>
+            <p className="export-modal-desc">Escolha o formato para exportar <strong>{filtered.length}</strong> transaç{filtered.length === 1 ? 'ão' : 'ões'}:</p>
+            <div className="export-modal-options">
+              <button className="export-option-btn" onClick={() => doExport('csv')}>
+                <div className="export-option-icon csv">CSV</div>
+                <div>
+                  <div className="export-option-label">CSV</div>
+                  <div className="export-option-sub">Compatível com Excel, Google Sheets</div>
+                </div>
+              </button>
+              <button className="export-option-btn" onClick={() => doExport('xlsx')}>
+                <div className="export-option-icon xlsx">XLS</div>
+                <div>
+                  <div className="export-option-label">Excel (XLSX)</div>
+                  <div className="export-option-sub">Abre direto no Microsoft Excel</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Period filter */}
+      <div className="period-filter">
+        <span className="period-label">Período</span>
+        <div className="period-months">
+          <button className={`period-month-btn${isAllActive ? ' active' : ''}`} onClick={selectAll}>Todos</button>
+          {availableMonths.map(m => (
+            <button key={m} className={`period-month-btn${isMonthActive(m) ? ' active' : ''}`} onClick={() => selectMonth(m)}>
+              {monthLabel(m)}
+            </button>
+          ))}
+        </div>
+        <div className="period-divider" />
+        <div className="period-dates">
+          <span className="period-date-label">De</span>
+          <input type="date" className="period-date-input" value={dateFrom} max={dateTo || undefined} onChange={e => setDateFrom(e.target.value)} />
+          <span className="period-date-label">até</span>
+          <input type="date" className="period-date-input" value={dateTo} min={dateFrom || undefined} onChange={e => setDateTo(e.target.value)} />
+        </div>
+      </div>
+
+      {/* Search + Type + Category */}
+      <div className="tx-filter-row">
+        <div className="search-input-wrap tx-search">
+          <Search size={14} />
+          <input type="text" placeholder="Buscar transação..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className="tx-type-pills">
+          <button className={`tx-type-pill${filterType === 'all' ? ' active' : ''}`} onClick={() => setFilterType('all')}>Todos</button>
+          <button className={`tx-type-pill${filterType === 'income' ? ' active income' : ''}`} onClick={() => setFilterType('income')}>
+            <TrendingUp size={12} /> Receitas
+          </button>
+          <button className={`tx-type-pill${filterType === 'expense' ? ' active expense' : ''}`} onClick={() => setFilterType('expense')}>
+            <TrendingDown size={12} /> Despesas
+          </button>
+        </div>
+        <select className="filter-select tx-cat-select" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
+          <option value="all">Todas as categorias</option>
+          {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+      </div>
+
+      {/* List */}
       <div className="table-card">
-        <table className="tx-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Descrição</th>
-              <th>Categoria</th>
-              <th>Tipo</th>
-              <th>Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(tx => {
+        {filtered.length === 0 ? (
+          <div className="empty-state">Nenhuma transação encontrada.</div>
+        ) : (
+          <div className="ind-tx-list">
+            {filtered.map((tx, i) => {
               const cat = categories.find(c => c.name === tx.category);
+              const iconKey = NAME_TO_ICON[tx.category] ?? 'Tag';
+              const CatIcon = ICON_MAP[iconKey] ?? Tag;
+              const color = cat?.color ?? '#888';
+              const isIncome = tx.amount > 0;
               return (
-                <tr key={tx.id}>
-                  <td className="date-cell">{new Date(tx.date).toLocaleDateString('pt-BR')}</td>
-                  <td className="desc-cell">{tx.description}</td>
-                  <td>
-                    <span className="cat-badge" style={{ background: (cat?.color ?? '#999') + '20', color: cat?.color }}>
-                      {cat?.icon} {tx.category}
+                <div key={tx.id} className={`ind-tx-row ${i < filtered.length - 1 ? 'bordered' : ''}`}>
+                  <div className="ind-tx-row-icon" style={{ background: color + '18', color }}>
+                    <CatIcon size={17} />
+                  </div>
+                  <div className="ind-tx-row-main">
+                    <span className="ind-tx-row-desc">{tx.description}</span>
+                    <span className="ind-cat-badge" style={{ background: color + '18', color }}>
+                      <span className="ind-cat-badge-icon" style={{ background: color }}>
+                        <CatIcon size={10} color="white" />
+                      </span>
+                      {tx.category}
                     </span>
-                  </td>
-                  <td>
-                    <span className={`type-badge ${tx.type}`}>
-                      {tx.type === 'income' ? 'Receita' : 'Despesa'}
+                  </div>
+                  <div className="ind-tx-row-right">
+                    <span className={`ind-tx-amount ${isIncome ? 'positive' : 'negative'}`}>
+                      {isIncome ? '+' : '-'}{fmt(tx.amount)}
                     </span>
-                  </td>
-                  <td className={`amount-cell ${tx.amount > 0 ? 'positive' : 'negative'}`}>
-                    {tx.amount > 0 ? '+' : '-'}{fmt(tx.amount)}
-                  </td>
-                </tr>
+                    <span className="ind-tx-date">
+                      {new Date(tx.date).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
               );
             })}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <div className="empty-state">Nenhuma transação encontrada.</div>
+          </div>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, AlertTriangle, CheckCircle, Info, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Tag, AlertTriangle, CheckCircle, Info, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { monthlyData, categoryExpenses, transactions } from '../data/mockData';
 import './Dashboard.css';
@@ -11,7 +11,6 @@ export default function Dashboard() {
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const totalExpense = Math.abs(transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const balance = totalIncome - totalExpense;
-  const savingsRate = (balance / totalIncome) * 100;
 
   // Simulated previous month values
   const prevIncome = 5100;
@@ -20,23 +19,18 @@ export default function Dashboard() {
 
   const incomeChange = ((totalIncome - prevIncome) / prevIncome) * 100;
   const expenseChange = ((totalExpense - prevExpense) / prevExpense) * 100;
-  const balanceChange = ((balance - prevBalance) / prevBalance) * 100;
+  const balanceChange = prevBalance !== 0 ? ((balance - prevBalance) / Math.abs(prevBalance)) * 100 : 0;
 
-  const healthScore = Math.min(100, Math.round(
-    (savingsRate > 20 ? 40 : savingsRate * 2) +
-    (totalExpense / totalIncome < 0.7 ? 30 : (1 - totalExpense / totalIncome) * 43) +
-    30
-  ));
-
-  const scoreColor = healthScore >= 70 ? '#27AE60' : healthScore >= 40 ? '#F5A623' : '#E74C3C';
-  const scoreLabel = healthScore >= 70 ? 'Ótima' : healthScore >= 40 ? 'Regular' : 'Atenção';
+  // Maior Categoria — fixo ao mês atual, não responde ao filtro
+  const topCategory = categoryExpenses.reduce((max, c) => c.value > max.value ? c : max, categoryExpenses[0]);
+  const topCategoryPct = Math.round((topCategory.value / totalExpense) * 100);
 
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
 
   const insights = [
     { type: 'warning', icon: AlertTriangle, text: 'Gastos com Alimentação 18% acima da sua média dos últimos 3 meses.' },
-    { type: 'success', icon: CheckCircle, text: 'Parabéns! Sua taxa de poupança de 54% está acima da meta recomendada (20%).' },
+    { type: 'success', icon: CheckCircle, text: 'Sua taxa de poupança de 54% está acima da meta recomendada (20%).' },
     { type: 'info', icon: Info, text: '3 transações recorrentes identificadas este mês: Aluguel, Netflix e Academia.' },
   ];
 
@@ -49,63 +43,43 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Top row: KPIs + Health Score */}
-      <div className="dashboard-top">
-        <div className="cards-grid">
-          <KpiCard
-            label="Saldo Atual"
-            value={fmt(balance)}
-            change={fmtPct(balanceChange)}
-            positive={balanceChange >= 0}
-            icon={<Wallet size={20} />}
-            accent="#F5A623"
-          />
-          <KpiCard
-            label="Receitas"
-            value={fmt(totalIncome)}
-            change={fmtPct(incomeChange)}
-            positive={incomeChange >= 0}
-            icon={<TrendingUp size={20} />}
-            accent="#27AE60"
-          />
-          <KpiCard
-            label="Despesas"
-            value={fmt(totalExpense)}
-            change={fmtPct(expenseChange)}
-            positive={expenseChange <= 0}
-            icon={<TrendingDown size={20} />}
-            accent="#E74C3C"
-          />
-          <KpiCard
-            label="Taxa de Poupança"
-            value={`${savingsRate.toFixed(1)}%`}
-            change="Meta: 20%"
-            positive={savingsRate >= 20}
-            icon={<PiggyBank size={20} />}
-            accent="#2980B9"
-          />
-        </div>
-
-        {/* Health Score */}
-        <div className="health-card">
-          <div className="health-title">Saúde Financeira</div>
-          <div className="health-score-ring">
-            <svg viewBox="0 0 100 100" width="110" height="110">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" strokeWidth="10" />
-              <circle
-                cx="50" cy="50" r="40" fill="none"
-                stroke={scoreColor} strokeWidth="10"
-                strokeDasharray={`${2 * Math.PI * 40 * healthScore / 100} ${2 * Math.PI * 40 * (1 - healthScore / 100)}`}
-                strokeLinecap="round"
-                transform="rotate(-90 50 50)"
-              />
-              <text x="50" y="46" textAnchor="middle" fontSize="18" fontWeight="800" fill={scoreColor}>{healthScore}</text>
-              <text x="50" y="60" textAnchor="middle" fontSize="9" fill="#999">/100</text>
-            </svg>
-          </div>
-          <div className="health-label" style={{ color: scoreColor }}>{scoreLabel}</div>
-          <div className="health-desc">Baseado em poupança, comprometimento de renda e recorrências</div>
-        </div>
+      {/* KPI Cards */}
+      <div className="cards-grid">
+        <KpiCard
+          label="Saldo do Mês"
+          value={fmt(balance)}
+          change={fmtPct(balanceChange)}
+          positive={balanceChange >= 0}
+          icon={<Wallet size={20} />}
+          accent="#F5A623"
+          valueColor={balance >= 0 ? '#27AE60' : '#E74C3C'}
+        />
+        <KpiCard
+          label="Receitas"
+          value={fmt(totalIncome)}
+          change={fmtPct(incomeChange)}
+          positive={incomeChange >= 0}
+          icon={<TrendingUp size={20} />}
+          accent="#27AE60"
+        />
+        <KpiCard
+          label="Despesas"
+          value={fmt(totalExpense)}
+          change={fmtPct(expenseChange)}
+          positive={expenseChange <= 0}
+          icon={<TrendingDown size={20} />}
+          accent="#E74C3C"
+        />
+        <KpiCard
+          label="Maior Categoria"
+          value={topCategory.name}
+          change={`${fmt(topCategory.value)} · ${topCategoryPct}% das despesas`}
+          positive={false}
+          icon={<Tag size={20} />}
+          accent={topCategory.color}
+          noChangeArrow
+          noChangeSuffix
+        />
       </div>
 
       {/* Insights */}
@@ -222,8 +196,16 @@ export default function Dashboard() {
   );
 }
 
-function KpiCard({ label, value, change, positive, icon, accent }: {
-  label: string; value: string; change: string; positive: boolean; icon: React.ReactNode; accent: string;
+function KpiCard({ label, value, change, positive, icon, accent, valueColor, noChangeArrow, noChangeSuffix }: {
+  label: string;
+  value: string;
+  change: string;
+  positive: boolean;
+  icon: React.ReactNode;
+  accent: string;
+  valueColor?: string;
+  noChangeArrow?: boolean;
+  noChangeSuffix?: boolean;
 }) {
   return (
     <div className="kpi-card" style={{ borderTopColor: accent }}>
@@ -231,10 +213,10 @@ function KpiCard({ label, value, change, positive, icon, accent }: {
         <span className="kpi-label">{label}</span>
         <span className="kpi-icon" style={{ background: accent + '18', color: accent }}>{icon}</span>
       </div>
-      <div className="kpi-value">{value}</div>
-      <div className={`kpi-change ${positive ? 'positive' : 'negative'}`}>
-        {positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-        {change} vs mês anterior
+      <div className="kpi-value" style={valueColor ? { color: valueColor } : undefined}>{value}</div>
+      <div className={`kpi-change ${noChangeArrow ? 'neutral' : positive ? 'positive' : 'negative'}`}>
+        {!noChangeArrow && (positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />)}
+        {change}{!noChangeSuffix && ' vs mês anterior'}
       </div>
     </div>
   );
