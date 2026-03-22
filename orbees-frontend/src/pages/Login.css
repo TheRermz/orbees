@@ -1,22 +1,25 @@
 .login-page {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ─── LEFT (white) ─── */
 .login-left {
   flex: 1;
   background: var(--white);
-  padding: 64px 56px;
+  padding: 24px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .brand-logo {
-  width: min(320px, 70%);
+  width: min(560px, 85%);
+  max-height: 45vh;
   height: auto;
   object-fit: contain;
 }
@@ -24,6 +27,7 @@
 .login-hero {
   text-align: center;
   max-width: 440px;
+  margin-top: -20px;
 }
 
 .login-hero h1 {
