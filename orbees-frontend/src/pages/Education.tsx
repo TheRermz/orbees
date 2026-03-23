@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import {
   ChevronDown, ChevronUp, AlertTriangle, BookOpen,
   Wallet, ShieldCheck, TrendingUp, BarChart2,
@@ -72,6 +72,39 @@ function Fonte({ href, label }: { href: string; label: string }) {
   );
 }
 
+/* ─── LEARNING PATH ─── */
+const PATH_STEPS = [
+  { num: 1, label: 'Fundamentos',        desc: 'Os 4 pilares, regra 50-30-20 e juros compostos',        to: '/education/fundamentos', color: '#27AE60', textColor: '#fff' },
+  { num: 2, label: 'Direitos e Tributos', desc: 'CLT, holerite, IRPF, crédito, LGPD e Open Finance',    to: '/education/direitos',    color: '#2980B9', textColor: '#fff' },
+  { num: 3, label: 'Calculadoras',        desc: 'Simule juros, metas, férias, parcelamento e investimentos', to: '/education/calculadoras', color: '#111', textColor: '#F5A623' },
+];
+
+function LearningPath() {
+  const navigate = useNavigate();
+  return (
+    <div className="edu-path-card">
+      <h3>Sua trilha de aprendizado</h3>
+      <p className="edu-path-subtitle">Siga as seções em ordem para construir uma base sólida</p>
+      <div className="edu-path-steps">
+        {PATH_STEPS.map((s, i) => (
+          <button
+            key={i}
+            className="edu-path-step edu-path-step-btn"
+            onClick={() => navigate(s.to)}
+          >
+            <div className="edu-step-num" style={{ background: s.color, color: s.textColor }}>{s.num}</div>
+            <div className="edu-step-info">
+              <div className="edu-step-label">{s.label}</div>
+              <div className="edu-step-desc">{s.desc}</div>
+            </div>
+            <div className="edu-step-cta">Acessar →</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════
    TAB 1 — INÍCIO
 ══════════════════════════════════════════════════════ */
@@ -102,31 +135,19 @@ export function EducationInicio() {
       {/* Stats from references */}
       <div className="edu-stats-grid">
         <div className="edu-stat-card red">
-          <div className="edu-stat-number">78,3%</div>
-          <div className="edu-stat-label">das famílias brasileiras estão endividadas</div>
-          <a
-            href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/"
-            target="_blank" rel="noopener noreferrer"
-            className="edu-stat-source-link"
-          >CNDL / SPC Brasil, 2024 ↗</a>
+          <div className="edu-stat-number">78,8%</div>
+          <div className="edu-stat-label">das famílias brasileiras estão endividadas — maior nível desde nov/2022</div>
+          <a href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/" target="_blank" rel="noopener noreferrer" className="edu-stat-source-link">CNDL / SPC Brasil — PEIC ago/2025 ↗</a>
         </div>
         <div className="edu-stat-card yellow">
-          <div className="edu-stat-number">52%</div>
-          <div className="edu-stat-label">dos brasileiros têm nível adequado de letramento financeiro</div>
-          <a
-            href="https://www.bcb.gov.br/estabilidadefinanceira/educacaofinanceira"
-            target="_blank" rel="noopener noreferrer"
-            className="edu-stat-source-link"
-          >Banco Central do Brasil, 2023 ↗</a>
+          <div className="edu-stat-number">59,6</div>
+          <div className="edu-stat-label">pontuação média de letramento financeiro (escala 0–100). Apenas 14,3% sabem calcular juros simples</div>
+          <a href="https://www.bcb.gov.br/estabilidadefinanceira/educacaofinanceira" target="_blank" rel="noopener noreferrer" className="edu-stat-source-link">Banco Central do Brasil, 2023 ↗</a>
         </div>
         <div className="edu-stat-card blue">
-          <div className="edu-stat-number">400%</div>
-          <div className="edu-stat-label">ao ano: custo médio do rotativo do cartão de crédito</div>
-          <a
-            href="https://www.bcb.gov.br/estatisticas/txjuros"
-            target="_blank" rel="noopener noreferrer"
-            className="edu-stat-source-link"
-          >BCB — Taxas de Operações de Crédito ↗</a>
+          <div className="edu-stat-number">58,32%</div>
+          <div className="edu-stat-label">ao ano: taxa média de juros cobrada dos consumidores — maior desde maio/2023</div>
+          <a href="https://www.bcb.gov.br/estatisticas/txjuros" target="_blank" rel="noopener noreferrer" className="edu-stat-source-link">BCB — PEIC / Taxas de Crédito, 2025 ↗</a>
         </div>
       </div>
 
@@ -138,21 +159,21 @@ export function EducationInicio() {
             <ShieldCheck size={20} className="edu-why-icon green" />
             <div>
               <strong>Segurança</strong>
-              <p>Uma reserva de emergência evita que imprevistos virem dívidas. Quem não se prepara, paga juros.</p>
+              <p>47,7% dos brasileiros não controlam o próprio orçamento. Sem planejamento, imprevistos viram dívidas. <Fonte href="https://cndl.org.br" label="CNDL, 2020" /></p>
             </div>
           </div>
           <div className="edu-why-item">
             <TrendingUp size={20} className="edu-why-icon yellow" />
             <div>
               <strong>Crescimento</strong>
-              <p>Investir mesmo R$200/mês com juros compostos pode gerar mais de R$240.000 em 20 anos.</p>
+              <p>Investir R$200/mês a 1% a.m. por 20 anos gera mais de R$198.000. Os juros compostos trabalham por você — ou contra.</p>
             </div>
           </div>
           <div className="edu-why-item">
             <Wallet size={20} className="edu-why-icon blue" />
             <div>
               <strong>Liberdade</strong>
-              <p>Quem controla o dinheiro decide onde trabalhar, quando parar e como viver.</p>
+              <p>Quem controla o dinheiro decide onde trabalhar, quando parar e como viver. 30,4% das famílias já têm dívidas em atraso. <Fonte href="https://cndl.org.br" label="PEIC ago/2025" /></p>
             </div>
           </div>
           <div className="edu-why-item">
@@ -160,8 +181,8 @@ export function EducationInicio() {
             <div>
               <strong>Realidade brasileira</strong>
               <p>
-                O brasileiro endividado destina em média 30% da renda para quitar dívidas.{' '}
-                <Fonte href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/" label="CNDL 2024" />
+                R$ 143 bilhões em crédito em atraso — recorde histórico. O comprometimento médio da renda com dívidas é de 29,3%.{' '}
+                <Fonte href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/" label="PEIC ago/2025" />
               </p>
             </div>
           </div>
@@ -169,26 +190,7 @@ export function EducationInicio() {
       </div>
 
       {/* Learning path */}
-      <div className="edu-path-card">
-        <h3>Sua trilha de aprendizado</h3>
-        <p className="edu-path-subtitle">Siga as seções em ordem para construir uma base sólida</p>
-        <div className="edu-path-steps">
-          {[
-            { num: '1', label: 'Fundamentos',  desc: 'O que é gestão financeira, os 4 pilares e a regra 50-30-20', color: '#27AE60' },
-            { num: '2', label: 'Direitos e Tributos', desc: 'CLT, holerite, IRPF, crédito, LGPD e Open Finance', color: '#2980B9' },
-            { num: '3', label: 'Calculadoras', desc: 'Simule juros, metas, férias, parcelamento e investimentos',  color: '#F5A623' },
-          ].map((s, i, arr) => (
-            <div key={i} className="edu-path-step">
-              <div className="edu-step-num" style={{ background: s.color }}>{s.num}</div>
-              <div className="edu-step-info">
-                <div className="edu-step-label">{s.label}</div>
-                <div className="edu-step-desc">{s.desc}</div>
-              </div>
-              {i < arr.length - 1 && <div className="edu-step-arrow">→</div>}
-            </div>
-          ))}
-        </div>
-      </div>
+      <LearningPath />
     </div>
   );
 }
@@ -210,8 +212,9 @@ export function EducationFundamentos() {
         <p>
           Gestão financeira é o processo de <strong>planejar, organizar, controlar e monitorar</strong> os
           recursos financeiros pessoais ou familiares. Não se trata de ganhar mais — mas de fazer mais com
-          o que você já ganha. Segundo o BCB (2023), o letramento financeiro inclui quatro dimensões:
-          conhecimento, comportamento, atitude e bem-estar financeiro.{' '}
+          o que você já ganha. Segundo o BCB (2023), o letramento financeiro é medido em quatro dimensões:
+          conhecimento, comportamento, atitude e bem-estar financeiro. O Brasil obteve média de <strong>59,6/100</strong> no índice de letramento financeiro — e apenas <strong>14,3%</strong> da população
+          consegue resolver corretamente um cálculo de juros simples.{' '}
           <Fonte href="https://www.bcb.gov.br/estabilidadefinanceira/educacaofinanceira" label="BCB, 2023" />
         </p>
       </div>
@@ -320,20 +323,25 @@ export function EducationFundamentos() {
           title: 'Método para sair das dívidas: Bola de Neve vs Avalanche',
           content: (
             <div className="accordion-body">
+              <p>
+                O cartão de crédito é a principal dívida de <strong>63,6%</strong> dos endividados brasileiros, seguido por empréstimos em instituições financeiras (<strong>21,3%</strong>). A taxa média cobrada ao consumidor chegou a <strong>58,32% a.a.</strong> em 2025.{' '}
+                <Fonte href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/" label="CNDL / PEIC 2025" />
+              </p>
               <div className="two-col">
                 <div>
                   <strong>Bola de Neve (Snowball)</strong>
                   <p>Pague o mínimo em todas as dívidas e concentre o máximo na <em>menor dívida</em>. Ao quitá-la, use o valor liberado para a próxima.</p>
-                  <p>Vantagem: motivação psicológica — você vê dívidas sendo eliminadas rapidamente.</p>
+                  <p>Vantagem: motivação psicológica — você elimina dívidas rapidamente e mantém o foco.</p>
                 </div>
                 <div>
                   <strong>Avalanche</strong>
-                  <p>Pague o mínimo em todas e concentre na dívida com <em>maior taxa de juros</em>.</p>
-                  <p>Vantagem: matematicamente mais eficiente — você paga menos juros no total.</p>
+                  <p>Pague o mínimo em todas e concentre na dívida com <em>maior taxa de juros</em> (ex: rotativo do cartão).</p>
+                  <p>Vantagem: matematicamente mais eficiente — você paga menos juros no total e quita mais rápido.</p>
                 </div>
               </div>
               <div className="edu-tip">
-                Evite rotativo do cartão (até <strong>400% a.a.</strong> <Fonte href="https://www.bcb.gov.br/estatisticas/txjuros" label="BCB" />) e cheque especial. Negocie com o credor ou use o Serasa Limpa Nome.
+                Principais causas de inadimplência: desemprego, redução de renda e descontrole financeiro.{' '}
+                <Fonte href="https://repositorio.ufpb.br" label="Silva, UFPB, 2021" /> Antes de contrair novo crédito, verifique se a nova taxa é menor que a dívida atual. Use o Serasa Limpa Nome para renegociar.
               </div>
             </div>
           ),
@@ -342,14 +350,17 @@ export function EducationFundamentos() {
           title: 'O papel do orçamento mensal',
           content: (
             <div className="accordion-body">
-              <p>O orçamento não é uma prisão — é um mapa. Ele mostra onde você está e para onde está indo.</p>
+              <p>
+                <strong>47,7%</strong> dos brasileiros não realizam qualquer controle do próprio orçamento.{' '}
+                <Fonte href="https://cndl.org.br" label="CNDL, 2020" /> O orçamento não é uma prisão — é um mapa financeiro. Ele mostra onde você está e para onde está indo.
+              </p>
               <ul>
-                <li>Liste todas as receitas (salário, freelance, aluguéis, etc.)</li>
-                <li>Categorize todas as despesas (fixas: aluguel, condomínio; variáveis: alimentação, lazer)</li>
-                <li>Calcule o saldo: se negativo, identifique onde cortar</li>
-                <li>Defina metas de economia e acompanhe semanalmente</li>
+                <li>Liste todas as receitas (salário, freelance, aluguéis, benefícios)</li>
+                <li>Categorize todas as despesas: fixas (aluguel, condomínio, plano de saúde) e variáveis (alimentação, lazer, vestuário)</li>
+                <li>Calcule o saldo: se negativo, identifique onde cortar antes de contrair mais dívidas</li>
+                <li>Defina metas de poupança e acompanhe semanalmente — 81,8% dos brasileiros que acompanham as finanças pagam contas em dia <Fonte href="https://www.bcb.gov.br/estabilidadefinanceira/educacaofinanceira" label="BCB, 2023" /></li>
               </ul>
-              <p>A Orbees faz isso automaticamente ao importar seu extrato bancário.</p>
+              <p>A Orbees faz isso automaticamente ao importar seu extrato bancário — basta conectar e acompanhar.</p>
             </div>
           ),
         },
@@ -368,6 +379,16 @@ export function EducationDireitos() {
         title="Direitos e Tributos"
         subtitle="Legislação trabalhista, tributação, crédito e proteção de dados financeiros"
       />
+
+      <div className="edu-concept-box">
+        <h3>Por que você precisa entender seus direitos financeiros?</h3>
+        <p>
+          Conhecer a legislação que rege seu salário, impostos e crédito é a diferença entre pagar o justo e pagar a mais.
+          A taxa média de juros cobrada dos consumidores brasileiros atingiu <strong>58,32% a.a.</strong> em 2025 — e o cartão de crédito
+          responde por <strong>63,6%</strong> das dívidas das famílias. <Fonte href="https://cndl.org.br/noticia/pesquisa-de-endividamento-e-inadimplencia-do-consumidor-peic/" label="PEIC, 2025" />
+          Entender CLT, IRPF e crédito protege seu patrimônio e evita armadilhas legais.
+        </p>
+      </div>
 
       <div className="vida-topics-grid">
         <div className="vida-topic-badge green"><CheckCircle size={14} /> CLT &amp; Direitos</div>
