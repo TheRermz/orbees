@@ -28,7 +28,7 @@ namespace orbees_api.Migrations
                     oauth_provider = table.Column<string>(type: "text", nullable: true),
                     oauth_provider_id = table.Column<string>(type: "text", nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
-                    created_ad = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>

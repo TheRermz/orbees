@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace orbees_api.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20260323135600_InitialCreate")]
+    [Migration("20260323184052_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,7 +34,7 @@ namespace orbees_api.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_ad");
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()

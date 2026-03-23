@@ -59,7 +59,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
           .HasColumnName("is_active");
 
         builder.Property(u => u.CreatedAt)
-          .HasColumnName("created_ad");
+          .HasColumnName("created_at");
 
         builder.Property(u => u.UpdatedAt)
           .HasColumnName("updated_at");
