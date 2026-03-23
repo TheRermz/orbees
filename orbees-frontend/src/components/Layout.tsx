@@ -21,6 +21,8 @@ import {
   X,
 } from 'lucide-react';
 import './Layout.css';
+import { loadNotifications, markAllRead, addNotification, unreadCount, type ONotification } from '../utils/notifications';
+import { transactions } from '../data/mockData';
 
 /* ── USER PROFILE (localStorage) ─────────────────────── */
 function loadProfile() {
@@ -65,7 +67,7 @@ const navStructure = [
     children: [
       { to: '/education/inicio',       icon: Compass,    label: 'Início' },
       { to: '/education/fundamentos',  icon: Lightbulb,  label: 'Fundamentos' },
-      { to: '/education/vida-adulta',  icon: Briefcase,  label: 'Vida Adulta' },
+      { to: '/education/direitos',      icon: Briefcase,  label: 'Direitos e Tributos' },
       { to: '/education/calculadoras', icon: Calculator, label: 'Calculadoras' },
     ],
   },
@@ -221,11 +223,90 @@ function ProfilePopover({
   );
 }
 
+/* ── NOTIFICATION PANEL ───────────────────────────────── */
+function NotificationPanel({ onClose }: { onClose: () => void }) {
+  const [notifs, setNotifs] = useState<ONotification[]>([]);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    markAllRead();
+    setNotifs(loadNotifications());
+  }, []);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+
+  const icons: Record<string, string> = { download: '⬇', warning: '⚠', info: 'ℹ' };
+
+  return (
+    <div className="notif-panel" ref={panelRef}>
+      <div className="notif-panel-header">
+        <span>Notificações</span>
+        <button className="notif-close" onClick={onClose}><X size={14} /></button>
+      </div>
+      {notifs.length === 0 ? (
+        <div className="notif-empty">Nenhuma notificação no momento.</div>
+      ) : (
+        <div className="notif-list">
+          {notifs.map(n => (
+            <div key={n.id} className={`notif-item notif-${n.type}`}>
+              <div className="notif-item-top">
+                <span className="notif-icon">{icons[n.type]}</span>
+                <div className="notif-body">
+                  <div className="notif-title">{n.title}</div>
+                  <div className="notif-msg">{n.message}</div>
+                  {n.href && (
+                    <a href={n.href} download={n.filename} className="notif-dl-link">
+                      Baixar {n.filename}
+                    </a>
+                  )}
+                  <div className="notif-time">{new Date(n.createdAt).toLocaleString('pt-BR')}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── MAIN LAYOUT ──────────────────────────────────────── */
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [profile, setProfile] = useState(loadProfile);
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
+  const [badge, setBadge] = useState(unreadCount);
+
+  // listen for new notifications
+  useEffect(() => {
+    const handler = () => setBadge(unreadCount());
+    window.addEventListener('orbees:notification', handler);
+    return () => window.removeEventListener('orbees:notification', handler);
+  }, []);
+
+  // check 7 days without import
+  useEffect(() => {
+    const lastDate = transactions.map(t => t.date).sort().at(-1) ?? '';
+    if (!lastDate) return;
+    const diffDays = Math.floor((Date.now() - new Date(lastDate).getTime()) / 86400000);
+    if (diffDays >= 7) {
+      const already = loadNotifications().some(n => n.title === 'Extrato desatualizado');
+      if (!already) {
+        addNotification({
+          type: 'warning',
+          title: 'Extrato desatualizado',
+          message: `Nenhum dado importado nos últimos ${diffDays} dias. Acesse "Importar Extrato" para atualizar suas transações.`,
+        });
+      }
+    }
+  }, []);
 
   function handleSave(p: { name: string; photo: string | null }) {
     setProfile(p);
@@ -263,11 +344,18 @@ export default function Layout() {
 
       <div className="main-wrapper">
         <header className="header">
-          <div className="header-left">
-            <h2 className="page-title">Março 2026</h2>
-          </div>
+          <div className="header-left" />
           <div className="header-right">
-            <button className="header-btn"><Bell size={18} /></button>
+            <div className="notif-btn-wrap">
+              <button
+                className="header-btn"
+                onClick={() => { setShowNotif(v => !v); setShowProfile(false); setBadge(0); }}
+              >
+                <Bell size={18} />
+                {badge > 0 && <span className="notif-badge">{badge}</span>}
+              </button>
+              {showNotif && <NotificationPanel onClose={() => setShowNotif(false)} />}
+            </div>
 
             {/* Clickable user area */}
             <div className="user-area" onClick={() => setShowProfile(v => !v)}>

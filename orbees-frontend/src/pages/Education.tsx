@@ -175,7 +175,7 @@ export function EducationInicio() {
         <div className="edu-path-steps">
           {[
             { num: '1', label: 'Fundamentos',  desc: 'O que é gestão financeira, os 4 pilares e a regra 50-30-20', color: '#27AE60' },
-            { num: '2', label: 'Vida Adulta',  desc: 'CLT, holerite, IRPF, crédito, LGPD e Open Finance',         color: '#2980B9' },
+            { num: '2', label: 'Direitos e Tributos', desc: 'CLT, holerite, IRPF, crédito, LGPD e Open Finance', color: '#2980B9' },
             { num: '3', label: 'Calculadoras', desc: 'Simule juros, metas, férias, parcelamento e investimentos',  color: '#F5A623' },
           ].map((s, i, arr) => (
             <div key={i} className="edu-path-step">
@@ -359,14 +359,14 @@ export function EducationFundamentos() {
 }
 
 /* ══════════════════════════════════════════════════════
-   TAB 3 — VIDA ADULTA
+   TAB 3 — DIREITOS E TRIBUTOS
 ══════════════════════════════════════════════════════ */
-export function EducationVidaAdulta() {
+export function EducationDireitos() {
   return (
     <div className="education-page">
       <SectionHeader
-        title="Vida Adulta"
-        subtitle="Direitos trabalhistas, impostos, crédito e seus dados financeiros"
+        title="Direitos e Tributos"
+        subtitle="Legislação trabalhista, tributação, crédito e proteção de dados financeiros"
       />
 
       <div className="vida-topics-grid">
@@ -627,19 +627,53 @@ export function EducationVidaAdulta() {
 /* ══════════════════════════════════════════════════════
    TAB 4 — CALCULADORAS
 ══════════════════════════════════════════════════════ */
+const CALC_LIST = [
+  { id: 'simples',       label: 'Juros Simples',              formula: 'M = C × (1 + i × t)' },
+  { id: 'compostos',     label: 'Juros Compostos',            formula: 'M = C × (1 + i)ⁿ' },
+  { id: 'ferias',        label: 'Férias CLT',                 formula: 'Férias + ⅓ + Abono' },
+  { id: 'parcelamento',  label: 'Custo do Parcelamento',      formula: 'Total = PMT × n' },
+  { id: 'metas',         label: 'Metas de Poupança',          formula: '(Meta − Atual) ÷ Meses' },
+  { id: 'dividas',       label: 'Quitação de Dívidas',        formula: 'Bola de Neve / Avalanche' },
+  { id: 'investimentos', label: 'Comparador de Investimentos', formula: 'M = C × (1 + i)ⁿ' },
+  { id: 'irpf',          label: 'Simulador IRPF',             formula: 'Base − Deduções → IR' },
+];
+
 export function EducationCalculadoras() {
+  const [active, setActive] = useState('simples');
+
+  function renderCalc() {
+    switch (active) {
+      case 'simples':       return <SimpleInterest />;
+      case 'compostos':     return <CompoundInterest />;
+      case 'ferias':        return <FeriasCalc />;
+      case 'parcelamento':  return <ParcelamentoCalc />;
+      case 'metas':         return <MetaCalc />;
+      case 'dividas':       return <DividasCalc />;
+      case 'investimentos': return <ComparadorInvest />;
+      case 'irpf':          return <IrpfSimuladorCalc />;
+      default:              return null;
+    }
+  }
+
   return (
     <div className="education-page">
       <SectionHeader title="Calculadoras" subtitle="Simule cenários reais e tome decisões com números, não com achismos" />
-      <div className="calc-section">
-        <SimpleInterest />
-        <CompoundInterest />
-        <FeriasCalc />
-        <ParcelamentoCalc />
-        <MetaCalc />
-        <DividasCalc />
-        <ComparadorInvest />
-        <IrpfSimuladorCalc />
+      <div className="calc-layout">
+        <nav className="calc-sidebar">
+          {CALC_LIST.map(c => (
+            <button
+              key={c.id}
+              className={`calc-nav-item${active === c.id ? ' active' : ''}`}
+              onClick={() => setActive(c.id)}
+            >
+              <div className="calc-nav-label">{c.label}</div>
+              <div className="calc-nav-formula">{c.formula}</div>
+            </button>
+          ))}
+        </nav>
+        <div className="calc-panel">
+          {renderCalc()}
+        </div>
       </div>
     </div>
   );
@@ -1006,6 +1040,7 @@ function IrpfSimuladorCalc() {
 }
 
 /* ─── Backward compat ─── */
-export function EducationIrpf() { return <EducationVidaAdulta />; }
+export function EducationVidaAdulta() { return <EducationDireitos />; }
+export function EducationIrpf() { return <EducationDireitos />; }
 export function EducationGuias() { return <EducationFundamentos />; }
 export function EducationInvestimentos() { return <EducationCalculadoras />; }

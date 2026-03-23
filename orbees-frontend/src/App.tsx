@@ -15,7 +15,7 @@ import Group, {
 import Education, {
   EducationInicio,
   EducationFundamentos,
-  EducationVidaAdulta,
+  EducationDireitos,
   EducationCalculadoras,
 } from './pages/Education';
 import Login from './pages/Login';
@@ -46,10 +46,11 @@ export default function App() {
             <Route index element={<Navigate to="inicio" replace />} />
             <Route path="inicio" element={<EducationInicio />} />
             <Route path="fundamentos" element={<EducationFundamentos />} />
-            <Route path="vida-adulta" element={<EducationVidaAdulta />} />
+            <Route path="direitos" element={<EducationDireitos />} />
             <Route path="calculadoras" element={<EducationCalculadoras />} />
+            <Route path="vida-adulta" element={<Navigate to="/education/direitos" replace />} />
             <Route path="investimentos" element={<Navigate to="/education/calculadoras" replace />} />
-            <Route path="irpf" element={<Navigate to="/education/vida-adulta" replace />} />
+            <Route path="irpf" element={<Navigate to="/education/direitos" replace />} />
             <Route path="guias" element={<Navigate to="/education/fundamentos" replace />} />
           </Route>
           <Route path="/settings" element={<Settings />} />
