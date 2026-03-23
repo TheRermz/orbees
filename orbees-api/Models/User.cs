@@ -1,6 +1,8 @@
+using Api.Models.Common;
+
 namespace Api.Models
 {
-    public class User
+    public class User : AuditableEntity
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public required string Email { get; set; }
@@ -26,9 +28,5 @@ namespace Api.Models
         public string? OAuthProviderId { get; set; } // ID Externo
         public bool IsActive { get; set; } = true;
 
-        // ------- Auditoria -------
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
     }
 }
