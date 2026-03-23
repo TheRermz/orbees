@@ -9,14 +9,6 @@ using Serilog;
 
 Env.Load();
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("logs/orbees-.log", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog();
-
 
 // ── ConnString ────────────────────────────────────────────────────────────────
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
@@ -24,6 +16,17 @@ var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" 
                        $"Username={Environment.GetEnvironmentVariable("DB_USER")};" +
                        $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
                        $"Database={Environment.GetEnvironmentVariable("DB_NAME")}";
+
+
+// ── Logger ────────────────────────────────────────────────────────────────
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/orbees.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
+
 
 // ── Controllers ────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
