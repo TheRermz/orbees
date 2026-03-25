@@ -1,6 +1,6 @@
 using Api.Models;
 
-namespace Api.Services.Interfaces
+namespace Api.Services.Interfaces.Auth
 {
     public interface ITokenService
     {

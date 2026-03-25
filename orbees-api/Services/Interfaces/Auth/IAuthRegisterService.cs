@@ -1,6 +1,6 @@
 using Api.Dtos;
 
-namespace Api.Services.Interfaces
+namespace Api.Services.Interfaces.Auth
 {
     public interface IAuthRegisterService
     {

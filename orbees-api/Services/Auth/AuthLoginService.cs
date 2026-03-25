@@ -1,5 +1,5 @@
 using Api.Repositories.Interfaces;
-using Api.Services.Interfaces;
+using Api.Services.Interfaces.Auth;
 
 namespace Api.Services.Auth
 {

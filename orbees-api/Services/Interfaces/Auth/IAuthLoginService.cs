@@ -1,4 +1,4 @@
-namespace Api.Services.Interfaces
+namespace Api.Services.Interfaces.Auth
 {
     public interface IAuthLoginService
     {

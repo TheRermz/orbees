@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Api.Models;
-using Api.Services.Interfaces;
+using Api.Services.Interfaces.Auth;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Api.Services.Auth
