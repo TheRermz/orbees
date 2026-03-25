@@ -20,6 +20,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import { transactions, categories } from '../data/mockData';
+import { addNotification } from '../utils/notifications';
 import CategoriesPage from './CategoriesPage';
 import './Individual.css';
 
@@ -294,8 +295,19 @@ function DashboardTab() {
                 height={filteredMonths.length <= 1 ? 50 : 30}
                 interval={0}
               />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v) => [fmt(Number(v ?? 0)), '']} />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })} />
+              <Tooltip content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const receitas = payload.find(p => p.dataKey === 'receitas');
+                const despesas = payload.find(p => p.dataKey === 'despesas');
+                return (
+                  <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '10px 14px', fontSize: 13, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6, color: '#111' }}>{label as string}</div>
+                    <div style={{ color: '#27AE60', marginBottom: 3 }}>Receitas: {fmt(Number(receitas?.value ?? 0))}</div>
+                    <div style={{ color: '#E74C3C' }}>Despesas: {fmt(Number(despesas?.value ?? 0))}</div>
+                  </div>
+                );
+              }} />
               <Bar dataKey="receitas" fill="#27AE60" radius={[4, 4, 0, 0]} name="Receitas" />
               <Bar dataKey="despesas" fill="#E74C3C" radius={[4, 4, 0, 0]} name="Despesas" />
             </BarChart>
@@ -455,21 +467,28 @@ function TransactionsTab() {
       t.amount.toFixed(2).replace('.', ','),
     ]);
 
+    const filename = `transacoes.${format}`;
+    const isLarge = rows.length > 30;
+    let blob: Blob;
     if (format === 'csv') {
       const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'transacoes.csv';
-      a.click();
-      URL.revokeObjectURL(a.href);
+      blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     } else {
-      // XLSX via tab-separated (opens correctly in Excel)
       const tsv = [header, ...rows].map(r => r.join('\t')).join('\n');
-      const blob = new Blob([tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      blob = new Blob([tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    }
+    if (isLarge) {
+      addNotification({
+        type: 'download',
+        title: 'Relatório pronto para download',
+        message: `${rows.length} transações exportadas (${format.toUpperCase()}). Clique no link para baixar.`,
+        href: URL.createObjectURL(blob),
+        filename,
+      });
+    } else {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'transacoes.xlsx';
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(a.href);
     }
