@@ -2,6 +2,7 @@ using Api.Dtos;
 using Api.Models;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.Auth;
+using Api.Services.Interfaces.Email;
 
 namespace Api.Services.Auth
 {
