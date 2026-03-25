@@ -1,4 +1,4 @@
-using Api.Dtos;
+using Api.Dtos.User;
 using Api.Models;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.Auth;

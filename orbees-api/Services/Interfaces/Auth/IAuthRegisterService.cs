@@ -1,4 +1,4 @@
-using Api.Dtos;
+using Api.Dtos.User;
 
 namespace Api.Services.Interfaces.Auth
 {
