@@ -22,7 +22,7 @@ namespace Api.Services.Auth
 
             await userRepository.UpdateAsync(user);
             await userRepository.SaveChangesAsync();
-            await emailService.SendPasswordResetAsync(user.Email, user.Fullname, resetToken)
+            await emailService.SendPasswordResetAsync(user.Email, user.Fullname, resetToken);
         }
 
         public async Task ResetPasswordAsync(string token, string newPassword)
