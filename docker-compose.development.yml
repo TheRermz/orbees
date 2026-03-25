@@ -59,6 +59,15 @@ services:
       - ./orbees-frontend:/app
       - /app/node_modules
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: orbees-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - orbees-network
+
 networks:
   orbees-network:
     driver: bridge
