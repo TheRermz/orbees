@@ -19,6 +19,7 @@ import Education, {
   EducationCalculadoras,
 } from './pages/Education';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Settings from './pages/Settings';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route element={<Layout />}>
           <Route path="/individual" element={<Individual />}>
             <Route index element={<Navigate to="dashboard" replace />} />

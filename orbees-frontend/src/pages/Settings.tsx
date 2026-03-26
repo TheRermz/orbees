@@ -24,6 +24,7 @@ const mockCurrentGroup = {
   role: 'Administrador' as const,
   members: 4,
   createdAt: 'Agosto 2024',
+  adminCount: 1, /* Only 1 admin (the current user) */
 };
 
 /* ════════════════════════════════════════════════════════
@@ -126,7 +127,7 @@ function TabPerfil() {
 
         <div className="profile-edit-info">
           <span className="profile-edit-label">Foto de perfil</span>
-          <span className="profile-edit-hint">JPG, PNG ou GIF. Recomendado 256×256px.</span>
+          <span className="profile-edit-hint">JPG, PNG. Recomendado 256×256px.</span>
           <div className="profile-edit-btns">
             <button className="btn-outline-sm" onClick={() => fileRef.current?.click()}>
               Alterar foto
@@ -186,10 +187,20 @@ function TabPerfil() {
 function TabGrupos() {
   const [group, setGroup] = useState<typeof mockCurrentGroup | null>(mockCurrentGroup);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isUniqueAdmin = group && group.role === 'Administrador' && group.adminCount === 1;
 
   function handleLeave() {
+    if (isUniqueAdmin) {
+      setError('Você é o único administrador deste grupo. Para sair, promova outro membro a administrador.');
+      setConfirmLeave(false);
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
     setGroup(null);
     setConfirmLeave(false);
+    setError(null);
   }
 
   return (
@@ -198,6 +209,12 @@ function TabGrupos() {
         <Users size={18} />
         <span>Grupo atual</span>
       </div>
+
+      {error && (
+        <div className="error-notification">
+          <span>{error}</span>
+        </div>
+      )}
 
       <div className="group-rule-note">
         Cada usuário pode participar de <strong>apenas um grupo</strong> por vez.

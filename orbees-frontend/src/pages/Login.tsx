@@ -45,13 +45,9 @@ export default function Login() {
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="form-input" />
             </div>
             <button type="submit" className="login-btn">Entrar →</button>
-            <div className="form-divider">ou</div>
-            <button type="button" className="demo-btn" onClick={() => navigate('/dashboard')}>
-              Entrar como demo
-            </button>
           </form>
 
-          <p className="register-link">Não tem conta? <a href="#">Cadastre-se grátis</a></p>
+          <p className="register-link">Não tem conta? <a href="/register">Cadastre-se grátis</a></p>
         </div>
       </div>
     </div>
