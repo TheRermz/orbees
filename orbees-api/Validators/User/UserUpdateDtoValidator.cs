@@ -24,7 +24,7 @@ namespace Api.Validators.User
                 .MinimumLength(8).WithMessage("Senha deve ter no mínimo 8 caracteres.")
                 .MaximumLength(256).WithMessage("Senha deve ter no máximo 128 caracteres.")
                 .Matches("[A-Z]").WithMessage("Senha deve conter ao menos uma letra maiúscula.")
-                .Matches(@"[!@#$%^&*(),.?\:{}|<>_\-+=\/\\]").WithMessage("Senha deve conter ao menos um caractere especial.")
+                .Matches(@"[^\w\s]").WithMessage("Senha deve conter ao menos um caractere especial.")
                 .When(x => x.Password != null);
         }
     }
