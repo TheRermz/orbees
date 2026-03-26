@@ -110,7 +110,8 @@ builder.Services.AddAuthorization();
 
 builder.Services
   .AddRepositories()
-  .AddApplicationServices();
+  .AddApplicationServices()
+  .AddApplicationValidators();
 
 
 // ── CORS ───────────────────────────────────────────────────────────────────────
