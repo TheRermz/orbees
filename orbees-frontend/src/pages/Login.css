@@ -154,6 +154,25 @@
 
 .demo-btn:hover { background: var(--gray-50); }
 
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  color: var(--black);
+}
+
+.google-btn:hover { background: var(--gray-50); border-color: var(--gray-400); }
+
 .register-link {
   text-align: center;
   margin-top: 20px;
