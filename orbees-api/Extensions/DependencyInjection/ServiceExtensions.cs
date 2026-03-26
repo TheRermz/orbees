@@ -1,7 +1,9 @@
 using Api.Services.Auth;
 using Api.Services.Email;
+using Api.Services.User;
 using Api.Services.Interfaces.Auth;
 using Api.Services.Interfaces.Email;
+using Api.Services.Interfaces.User;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -9,6 +11,7 @@ namespace Api.Extensions.DependencyInjection
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            // --- AUTH ---
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthRegisterService, AuthRegisterService>();
             services.AddScoped<IAuthLoginService, AuthLoginService>();
@@ -17,6 +20,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IAuthOAuthService, AuthOAuthService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, EmailService>();
+            // --- USER ---
+            services.AddScoped<IUserService, UserService>();
             return services;
 
         }
