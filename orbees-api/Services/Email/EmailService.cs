@@ -34,15 +34,98 @@ namespace Api.Services.Email
             var confirmUrl = $"{_frontendUrl}/auth/confirm-email?token={token}";
             var subject = "Confirme seu Email - Orbees";
             var body = $"""
-                <h2>Olá, {name}!</h2>
-                <p>Obrigado por se cadastrar no <strong>Orbees</strong>!</p>
-                <p>Clique no botão abaixo para confirmar seu email:</p>
-                <a href='{confirmUrl}'
-                style='display:inline-block;padding:12px 24px;background:#4F46E5;color:#fff;border-radius:6px;text-decoration:none;'>
-                Confirmar Email
-                </a>
-                <p>O link expira em <strong>24 horas</strong>.</p>
-                <p>Se você não criou uma conta no Orbees, ignore este email.</p>
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              </head>
+              <body style="margin:0;padding:0;background-color:#1a1a1a;font-family:'Segoe UI',Arial,sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;padding:40px 0;">
+                  <tr>
+                    <td align="center">
+                      <table width="560" cellpadding="0" cellspacing="0" style="background-color:#242424;border-radius:12px;overflow:hidden;">
+                        
+                        <!-- Header -->
+                        <tr>
+                          <td style="background-color:#242424;padding:32px 40px 24px;border-bottom:2px solid #F5A623;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td>
+                                  <span style="font-size:24px;font-weight:700;color:#F5A623;letter-spacing:1px;">ORBEES</span>
+                                  <br>
+                                  <span style="font-size:11px;color:#888;letter-spacing:2px;">O ECOSSISTEMA FINANCEIRO ORGANIZADO</span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <!-- Body -->
+                        <tr>
+                          <td style="padding:40px 40px 32px;">
+                            <h1 style="margin:0 0 8px;font-size:22px;font-weight:600;color:#ffffff;">
+                              Olá, {name}! 🐝
+                            </h1>
+                            <p style="margin:0 0 24px;font-size:15px;color:#aaaaaa;line-height:1.6;">
+                              Obrigado por se cadastrar no <strong style="color:#F5A623;">Orbees</strong>. 
+                              Estamos quase lá — confirme seu email para ativar sua conta e começar a organizar suas finanças.
+                            </p>
+
+                            <!-- CTA Button -->
+                            <table cellpadding="0" cellspacing="0" style="margin:32px 0;">
+                              <tr>
+                                <td style="background-color:#F5A623;border-radius:8px;">
+                                  <a href="{confirmUrl}" 
+                                     style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#1a1a1a;text-decoration:none;letter-spacing:0.3px;">
+                                    ✓ Confirmar Email
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+
+                            <p style="margin:0 0 8px;font-size:13px;color:#666;">
+                              Ou copie e cole o link abaixo no seu navegador:
+                            </p>
+                            <p style="margin:0;font-size:12px;color:#F5A623;word-break:break-all;">
+                              {confirmUrl}
+                            </p>
+                          </td>
+                        </tr>
+
+                        <!-- Warning -->
+                        <tr>
+                          <td style="padding:0 40px 32px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" 
+                                   style="background-color:#2e2e2e;border-left:3px solid #F5A623;border-radius:4px;padding:16px;">
+                              <tr>
+                                <td style="padding:16px;">
+                                  <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.5;">
+                                    ⏱ Este link expira em <strong style="color:#ffffff;">24 horas</strong>.<br>
+                                    Se você não criou uma conta no Orbees, ignore este email com segurança.
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                          <td style="padding:24px 40px;border-top:1px solid #333;">
+                            <p style="margin:0;font-size:12px;color:#555;text-align:center;">
+                              © 2026 Orbees · O Ecossistema Financeiro Organizado<br>
+                              Este é um email automático, não responda.
+                            </p>
+                          </td>
+                        </tr>
+
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </body>
+              </html>
             """;
 
             await SendAsync(to, subject, body);
