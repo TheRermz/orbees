@@ -27,7 +27,7 @@ namespace Api.Validators.User
             RuleFor(x => x.Password)
               .NotEmpty().WithMessage("A senha é obrigatória.")
               .MinimumLength(8).WithMessage("A senha deve conter pelo menos 8 caracteres.")
-              .MaximumLength(128).WithMessage("A senha deve conter no máximo 128 caracteres.")
+              .MaximumLength(256).WithMessage("A senha deve conter no máximo 128 caracteres.")
               .Matches("[A-Z]").WithMessage("A senha deve conter ao menos uma letra maiúscula.")
               .Matches(@"[!@#$%^&*(),.?\:{}|<>_\-+=\/\\]").WithMessage("A senha deve conter ao menos um caractere especial.")
               .When(x => x.Password != null);
