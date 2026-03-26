@@ -20,12 +20,6 @@ namespace Api.Validators.User
                 .Matches("^[a-zA-Z0-9_]+$").WithMessage("Username deve conter apenas letras, números e underscore.")
                 .When(x => x.Username != null);
 
-            RuleFor(x => x.Password)
-                .MinimumLength(8).WithMessage("Senha deve ter no mínimo 8 caracteres.")
-                .MaximumLength(256).WithMessage("Senha deve ter no máximo 128 caracteres.")
-                .Matches("[A-Z]").WithMessage("Senha deve conter ao menos uma letra maiúscula.")
-                .Matches(@"[^\w\s]").WithMessage("Senha deve conter ao menos um caractere especial.")
-                .When(x => x.Password != null);
         }
     }
 }

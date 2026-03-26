@@ -1,5 +1,5 @@
 using Api.Dtos.User;
-using Api.Services.Interfaces.User;
+using Api.Services.Interfaces.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -44,6 +44,7 @@ namespace Api.Controllers.User
         }
 
         // DELETE /api/user/me
+        [HttpDelete("me")]
         public async Task<IActionResult> DeleteMe()
         {
             await userService.DeleteMeAsync(GetUserId());

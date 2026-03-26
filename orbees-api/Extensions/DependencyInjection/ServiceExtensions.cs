@@ -1,9 +1,9 @@
 using Api.Services.Auth;
 using Api.Services.Email;
-using Api.Services.User;
+using Api.Services.UserProfile;
 using Api.Services.Interfaces.Auth;
 using Api.Services.Interfaces.Email;
-using Api.Services.Interfaces.User;
+using Api.Services.Interfaces.UserProfile;
 
 namespace Api.Extensions.DependencyInjection
 {

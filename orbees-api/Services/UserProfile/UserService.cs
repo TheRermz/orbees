@@ -1,8 +1,8 @@
 using Api.Dtos.User;
 using Api.Repositories.Interfaces;
-using Api.Services.Interfaces.User;
+using Api.Services.Interfaces.UserProfile;
 
-namespace Api.Services.User
+namespace Api.Services.UserProfile
 {
     public class UserService(IUserRepository userRepository) : IUserService
     {
