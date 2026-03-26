@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Api.Extensions.DependencyInjection;
+using Api.Extensions.MiddlewareExtensions;
 
 Env.Load();
 
@@ -134,7 +135,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseGlobalExceptionHandler();
 app.UseCors("Dev");
 app.UseHttpsRedirection();
 app.UseAuthentication();
