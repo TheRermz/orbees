@@ -25,7 +25,7 @@ namespace Api.Controllers.Auth
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var token = await authService.LoginAsync(dto.Email, dto.Email);
+            var token = await authService.LoginAsync(dto.Email, dto.Password);
             return Ok(new { token });
         }
 
