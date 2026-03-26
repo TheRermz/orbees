@@ -28,5 +28,7 @@ namespace Api.Models
         public string? OAuthProviderId { get; set; } // ID Externo
         public bool IsActive { get; set; } = true;
 
+        // ------- UserPicture -------
+        public string? ProfilePicturePath { get; set; }
     }
 }

@@ -6,5 +6,6 @@ namespace Api.Dtos.User
         public required string Email { get; set; }
         public required string Username { get; set; }
         public required string Fullname { get; set; }
+        public string? ProfilePicturePath { get; set; }
     }
 }
