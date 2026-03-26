@@ -21,7 +21,7 @@ namespace Api.Validators.User
             RuleFor(x => x.Username)
               .NotEmpty().WithMessage("O username (Nome de Usuário) é obrigatório.")
               .MinimumLength(3).WithMessage("O username deve conter no mínimo 3 caracteres.")
-              .MaximumLength(256).WithMessage("O username deve conter no máximo 256 caracteres.")
+              .MaximumLength(50).WithMessage("O username deve conter no máximo 256 caracteres.")
               .Matches("^[a-zA-Z0-9_]+$").WithMessage("O username deve conter apenas letras, números e underscore");
 
             RuleFor(x => x.Password)
