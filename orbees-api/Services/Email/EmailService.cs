@@ -75,8 +75,9 @@ namespace Api.Services.Email
             message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(_host, _port, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(_user, _password);
+            // await smtp.ConnectAsync(_host, _port, SecureSocketOptions.StartTls); -- Prod
+            await smtp.ConnectAsync(_host, _port, SecureSocketOptions.None); // Dev
+            // await smtp.AuthenticateAsync(_user, _password);
             await smtp.SendAsync(message);
             await smtp.DisconnectAsync(true);
         }
