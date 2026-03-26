@@ -10,6 +10,7 @@ namespace Api.Extensions.DependencyInjection
         {
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<UserCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<UserUpdateDtoValidator>();
 
             return services;
         }
