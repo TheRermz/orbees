@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Api.Extensions.DependencyInjection;
 
 Env.Load();
 
@@ -100,6 +101,13 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// -- Deps Injection ------------------------------------------------------------
+
+builder.Services
+  .AddRepositories()
+  .AddApplicationServices();
+
 
 // ── CORS ───────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
