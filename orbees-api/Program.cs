@@ -56,6 +56,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Informe o token JWT: Bearer {seu_token}"
     });
 
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -94,6 +95,18 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
         ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = async context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = 401;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { message = "Acesso não autorizado" });
+
+        }
     };
 })
 .AddGoogle(options =>
