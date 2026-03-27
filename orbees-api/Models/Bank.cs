@@ -10,5 +10,8 @@ namespace Api.Models
         public string? Ispb { get; set; }             // ex: 18236120
         public string? CsvHeaderSignature { get; set; }
         public bool IsActive { get; set; } = true;
+
+
+        public ICollection<BankAccount> BankAccounts { get; set; } = [];
     }
 }
