@@ -50,5 +50,13 @@ namespace Api.Controllers.User
             await userService.DeleteMeAsync(GetUserId());
             return Ok(new { message = "Conta desativada com sucesso." });
         }
+
+        // PUT /api/user/me/picture
+        [HttpPut("me/picture")]
+        public async Task<IActionResult> UpdateProfilePicture(IFormFile file)
+        {
+            var user = await userService.UpdateProfilePictureAsync(GetUserId(), file);
+            return Ok(user);
+        }
     }
 }
