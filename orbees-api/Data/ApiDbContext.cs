@@ -11,6 +11,8 @@ namespace Api.Data
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Bank> Banks { get; set; } = null!;
+        public DbSet<BankAccount> BankAccounts { get; set; } = null!;
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

@@ -30,5 +30,10 @@ namespace Api.Models
 
         // ------- UserPicture -------
         public string? ProfilePicturePath { get; set; }
+
+        // ------- Navegação --------
+        public ICollection<BankAccount> BankAccounts { get; set; } = [];
+        public ICollection<Category> Categories { get; set; } = [];
+
     }
 }
