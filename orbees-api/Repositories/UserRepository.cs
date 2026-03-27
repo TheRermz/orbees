@@ -7,7 +7,11 @@ namespace Api.Repositories
 {
     public class UserRepository(ApiDbContext context) : IUserRepository
     {
-        public async Task<User?> GetByIdAsync(Guid id, bool includeInactive = false) => await context.Users.FirstOrDefaultAsync(u => u.Id == id && (includeInactive || u.IsActive));
+        public async Task<User?> GetByIdAsync(Guid id, bool includeInactive = false) =>
+          await context.Users
+          .Include(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)
+          .FirstOrDefaultAsync(u => u.Id == id && (includeInactive || u.IsActive));
 
         public async Task<IEnumerable<User>> GetAllAsync(bool includeInactive) => await context.Users.Where(u => includeInactive || u.IsActive).ToListAsync();
 

@@ -18,6 +18,9 @@ namespace Api.Services.Auth
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var roleClaims = user.UserRoles
+              .Select(ur => new Claim(ClaimTypes.Role, ur.Role.RoleName));
+
 
             var claims = new[]
             {
@@ -25,7 +28,7 @@ namespace Api.Services.Auth
               new Claim(JwtRegisteredClaimNames.Email, user.Email),
               new Claim("username", user.Username),
               new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+            }.Concat(roleClaims);
 
             var token = new JwtSecurityToken(
                 issuer: Environment.GetEnvironmentVariable("JWT_ISSUER"),
