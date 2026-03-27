@@ -7,6 +7,7 @@ namespace Api.Data.Seeds
             await RoleSeeder.SeedAsync(context);
             await AdminSeeder.SeedAsync(context);
             await CategorySeeder.SeedAsync(context);
+            await BankSeeder.SeedAsync(context);
         }
     }
 }

@@ -32,6 +32,12 @@ namespace Api.Data.Configurations
               .HasColumnName("is_active")
               .HasDefaultValue(true);
 
+            builder.Property(ba => ba.UserId)
+              .HasColumnName("user_id");
+
+            builder.Property(ba => ba.BankId)
+              .HasColumnName("bank_id");
+
             builder.Property(ba => ba.CreatedAt)
               .HasColumnName("created_at");
 
