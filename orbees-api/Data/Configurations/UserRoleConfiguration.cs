@@ -12,6 +12,18 @@ namespace Api.Data.Configurations
 
             builder.HasKey(ur => new { ur.UserId, ur.RoleId });
 
+            builder.Property(ur => ur.UserId)
+              .HasColumnName("user_id");
+
+            builder.Property(ur => ur.RoleId)
+              .HasColumnName("role_id");
+
+            builder.Property(ur => ur.CreatedAt)
+              .HasColumnName("created_at");
+
+            builder.Property(ur => ur.UpdatedAt)
+              .HasColumnName("updated_at");
+
             builder.HasOne(ur => ur.User)
               .WithMany(u => u.UserRoles)
               .HasForeignKey(ur => ur.UserId)

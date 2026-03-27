@@ -12,18 +12,31 @@ namespace Api.Data.Configurations
 
             builder.HasKey(ba => ba.Id);
 
+            builder.Property(ba => ba.Id)
+              .HasColumnName("id");
+
             builder.Property(ba => ba.Name)
+              .HasColumnName("bank_account_name")
               .IsRequired()
               .HasMaxLength(128);
 
             builder.Property(ba => ba.Agency)
+              .HasColumnName("agency")
               .HasMaxLength(10);
 
             builder.Property(ba => ba.AccountNumber)
+              .HasColumnName("account_number")
               .HasMaxLength(20);
 
             builder.Property(ba => ba.IsActive)
+              .HasColumnName("is_active")
               .HasDefaultValue(true);
+
+            builder.Property(ba => ba.CreatedAt)
+              .HasColumnName("created_at");
+
+            builder.Property(ba => ba.UpdatedAt)
+              .HasColumnName("updated_at");
 
             // FK USER
             builder.HasOne(ba => ba.User)

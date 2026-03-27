@@ -12,18 +12,31 @@ namespace Api.Data.Configurations
 
             builder.HasKey(c => c.Id);
 
+            builder.Property(c => c.Id)
+              .HasColumnName("id");
+
             builder.Property(c => c.Name)
+              .HasColumnName("category_name")
               .IsRequired()
               .HasMaxLength(128);
 
             builder.Property(c => c.Icon)
+              .HasColumnName("category_icon")
               .HasMaxLength(64);
 
             builder.Property(c => c.Color)
+              .HasColumnName("category_color")
               .HasMaxLength(7);
 
             builder.Property(c => c.IsActive)
+              .HasColumnName("is_active")
               .HasDefaultValue(true);
+
+            builder.Property(c => c.CreatedAt)
+              .HasColumnName("created_at");
+
+            builder.Property(c => c.UpdatedAt)
+              .HasColumnName("updated_at");
 
             // FK User -- nullable
             builder.HasOne(c => c.User)

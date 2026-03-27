@@ -12,15 +12,27 @@ namespace Api.Data.Configurations
 
             builder.HasKey(r => r.Id);
 
+            builder.Property(r => r.Id)
+              .HasColumnName("id");
+
             builder.Property(r => r.RoleName)
+              .HasColumnName("role_name")
               .IsRequired()
               .HasMaxLength(64);
 
             builder.Property(r => r.Description)
+              .HasColumnName("role_description")
               .HasMaxLength(256);
 
             builder.Property(r => r.IsActive)
+              .HasColumnName("is_active")
               .HasDefaultValue(true);
+
+            builder.Property(r => r.CreatedAt)
+              .HasColumnName("created_at");
+
+            builder.Property(r => r.UpdatedAt)
+              .HasColumnName("updated_at");
 
             builder.HasIndex(r => r.RoleName)
               .IsUnique();
