@@ -149,6 +149,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+          Path.Combine(Directory.GetCurrentDirectory(), "uploads")
+          ),
+    RequestPath = "/uploads"
+});
 app.UseGlobalExceptionHandler();
 app.UseCors("Dev");
 app.UseHttpsRedirection();
