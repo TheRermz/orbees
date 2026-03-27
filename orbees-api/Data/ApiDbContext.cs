@@ -13,6 +13,10 @@ namespace Api.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Bank> Banks { get; set; } = null!;
         public DbSet<BankAccount> BankAccounts { get; set; } = null!;
+        public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<UserRole> UserRoles { get; set; } = null!;
+        public DbSet<Category> Categories { get; set; } = null!;
+
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
