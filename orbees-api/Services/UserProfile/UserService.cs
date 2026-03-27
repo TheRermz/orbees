@@ -71,6 +71,31 @@ namespace Api.Services.UserProfile
             };
         }
 
+        public async Task<UserReadDto> DeleteProfilePictureAsync(Guid userId)
+        {
+            var user = await userRepository.GetByIdAsync(userId)
+              ?? throw new KeyNotFoundException("Usuário não encontrado");
+
+            if (user.ProfilePicturePath == null)
+                throw new InvalidOperationException("Usuário não possui foto de perfil");
+
+            fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
+            user.ProfilePicturePath = null;
+
+            await userRepository.UpdateAsync(user);
+            await userRepository.SaveChangesAsync();
+
+            return new UserReadDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                Fullname = user.Fullname,
+                ProfilePicturePath = user.ProfilePicturePath
+            };
+
+        }
+
         public async Task UpdatePasswordAsync(Guid userId, string currentPassword, string newPassword)
         {
             var user = await userRepository.GetByIdAsync(userId)

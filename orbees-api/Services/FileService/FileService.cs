@@ -26,7 +26,7 @@ namespace Api.Services.FileService
             Directory.CreateDirectory(userFolder);
 
             var fileName = $"{userId}{extension}";
-            var filePath = Path.Combine(_uploadPath, fileName);
+            var filePath = Path.Combine(userFolder, fileName);
 
             using var stream = new FileStream(filePath, FileMode.Create);
             await file.CopyToAsync(stream);

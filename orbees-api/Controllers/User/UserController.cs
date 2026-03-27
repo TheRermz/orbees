@@ -58,5 +58,13 @@ namespace Api.Controllers.User
             var user = await userService.UpdateProfilePictureAsync(GetUserId(), file);
             return Ok(user);
         }
+
+        // DELETE /api/user/me/picture/delete
+        [HttpDelete("me/picture/delete")]
+        public async Task<IActionResult> DeleteProfilePicture()
+        {
+            await userService.DeleteProfilePictureAsync(GetUserId());
+            return Ok(new { message = "Foto de perfil removida com sucesso." });
+        }
     }
 }
