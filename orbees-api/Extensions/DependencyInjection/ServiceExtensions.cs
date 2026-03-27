@@ -4,6 +4,8 @@ using Api.Services.UserProfile;
 using Api.Services.Interfaces.Auth;
 using Api.Services.Interfaces.Email;
 using Api.Services.Interfaces.UserProfile;
+using Api.Services.FileService;
+using Api.Services.Interfaces.FileService;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -22,6 +24,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IEmailService, EmailService>();
             // --- USER ---
             services.AddScoped<IUserService, UserService>();
+            // --- Files ---
+            services.AddScoped<IFileService, FileService>();
             return services;
 
         }

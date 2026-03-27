@@ -37,6 +37,7 @@ services:
       - orbees-network
     volumes:
       - ./orbees-api:/app
+      - ./orbees-api/uploads:/app/uploads
       - /app/obj
       - /app/bin
 
