@@ -9,6 +9,7 @@ using Serilog;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Api.Extensions.DependencyInjection;
 using Api.Extensions.MiddlewareExtensions;
+using Api.Data.Seeds;
 
 Env.Load();
 
@@ -142,6 +143,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    await db.Database.MigrateAsync();
+    await DefaultSeeder.SeedAsync(db);
+}
 
 // ── Pipeline ───────────────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
