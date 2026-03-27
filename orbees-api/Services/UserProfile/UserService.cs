@@ -1,10 +1,11 @@
 using Api.Dtos.User;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.UserProfile;
+using Api.Services.Interfaces.FileService;
 
 namespace Api.Services.UserProfile
 {
-    public class UserService(IUserRepository userRepository) : IUserService
+    public class UserService(IUserRepository userRepository, IFileService fileService) : IUserService
     {
         public async Task<UserReadDto> GetMeAsync(Guid userId)
         {
@@ -44,6 +45,29 @@ namespace Api.Services.UserProfile
                 Email = user.Email,
                 Username = user.Username,
                 Fullname = user.Fullname
+            };
+        }
+
+        public async Task<UserReadDto> UpdateProfilePictureAsync(Guid userId, IFormFile file)
+        {
+            var user = await userRepository.GetByIdAsync(userId)
+              ?? throw new KeyNotFoundException("Usuário não encontrado");
+
+            if (user.ProfilePicturePath != null)
+                fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
+
+            user.ProfilePicturePath = await fileService.SaveProfilePictureAsync(file, userId, user.Username);
+
+            await userRepository.UpdateAsync(user);
+            await userRepository.SaveChangesAsync();
+
+            return new UserReadDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                Fullname = user.Fullname,
+                ProfilePicturePath = user.ProfilePicturePath
             };
         }
 
