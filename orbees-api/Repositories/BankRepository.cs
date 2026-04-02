@@ -16,7 +16,7 @@ namespace Api.Repositories
         public async Task<IEnumerable<Bank>> GetAllAsync(bool includeInactive = false) =>
           await context.Banks.Where(b => includeInactive || b.IsActive).ToListAsync();
 
-        public async Task<IEnumerable<Bank>> GetAllActive() =>
+        public async Task<IEnumerable<Bank>> GetAllActiveAsync() =>
           await context.Banks.Where(b => b.IsActive).ToListAsync();
 
         public async Task<Bank?> GetByCodeAsync(string code) =>
