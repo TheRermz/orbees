@@ -41,7 +41,7 @@ export default function Dashboard() {
     return acc;
   }, {});
   const top3 = Object.entries(frequencyMap)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
     .slice(0, 3);
 
   const fmtFreq = (name: string, count: number) =>
