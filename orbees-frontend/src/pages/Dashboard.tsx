@@ -173,11 +173,14 @@ export default function Dashboard() {
 
         <div className="chart-card">
           <div className="chart-header">
-            <h3>Transações Recentes</h3>
+            <div>
+              <h3>Últimas 5 transações</h3>
+              <p className="chart-subtitle">independente do período selecionado</p>
+            </div>
             <a href="/transactions" className="see-all">Ver todas</a>
           </div>
           <div className="tx-list">
-            {transactions.slice(0, 7).map(tx => (
+            {transactions.slice(0, 5).map(tx => (
               <div key={tx.id} className="tx-item">
                 <div className="tx-left">
                   <div className="tx-category-dot" style={{ background: tx.amount > 0 ? '#27AE60' : '#E74C3C' }}></div>
