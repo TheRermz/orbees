@@ -35,13 +35,33 @@ export default function Dashboard() {
     : 1;
   const dailyAvg = totalExpense / periodDays;
 
+  // Insight 2: top 3 estabelecimentos por frequência de transações de despesa
+  const frequencyMap = expenseTransactions.reduce<Record<string, number>>((acc, t) => {
+    acc[t.description] = (acc[t.description] || 0) + 1;
+    return acc;
+  }, {});
+  const top3 = Object.entries(frequencyMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  const fmtFreq = (name: string, count: number) =>
+    `${name} com ${count} ${count === 1 ? 'transação' : 'transações'}`;
+
+  const formatTop3 = (entries: [string, number][]) => {
+    if (entries.length === 0) return 'Nenhuma transação no período.';
+    if (entries.length === 1) return `${fmtFreq(entries[0][0], entries[0][1])}.`;
+    const last = entries[entries.length - 1];
+    const rest = entries.slice(0, -1);
+    return `${rest.map(([name, count]) => fmtFreq(name, count)).join(', ')} e ${fmtFreq(last[0], last[1])}.`;
+  };
+
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
 
   const insights = [
     { type: 'info', icon: Info, text: `Você está gastando em média ${fmt(dailyAvg)}/dia no período selecionado.` },
     { type: 'success', icon: CheckCircle, text: 'Sua taxa de poupança de 54% está acima da meta recomendada (20%).' },
-    { type: 'info', icon: Info, text: '3 transações recorrentes identificadas este mês: Aluguel, Netflix e Academia.' },
+    { type: 'info', icon: Info, text: `Seus gastos mais frequentes: ${formatTop3(top3)}` },
   ];
 
   return (
