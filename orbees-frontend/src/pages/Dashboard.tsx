@@ -84,7 +84,7 @@ export default function Dashboard() {
 
       {/* Insights */}
       <div className="insights-section">
-        <h3 className="section-title">Insights do Mês</h3>
+        <h3 className="section-title">Insights</h3>
         <div className="insights-list">
           {insights.map((ins, i) => (
             <div key={i} className={`insight-card insight-${ins.type}`}>
