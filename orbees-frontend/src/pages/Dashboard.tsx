@@ -25,11 +25,21 @@ export default function Dashboard() {
   const topCategory = categoryExpenses.reduce((max, c) => c.value > max.value ? c : max, categoryExpenses[0]);
   const topCategoryPct = Math.round((topCategory.value / totalExpense) * 100);
 
+  // Insight 1: média de gasto diário no período das transações de despesa
+  const expenseTransactions = transactions.filter(t => t.type === 'expense');
+  const expenseDates = expenseTransactions.map(t => new Date(t.date).getTime());
+  const minDate = Math.min(...expenseDates);
+  const maxDate = Math.max(...expenseDates);
+  const periodDays = expenseDates.length > 0
+    ? Math.max(1, Math.round((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1)
+    : 1;
+  const dailyAvg = totalExpense / periodDays;
+
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
 
   const insights = [
-    { type: 'warning', icon: AlertTriangle, text: 'Gastos com Alimentação 18% acima da sua média dos últimos 3 meses.' },
+    { type: 'info', icon: Info, text: `Você está gastando em média ${fmt(dailyAvg)}/dia no período selecionado.` },
     { type: 'success', icon: CheckCircle, text: 'Sua taxa de poupança de 54% está acima da meta recomendada (20%).' },
     { type: 'info', icon: Info, text: '3 transações recorrentes identificadas este mês: Aluguel, Netflix e Academia.' },
   ];
