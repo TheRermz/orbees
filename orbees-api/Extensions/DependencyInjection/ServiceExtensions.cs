@@ -6,6 +6,10 @@ using Api.Services.Interfaces.Email;
 using Api.Services.Interfaces.UserProfile;
 using Api.Services.FileService;
 using Api.Services.Interfaces.FileService;
+using Api.Services.Bank;
+using Api.Services.BankAccount;
+using Api.Services.Interfaces.Bank;
+using Api.Services.Interfaces.BankAccount;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -26,6 +30,10 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IUserService, UserService>();
             // --- Files ---
             services.AddScoped<IFileService, FileService>();
+            // --- Bank and BankAccount ---
+            services.AddScoped<IBankService, BankService>();
+            services.AddScoped<IBankAccountService, BankAccountService>();
+
             return services;
 
         }
