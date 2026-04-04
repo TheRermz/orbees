@@ -13,6 +13,10 @@ namespace Api.Extensions.DependencyInjection
             // --- Bank and BankAccount ---
             services.AddScoped<IBankRepository, BankRepository>();
             services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+            // --- Groups ---
+            services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
+            services.AddScoped<IGroupRoleRepository, GroupRoleRepository>();
             return services;
         }
     }
