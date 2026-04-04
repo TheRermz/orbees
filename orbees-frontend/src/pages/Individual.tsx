@@ -188,47 +188,39 @@ function DashboardTab() {
   })).filter(c => c.value > 0);
   const catData = catView === 'value' ? filteredCatExpenses : catQty;
 
-  // ─── Insights — sempre dos últimos 3 meses, não afetados pelo filtro ───
-  const txMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
-  const insightCurrent = txMonths.at(-1)!;
-  const insightPrev    = txMonths.slice(-3, -1);
+  // ─── Insight 1: média de gasto diário no período selecionado ───
+  const periodDays = Math.max(1, Math.round((new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / (1000 * 60 * 60 * 24)) + 1);
+  const dailyAvg = totalExpense / periodDays;
 
-  const catAvgInsight: Record<string, number> = {};
-  for (const m of insightPrev) {
-    transactions.filter(t => t.date.startsWith(m) && t.type === 'expense')
-      .forEach(t => { catAvgInsight[t.category] = (catAvgInsight[t.category] ?? 0) + Math.abs(t.amount); });
-  }
-  for (const cat of Object.keys(catAvgInsight)) catAvgInsight[cat] /= insightPrev.length || 1;
+  // ─── Insight 2: top 3 gastos mais frequentes no período ───
+  const expenseFiltered = filtered.filter(t => t.type === 'expense');
+  const frequencyMap = expenseFiltered.reduce<Record<string, number>>((acc, t) => {
+    acc[t.description] = (acc[t.description] || 0) + 1;
+    return acc;
+  }, {});
+  const top3 = Object.entries(frequencyMap)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
+    .slice(0, 3);
 
-  const currentCatTotals: Record<string, number> = {};
-  transactions.filter(t => t.date.startsWith(insightCurrent) && t.type === 'expense')
-    .forEach(t => { currentCatTotals[t.category] = (currentCatTotals[t.category] ?? 0) + Math.abs(t.amount); });
+  const fmtFreq = (name: string, count: number) =>
+    `${name} com ${count} ${count === 1 ? 'transação' : 'transações'}`;
 
-  let topVarCat = '', topVarPct = 0;
-  for (const [cat, val] of Object.entries(currentCatTotals)) {
-    const avg = catAvgInsight[cat] ?? 0;
-    if (avg > 0) { const pct = ((val - avg) / avg) * 100; if (pct > topVarPct) { topVarPct = pct; topVarCat = cat; } }
-  }
+  const formatTop3 = (entries: [string, number][]) => {
+    if (entries.length === 0) return 'Nenhuma transação no período.';
+    if (entries.length === 1) return `${fmtFreq(entries[0][0], entries[0][1])}.`;
+    const last = entries[entries.length - 1];
+    const rest = entries.slice(0, -1);
+    return `${rest.map(([name, count]) => fmtFreq(name, count)).join(', ')} e ${fmtFreq(last[0], last[1])}.`;
+  };
 
-  const descsByMonth: Record<string, Set<string>> = {};
-  for (const m of txMonths.slice(-3)) {
-    descsByMonth[m] = new Set(transactions.filter(t => t.date.startsWith(m)).map(t => t.description));
-  }
-  const recurring = [...new Set(transactions.map(t => t.description))].filter(desc =>
-    txMonths.slice(-3).filter(m => descsByMonth[m]?.has(desc)).length >= 2
-  );
-  const recNames = recurring.slice(0, 3);
-  const recExtra  = recurring.length > 3 ? ` e mais ${recurring.length - 3}` : '';
-  const recStr    = recNames.length === 1 ? recNames[0]
-    : recNames.length === 2 ? `${recNames[0]} e ${recNames[1]}`
-    : `${recNames[0]}, ${recNames[1]} e ${recNames[2]}`;
-
-  const latestTxDate   = new Date(Math.max(...transactions.map(t => new Date(t.date).getTime())));
+  // ─── Insight 3: alerta de extrato desatualizado ───
+  const latestTxDate = new Date(Math.max(...transactions.map(t => new Date(t.date).getTime())));
   const daysSinceLastTx = Math.floor((Date.now() - latestTxDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  const insights: { type: string; icon: React.ElementType; text: string }[] = [];
-  if (topVarPct > 10)    insights.push({ type: 'warning', icon: AlertTriangle, text: `Gastos com ${topVarCat} ${topVarPct.toFixed(0)}% acima da sua média dos últimos 3 meses.` });
-  if (recurring.length)  insights.push({ type: 'info',    icon: RefreshCw,    text: `${recurring.length} transaç${recurring.length === 1 ? 'ão recorrente identificada' : 'ões recorrentes identificadas'} este mês: ${recStr}${recExtra}.` });
+  const insights: { type: string; icon: React.ElementType; text: string }[] = [
+    { type: 'info', icon: Info, text: `Você está gastando em média ${fmt(dailyAvg)}/dia no período selecionado.` },
+    { type: 'info', icon: Info, text: `Seus gastos mais frequentes: ${formatTop3(top3)}` },
+  ];
   if (daysSinceLastTx > 7) insights.push({ type: 'neutral', icon: Bell, text: 'Nenhuma transação registrada nos últimos 7 dias. Seu extrato está atualizado?' });
 
   const fmt    = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -269,7 +261,7 @@ function DashboardTab() {
 
       {/* ── Insights ── */}
       <div className="insights-section">
-        <h3 className="section-title">Insights do Mês</h3>
+        <h3 className="section-title">Insights</h3>
         <div className="insights-list">
           {insights.map((ins, i) => (
             <div key={i} className={`insight-card insight-${ins.type}`}>
@@ -379,14 +371,17 @@ function DashboardTab() {
         </div>
       </div>
 
-      {/* ── Transações Recentes (do período filtrado) ── */}
+      {/* ── Últimas 5 Transações (sempre as mais recentes, independente do filtro) ── */}
       <div className="chart-card">
         <div className="chart-header">
-          <h3>Transações Recentes</h3>
+          <div>
+            <h3>Últimas 5 transações</h3>
+            <p className="chart-subtitle">independente do período selecionado</p>
+          </div>
           <span className="see-all" style={{ cursor: 'pointer' }}>Ver todas</span>
         </div>
         <div className="tx-list">
-          {filtered.slice(0, 5).map(tx => (
+          {[...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5).map(tx => (
             <div key={tx.id} className="tx-item">
               <div className="tx-left">
                 <div className="tx-category-dot" style={{ background: tx.amount > 0 ? '#27AE60' : '#E74C3C' }} />
