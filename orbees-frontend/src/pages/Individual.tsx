@@ -188,6 +188,9 @@ function DashboardTab() {
   })).filter(c => c.value > 0);
   const catData = catView === 'value' ? filteredCatExpenses : catQty;
 
+  const fmt    = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
+
   // ─── Insight 1: média de gasto diário no período selecionado ───
   const periodDays = Math.max(1, Math.round((new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / (1000 * 60 * 60 * 24)) + 1);
   const dailyAvg = totalExpense / periodDays;
@@ -222,9 +225,6 @@ function DashboardTab() {
     { type: 'info', icon: Info, text: `Seus gastos mais frequentes: ${formatTop3(top3)}` },
   ];
   if (daysSinceLastTx > 7) insights.push({ type: 'neutral', icon: Bell, text: 'Nenhuma transação registrada nos últimos 7 dias. Seu extrato está atualizado?' });
-
-  const fmt    = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
 
   return (
     <div className="ind-dashboard">
