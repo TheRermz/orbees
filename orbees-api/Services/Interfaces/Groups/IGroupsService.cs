@@ -13,7 +13,7 @@ namespace Api.Services.Interfaces.Groups
         Task<GroupReadDto> UpdateAsync(Guid userId, Guid groupId, GroupUpdateDto dto);
         Task DeleteAsync(Guid userId, Guid groupId);
         Task<GroupMemberReadDto> AddMemberAsync(Guid userId, Guid groupId, GroupMemberCreateDto dto);
-        Task UpdateMemberRoleAsync(Guid userId, Guid groupId, GroupMemberUpdateDto dto);
+        Task UpdateMemberRoleAsync(Guid userId, Guid groupId, Guid memberId, GroupMemberUpdateDto dto);
         Task RemoveMemberAsync(Guid userId, Guid groupId, Guid memberId);
         Task LeaveGroupAsync(Guid userId, Guid groupId);
         Task<IEnumerable<GroupRoleReadDto>> GetRolesAsync();
