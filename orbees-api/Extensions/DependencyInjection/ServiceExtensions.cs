@@ -10,6 +10,8 @@ using Api.Services.Bank;
 using Api.Services.BankAccount;
 using Api.Services.Interfaces.Bank;
 using Api.Services.Interfaces.BankAccount;
+using Api.Services.Interfaces.Groups;
+using Api.Services.Groups;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -33,6 +35,8 @@ namespace Api.Extensions.DependencyInjection
             // --- Bank and BankAccount ---
             services.AddScoped<IBankService, BankService>();
             services.AddScoped<IBankAccountService, BankAccountService>();
+            // --- Groups ---
+            services.AddScoped<IGroupService, GroupService>();
 
             return services;
 
