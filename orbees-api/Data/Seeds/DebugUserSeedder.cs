@@ -44,7 +44,7 @@ namespace Api.Data.Seeds
             var seedEnabled = Environment.GetEnvironmentVariable("SEED_DB");
             if (seedEnabled != "true") return;
 
-            if (await context.Users.AnyAsync(u => u.Email.EndsWith("@debug.orbees.com"))) return;
+            if (await context.Users.AnyAsync(u => u.Email.EndsWith("@debug.orbees.com.br"))) return;
 
             var userRole = await context.Roles.FirstOrDefaultAsync(r => r.RoleName == "User");
             if (userRole == null) return;
