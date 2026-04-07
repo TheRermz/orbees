@@ -17,7 +17,8 @@ namespace Api.Services.UserProfile
                 Id = user.Id,
                 Email = user.Email,
                 Username = user.Username,
-                Fullname = user.Fullname
+                Fullname = user.Fullname,
+                ProfilePicturePath = user.ProfilePicturePath
             };
         }
 

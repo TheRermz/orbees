@@ -51,7 +51,7 @@ namespace Api.Data.Configurations
 
             // FK Group -- nullable
             builder.HasOne(c => c.Group)
-              .WithMany()
+              .WithMany(g => g.Categories)
               .HasForeignKey(c => c.GroupId)
               .IsRequired(false)
               .OnDelete(DeleteBehavior.Cascade);
