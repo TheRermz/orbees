@@ -164,6 +164,13 @@ namespace Api.Services.Groups
             var member = await groupMemberRepository.GetByIdAsync(memberId)
               ?? throw new KeyNotFoundException("Membro não encontrado.");
 
+            if (member.UserId == userId)
+                throw new InvalidOperationException("Você não pode alterar sua própria função.");
+
+            // admin não pode rebaixar outro admin
+            if (member.GroupRole.Name == "Administrador")
+                throw new InvalidOperationException("Você não pode alterar a função de outro administrador.");
+
             var role = await groupRoleRepository.GetByIdAsync(dto.GroupRoleId)
               ?? throw new KeyNotFoundException("Função não encontrada.");
 
@@ -193,9 +200,16 @@ namespace Api.Services.Groups
             if (await groupMemberRepository.IsAdminAsync(userId, groupId))
             {
                 var members = await groupMemberRepository.GetByGroupIdAsync(groupId);
-                var adminCount = members.Count(m => m.IsActive && m.GroupRole.Name == "Admin");
+                var adminCount = members.Count(m => m.IsActive && m.GroupRole.Name == "Administrador");
                 if (adminCount == 1)
                     throw new InvalidOperationException("Você é o único administrador. Transfira a administração para outro membro antes de sair.");
+
+                if (members.Count(m => m.IsActive) == 1)
+                {
+                    var group = await groupRepository.GetByIdAsync(groupId)
+                        ?? throw new KeyNotFoundException("Grupo não encontrado.");
+                    await groupRepository.DeleteAsync(group);
+                }
             }
 
             await groupMemberRepository.DeleteAsync(member);
