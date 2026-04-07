@@ -176,9 +176,6 @@ namespace Api.Services.Groups
                 throw new InvalidOperationException("Você não pode alterar sua própria função.");
 
             if (member.GroupRole.Name == "Administrador")
-                throw new InvalidOperationException("Você não pode alterar a função de outro administrador.");
-
-            if (member.GroupRole.Name == "Administrador")
             {
                 if (member.PromotedAt == null || DateTime.UtcNow > member.PromotedAt.Value.AddHours(24))
                     throw new InvalidOperationException("O prazo de 24 horas para rebaixar este administrador já expirou.");

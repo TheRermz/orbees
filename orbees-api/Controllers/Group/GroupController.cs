@@ -1,6 +1,5 @@
 using Api.Dtos.Group;
 using Api.Dtos.GroupMember;
-using Api.Dtos.GroupRole;
 using Api.Services.Interfaces.Groups;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

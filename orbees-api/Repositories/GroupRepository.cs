@@ -26,6 +26,7 @@ namespace Api.Repositories
 
         public async Task<IEnumerable<Group>> GetByUserIdAsync(Guid userId) =>
           await context.Groups
+                .Include(g => g.Members.Where(m => m.IsActive))
                 .Where(g => g.IsActive && g.Members.Any(m => m.UserId == userId && m.IsActive))
                 .ToListAsync();
 
