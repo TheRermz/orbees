@@ -145,14 +145,14 @@ namespace Api.Services.Groups
             if (await groupRepository.UserIsInAnyGroupAsync(dto.UserId))
                 throw new InvalidOperationException("Este usuário já participa de um grupo.");
 
-            var role = await groupRoleRepository.GetByIdAsync(dto.GroupRoleId)
-              ?? throw new KeyNotFoundException("Função do grupo não encontrada.");
+            var memberRole = await groupRoleRepository.GetByNameAsync("Membro")
+              ?? throw new InvalidOperationException("Função de membro não encontrada.");
 
             var member = new GroupMember
             {
                 GroupId = groupId,
                 UserId = dto.UserId,
-                GroupRoleId = dto.GroupRoleId
+                GroupRoleId = memberRole.Id
             };
 
             await groupMemberRepository.AddAsync(member);

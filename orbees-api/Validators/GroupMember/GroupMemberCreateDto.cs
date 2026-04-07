@@ -9,9 +9,6 @@ namespace Api.Validators.GroupMember
         {
             RuleFor(x => x.UserId)
               .NotEmpty().WithMessage("O usuário é obrigatório");
-
-            RuleFor(x => x.GroupRoleId)
-              .NotEmpty().WithMessage("A função do integrante é obrigatória.");
         }
     }
 }
