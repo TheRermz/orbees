@@ -26,7 +26,8 @@ namespace Api.Data.Configurations
 
             builder.Property(c => c.Color)
               .HasColumnName("category_color")
-              .HasMaxLength(7);
+              .HasMaxLength(7)
+              .HasDefaultValue("#262626");
 
             builder.Property(c => c.IsActive)
               .HasColumnName("is_active")
