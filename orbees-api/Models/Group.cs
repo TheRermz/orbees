@@ -11,5 +11,6 @@ namespace Api.Models
 
         // Navegação
         public ICollection<GroupMember> Members { get; set; } = [];
+        public ICollection<Category> Categories { get; set; } = [];
     }
 }

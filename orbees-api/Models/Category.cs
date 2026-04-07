@@ -14,6 +14,8 @@ namespace Api.Models
         public Guid? UserId { get; set; }
         public User? User { get; set; }
 
-        // FK Grupo
+        // FK Grupo -- null se for individual
+        public Guid? GroupId { get; set; }
+        public Group? Group { get; set; }
     }
 }

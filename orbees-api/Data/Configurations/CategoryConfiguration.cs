@@ -32,6 +32,9 @@ namespace Api.Data.Configurations
               .HasColumnName("is_active")
               .HasDefaultValue(true);
 
+            builder.Property(c => c.GroupId)
+              .HasColumnName("group_id");
+
             builder.Property(c => c.CreatedAt)
               .HasColumnName("created_at");
 
@@ -42,6 +45,13 @@ namespace Api.Data.Configurations
             builder.HasOne(c => c.User)
               .WithMany(c => c.Categories)
               .HasForeignKey(c => c.UserId)
+              .IsRequired(false)
+              .OnDelete(DeleteBehavior.Cascade);
+
+            // FK Group -- nullable
+            builder.HasOne(c => c.Group)
+              .WithMany()
+              .HasForeignKey(c => c.GroupId)
               .IsRequired(false)
               .OnDelete(DeleteBehavior.Cascade);
 
