@@ -175,9 +175,14 @@ namespace Api.Services.Groups
             if (member.UserId == userId)
                 throw new InvalidOperationException("Você não pode alterar sua própria função.");
 
-            // admin não pode rebaixar outro admin
             if (member.GroupRole.Name == "Administrador")
                 throw new InvalidOperationException("Você não pode alterar a função de outro administrador.");
+
+            if (member.GroupRole.Name == "Administrador")
+            {
+                if (member.PromotedAt == null || DateTime.UtcNow > member.PromotedAt.Value.AddHours(24))
+                    throw new InvalidOperationException("O prazo de 24 horas para rebaixar este administrador já expirou.");
+            }
 
             var role = await groupRoleRepository.GetByIdAsync(dto.GroupRoleId)
               ?? throw new KeyNotFoundException("Função não encontrada.");
@@ -188,9 +193,14 @@ namespace Api.Services.Groups
                 var memberCount = members.Count(m => m.IsActive);
                 var adminCount = members.Count(m => m.IsActive && m.GroupRole.Name == "Administrador");
                 var maxAdmins = GetMaxAdmins(memberCount);
+                member.PromotedAt = DateTime.UtcNow;
 
                 if (adminCount >= maxAdmins)
                     throw new InvalidOperationException($"Este grupo permite no máximo {maxAdmins} administrador(es) para {memberCount} membro(s).");
+            }
+            else
+            {
+                member.PromotedAt = null;
             }
 
 

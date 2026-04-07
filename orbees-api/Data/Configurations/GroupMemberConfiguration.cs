@@ -29,6 +29,8 @@ namespace Api.Data.Configurations
             builder.Property(m => m.UpdatedAt)
               .HasColumnName("updated_at");
 
+            builder.Property(m => m.PromotedAt)
+              .HasColumnName("promoted_at");
 
             builder.Property(m => m.GroupId)
               .HasColumnName("group_id");

@@ -20,5 +20,6 @@ namespace Api.Models
         public GroupRole GroupRole { get; set; } = null!;
 
         public DateTime? LeftAt { get; set; }
+        public DateTime? PromotedAt { get; set; }
     }
 }
