@@ -13,6 +13,14 @@ namespace Api.Services.Groups
         IGroupRoleRepository groupRoleRepository
         ) : IGroupService
     {
+
+        private static int GetMaxAdmins(int memberCount) => memberCount switch
+        {
+            <= 5 => 2,
+            <= 10 => 3,
+            _ => 5
+        };
+
         public async Task<IEnumerable<GroupReadDto>> GetMyGroupsAsync(Guid userId)
         {
             var groups = await groupRepository.GetByUserIdAsync(userId);
@@ -173,6 +181,18 @@ namespace Api.Services.Groups
 
             var role = await groupRoleRepository.GetByIdAsync(dto.GroupRoleId)
               ?? throw new KeyNotFoundException("Função não encontrada.");
+
+            if (role.Name == "Administrador")
+            {
+                var members = await groupMemberRepository.GetByGroupIdAsync(groupId);
+                var memberCount = members.Count(m => m.IsActive);
+                var adminCount = members.Count(m => m.IsActive && m.GroupRole.Name == "Administrador");
+                var maxAdmins = GetMaxAdmins(memberCount);
+
+                if (adminCount >= maxAdmins)
+                    throw new InvalidOperationException($"Este grupo permite no máximo {maxAdmins} administrador(es) para {memberCount} membro(s).");
+            }
+
 
             member.GroupRoleId = dto.GroupRoleId;
 
