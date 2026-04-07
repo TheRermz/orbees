@@ -133,6 +133,10 @@ namespace Api.Services.Groups
             var group = await groupRepository.GetByIdAsync(groupId)
               ?? throw new KeyNotFoundException("Grupo não encontrado");
 
+            var members = await groupMemberRepository.GetByGroupIdAsync(groupId);
+            if (members.Count(m => m.IsActive) > 1)
+                throw new InvalidOperationException("Não é possível deletar um grupo com membros ativos");
+
             await groupRepository.DeleteAsync(group);
             await groupRepository.SaveChangesAsync();
         }
@@ -214,6 +218,12 @@ namespace Api.Services.Groups
 
             var member = await groupMemberRepository.GetByIdAsync(memberId)
               ?? throw new KeyNotFoundException("Membro não encontrado.");
+
+            if (member.UserId == userId)
+                throw new InvalidOperationException("Você não pode se remover do grupo, use a opção de sair.");
+
+            if (member.GroupRole.Name == "Administrador")
+                throw new InvalidOperationException("Você não pode remover outro administrador.");
 
             await groupMemberRepository.DeleteAsync(member);
             await groupMemberRepository.SaveChangesAsync();
