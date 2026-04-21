@@ -13,7 +13,8 @@ import {
   GraduationCap, Pencil, School, Backpack, Music, Film, Headphones, Camera,
   Tv, Star, Smartphone, Laptop, Monitor, Wifi, Briefcase, BarChart2,
   Globe, Gift, Scissors, Shirt, Palette, TreePine, Sun, Zap, Cat, Dog,
-  Flower2, Pizza,
+  Flower2, Pizza, Plus, Trash2, Edit3, ArrowUp, ArrowDown, BanknoteIcon,
+  AlertCircle,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -52,23 +53,33 @@ type UploadStep = 'select' | 'preview' | 'categorize' | 'done';
 
 const uploadCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Salário', 'Outros'];
 
-// Categorias do grupo criadas pelo administrador (mock)
 const groupCategories = ['Aluguel Compartilhado', 'Mercado do Mês', 'Conta de Luz', 'Internet', 'Streaming Compartilhado', 'Outros do Grupo'];
 
-// Mock: usuário atual pertence ao grupo "Família / Grupo"
 const userGroupName = 'Família / Grupo';
 
-const previewData = [
-  { date: '2026-03-01', desc: 'PIX RECEBIDO MARIA SILVA', amount: 500.00, category: null as string | null },
-  { date: '2026-03-02', desc: 'COMPRA SUPERMERCADO BH', amount: -210.50, category: 'Alimentação' as string | null },
-  { date: '2026-03-03', desc: 'DEB AUT ENERGIA CEMIG', amount: -145.00, category: 'Moradia' as string | null },
-  { date: '2026-03-04', desc: 'TED ENVIADO', amount: -300.00, category: null as string | null },
-  { date: '2026-03-05', desc: 'CREDITO SALARIO', amount: 4500.00, category: 'Salário' as string | null },
+interface PreviewRow {
+  date: string;
+  desc: string;
+  title: string;
+  amount: number;
+  category: string | null;
+  removed?: boolean;
+}
+
+const initialPreviewData: PreviewRow[] = [
+  { date: '2026-03-01', desc: 'PIX RECEBIDO MARIA SILVA', title: 'PIX RECEBIDO MARIA SILVA', amount: 500.00, category: null },
+  { date: '2026-03-02', desc: 'COMPRA SUPERMERCADO BH', title: 'COMPRA SUPERMERCADO BH', amount: -210.50, category: 'Alimentação' },
+  { date: '2026-03-03', desc: 'DEB AUT ENERGIA CEMIG', title: 'DEB AUT ENERGIA CEMIG', amount: -145.00, category: 'Moradia' },
+  { date: '2026-03-04', desc: 'TED ENVIADO', title: 'TED ENVIADO', amount: -300.00, category: null },
+  { date: '2026-03-05', desc: 'CREDITO SALARIO', title: 'CREDITO SALARIO', amount: 4500.00, category: 'Salário' },
 ];
 
 const budgets: Record<string, number> = {
   Alimentação: 400, Moradia: 1400, Transporte: 250, Saúde: 200, Lazer: 150, Educação: 120, Outros: 200,
 };
+
+// Mock: usuário não tem conta bancária cadastrada (false = sem conta)
+const userHasBankAccount = false;
 
 export default function Individual() {
   return (
@@ -88,7 +99,6 @@ function DashboardTab() {
   const [catView, setCatView] = useState<'value' | 'qty'>('value');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
 
-  // ─── Period filter ───
   const availableMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
 
   const lastDayOf = (ym: string) => {
@@ -116,15 +126,12 @@ function DashboardTab() {
     return s.charAt(0).toUpperCase() + s.slice(1) + ' ' + String(y).slice(2);
   };
 
-  // ─── Filtered transactions ───
   const filtered = transactions.filter(t => t.date >= dateFrom && t.date <= dateTo + 'T23:59:59');
 
-  // ─── KPI metrics ───
   const totalIncome  = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const totalExpense = Math.abs(filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const balance = totalIncome - totalExpense;
 
-  // ─── Previous period ───
   const fromMs    = new Date(dateFrom).getTime();
   const periodMs  = new Date(dateTo).getTime() - fromMs + 86400000;
   const prevToStr = new Date(fromMs - 86400000).toISOString().slice(0, 10);
@@ -139,19 +146,21 @@ function DashboardTab() {
   const expenseChange = pctChange(totalExpense, prevExpense);
   const balanceChange = pctChange(balance,      prevBalance);
 
-  // ─── Category data from filtered ───
   const catMapFiltered: Record<string, number> = {};
   filtered.filter(t => t.type === 'expense').forEach(t => {
     catMapFiltered[t.category] = (catMapFiltered[t.category] ?? 0) + Math.abs(t.amount);
   });
   const filteredCatExpenses = Object.entries(catMapFiltered)
     .map(([name, value]) => ({ name, value, color: categories.find(c => c.name === name)?.color ?? '#888' }))
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name, 'pt-BR'));
 
+  // Maior categoria com desempate alfabético
   const topCategory    = filteredCatExpenses[0] ?? { name: '—', value: 0, color: '#888' };
   const topCategoryPct = totalExpense > 0 ? Math.round((topCategory.value / totalExpense) * 100) : 0;
+  // Se há empate (segunda categoria com mesmo valor), indica no KPI
+  const secondCategory = filteredCatExpenses[1];
+  const hasTie = secondCategory && secondCategory.value === topCategory.value;
 
-  // ─── Bar chart data from filtered ───
   const filteredMonths = [...new Set(filtered.map(t => t.date.slice(0, 7)))].sort();
   const barData = filteredMonths.length > 1
     ? filteredMonths.map(m => {
@@ -180,7 +189,6 @@ function DashboardTab() {
         });
       })();
 
-  // ─── Category chart ───
   const catQty = categories.map(cat => ({
     name: cat.name,
     value: filtered.filter(t => t.category === cat.name).length,
@@ -191,14 +199,12 @@ function DashboardTab() {
   const fmt    = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`;
 
-  // ─── Insight 1: média de gasto diário no período selecionado ───
   const periodDays = Math.max(1, Math.round((new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / (1000 * 60 * 60 * 24)) + 1);
   const dailyAvg = totalExpense / periodDays;
 
-  // ─── Insight 2: top 3 gastos mais frequentes no período ───
   const expenseFiltered = filtered.filter(t => t.type === 'expense');
   const frequencyMap = expenseFiltered.reduce<Record<string, number>>((acc, t) => {
-    acc[t.description] = (acc[t.description] || 0) + 1;
+    acc[t.title] = (acc[t.title] || 0) + 1;
     return acc;
   }, {});
   const top3 = Object.entries(frequencyMap)
@@ -216,7 +222,6 @@ function DashboardTab() {
     return `${rest.map(([name, count]) => fmtFreq(name, count)).join(', ')} e ${fmtFreq(last[0], last[1])}.`;
   };
 
-  // ─── Insight 3: alerta de extrato desatualizado ───
   const latestTxDate = new Date(Math.max(...transactions.map(t => new Date(t.date).getTime())));
   const daysSinceLastTx = Math.floor((Date.now() - latestTxDate.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -225,6 +230,13 @@ function DashboardTab() {
     { type: 'info', icon: Info, text: `Seus gastos mais frequentes: ${formatTop3(top3)}` },
   ];
   if (daysSinceLastTx > 7) insights.push({ type: 'neutral', icon: Bell, text: 'Nenhuma transação registrada nos últimos 7 dias. Seu extrato está atualizado?' });
+
+  const topCatKpiValue = hasTie
+    ? `${topCategory.name} e ${secondCategory.name}`
+    : topCategory.name;
+  const topCatKpiChange = hasTie
+    ? `Empate: ambas com ${fmt(topCategory.value)} · ${topCategoryPct}% das despesas`
+    : `${fmt(topCategory.value)} · ${topCategoryPct}% das despesas`;
 
   return (
     <div className="ind-dashboard">
@@ -253,10 +265,10 @@ function DashboardTab() {
 
       {/* ── KPI Cards ── */}
       <div className="cards-grid ind-cards-grid">
-        <KpiCard label="Saldo do Mês"    value={fmt(balance)}      change={fmtPct(balanceChange)}  positive={balanceChange >= 0}  icon={<Wallet size={20} />}      accent="#F5A623" valueColor={balance >= 0 ? '#27AE60' : '#E74C3C'} />
-        <KpiCard label="Receitas"        value={fmt(totalIncome)}  change={fmtPct(incomeChange)}   positive={incomeChange >= 0}   icon={<TrendingUp size={20} />}   accent="#27AE60" />
-        <KpiCard label="Despesas"        value={fmt(totalExpense)} change={fmtPct(expenseChange)}  positive={expenseChange <= 0}  icon={<TrendingDown size={20} />} accent="#E74C3C" />
-        <KpiCard label="Maior Categoria" value={topCategory.name} change={`${fmt(topCategory.value)} · ${topCategoryPct}% das despesas`} positive={false} icon={<Tag size={20} />} accent={topCategory.color} noChangeArrow noChangeSuffix />
+        <KpiCard label="Saldo do Mês"    value={fmt(balance)}         change={fmtPct(balanceChange)}  positive={balanceChange >= 0}  icon={<Wallet size={20} />}      accent="#F5A623" valueColor={balance >= 0 ? '#27AE60' : '#E74C3C'} />
+        <KpiCard label="Receitas"        value={fmt(totalIncome)}     change={fmtPct(incomeChange)}   positive={incomeChange >= 0}   icon={<TrendingUp size={20} />}   accent="#27AE60" />
+        <KpiCard label="Despesas"        value={fmt(totalExpense)}    change={fmtPct(expenseChange)}  positive={expenseChange <= 0}  icon={<TrendingDown size={20} />} accent="#E74C3C" />
+        <KpiCard label="Maior Categoria" value={topCatKpiValue}       change={topCatKpiChange}        positive={false} icon={<Tag size={20} />} accent={topCategory.color} noChangeArrow noChangeSuffix />
       </div>
 
       {/* ── Insights ── */}
@@ -371,11 +383,11 @@ function DashboardTab() {
         </div>
       </div>
 
-      {/* ── Últimas 5 Transações (sempre as mais recentes, independente do filtro) ── */}
+      {/* ── Transações (5 últimas) ── */}
       <div className="chart-card">
         <div className="chart-header">
           <div>
-            <h3>Últimas 5 transações</h3>
+            <h3>Transações (5 últimas)</h3>
             <p className="chart-subtitle">independente do período selecionado</p>
           </div>
           <span className="see-all" style={{ cursor: 'pointer' }}>Ver todas</span>
@@ -386,7 +398,7 @@ function DashboardTab() {
               <div className="tx-left">
                 <div className="tx-category-dot" style={{ background: tx.amount > 0 ? '#27AE60' : '#E74C3C' }} />
                 <div>
-                  <div className="tx-desc">{tx.description}</div>
+                  <div className="tx-desc">{tx.title}</div>
                   <div className="tx-meta">{tx.category} · {new Date(tx.date).toLocaleDateString('pt-BR')}</div>
                 </div>
               </div>
@@ -425,9 +437,23 @@ function TransactionsTab() {
   const [filterCat, setFilterCat] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-  // ─── Period filter ───
-  const availableMonths = [...new Set(transactions.map(t => t.date.slice(0, 7)))].sort();
+  // Manual transaction modal
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualDesc, setManualDesc] = useState('');
+  const [manualAmount, setManualAmount] = useState('');
+  const [manualType, setManualType] = useState<'income' | 'expense'>('expense');
+  const [manualCat, setManualCat] = useState('');
+  const [manualDate, setManualDate] = useState(new Date().toISOString().slice(0, 10));
+  const [manualGroup, setManualGroup] = useState(false);
+  const [manualGroupCat, setManualGroupCat] = useState('');
+  const [manualTxs, setManualTxs] = useState<typeof transactions>([]);
+
+  const allTransactions = [...transactions, ...manualTxs];
+
+  const availableMonths = [...new Set(allTransactions.map(t => t.date.slice(0, 7)))].sort();
   const lastDayOf = (ym: string) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).toISOString().slice(0, 10); };
   const selectMonth = (m: string) => { setDateFrom(m + '-01'); setDateTo(lastDayOf(m)); };
   const selectAll = () => { setDateFrom(''); setDateTo(''); };
@@ -441,22 +467,29 @@ function TransactionsTab() {
 
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const filtered = transactions.filter(t => {
-    const matchSearch = t.description.toLowerCase().includes(search.toLowerCase());
-    const matchType = filterType === 'all' || t.type === filterType;
-    const matchCat = filterCat === 'all' || t.category === filterCat;
-    const matchFrom = !dateFrom || t.date >= dateFrom;
-    const matchTo = !dateTo || t.date <= dateTo + 'T23:59:59';
-    return matchSearch && matchType && matchCat && matchFrom && matchTo;
-  });
+  const filtered = allTransactions
+    .filter(t => {
+      const matchSearch = t.title.toLowerCase().includes(search.toLowerCase())
+        || (t.description ?? '').toLowerCase().includes(search.toLowerCase());
+      const matchType = filterType === 'all' || t.type === filterType;
+      const matchCat = filterCat === 'all' || t.category === filterCat;
+      const matchFrom = !dateFrom || t.date >= dateFrom;
+      const matchTo = !dateTo || t.date <= dateTo + 'T23:59:59';
+      return matchSearch && matchType && matchCat && matchFrom && matchTo;
+    })
+    .sort((a, b) => {
+      const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      return sortOrder === 'desc' ? -diff : diff;
+    });
 
   const [showExportModal, setShowExportModal] = useState(false);
 
   const doExport = (format: 'csv' | 'xlsx') => {
-    const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor'];
+    const header = ['Data', 'Título', 'Descrição', 'Categoria', 'Tipo', 'Valor'];
     const rows = filtered.map(t => [
       new Date(t.date).toLocaleDateString('pt-BR'),
-      t.description,
+      t.title,
+      t.description ?? '',
       t.category,
       t.type === 'income' ? 'Receita' : 'Despesa',
       t.amount.toFixed(2).replace('.', ','),
@@ -467,7 +500,7 @@ function TransactionsTab() {
     let blob: Blob;
     if (format === 'csv') {
       const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-      blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     } else {
       const tsv = [header, ...rows].map(r => r.join('\t')).join('\n');
       blob = new Blob([tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
@@ -490,6 +523,30 @@ function TransactionsTab() {
     setShowExportModal(false);
   };
 
+  const handleSaveManual = () => {
+    if (!manualTitle.trim() || !manualAmount || !manualCat) return;
+    const amt = parseFloat(manualAmount.replace(',', '.'));
+    if (isNaN(amt)) return;
+    const finalAmount = manualType === 'expense' ? -Math.abs(amt) : Math.abs(amt);
+    const newTx = {
+      id: `manual-${Date.now()}`,
+      title: manualTitle.trim(),
+      description: manualDesc.trim() || undefined,
+      date: `${manualDate}T12:00:00`,
+      amount: finalAmount,
+      category: manualCat,
+      type: manualType,
+      isManual: true,
+      groupId: manualGroup ? 'group-1' : undefined,
+      groupCategoryId: manualGroup && manualGroupCat ? manualGroupCat : undefined,
+    };
+    setManualTxs(prev => [...prev, newTx]);
+    setShowManualModal(false);
+    setManualTitle(''); setManualDesc(''); setManualAmount('');
+    setManualType('expense'); setManualCat(''); setManualDate(new Date().toISOString().slice(0, 10));
+    setManualGroup(false); setManualGroupCat('');
+  };
+
   return (
     <div className="ind-transactions">
       <div className="ind-tx-header">
@@ -497,10 +554,114 @@ function TransactionsTab() {
           <h2>Transações</h2>
           <p>Histórico completo de movimentações</p>
         </div>
-        <button className="export-btn" onClick={() => setShowExportModal(true)}>
-          <Download size={14} /> Exportar
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-secondary small" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontSize: 13 }} onClick={() => setShowManualModal(true)}>
+            <Plus size={14} /> Nova transação
+          </button>
+          <button className="export-btn" onClick={() => setShowExportModal(true)}>
+            <Download size={14} /> Exportar
+          </button>
+        </div>
       </div>
+
+      {/* Manual transaction modal */}
+      {showManualModal && (
+        <div className="modal-overlay" onClick={() => setShowManualModal(false)}>
+          <div className="export-modal" style={{ maxWidth: 480, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div className="export-modal-header">
+              <span>Nova transação manual</span>
+              <button className="export-modal-close" onClick={() => setShowManualModal(false)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 0' }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Título <span style={{ color: '#E74C3C' }}>*</span></label>
+                <input
+                  className="invite-input"
+                  placeholder="Ex: Compra feira do bairro"
+                  value={manualTitle}
+                  onChange={e => setManualTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Descrição <span style={{ color: '#999', fontWeight: 400 }}>(opcional)</span></label>
+                <input
+                  className="invite-input"
+                  placeholder="Ex: Banana, tomate e verduras para a semana"
+                  value={manualDesc}
+                  onChange={e => setManualDesc(e.target.value)}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Tipo <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => setManualType('expense')}
+                      style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `2px solid ${manualType === 'expense' ? '#E74C3C' : '#e0e0e0'}`, background: manualType === 'expense' ? '#fef2f2' : '#fff', color: manualType === 'expense' ? '#E74C3C' : '#555', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}
+                    >
+                      Despesa
+                    </button>
+                    <button
+                      onClick={() => setManualType('income')}
+                      style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `2px solid ${manualType === 'income' ? '#27AE60' : '#e0e0e0'}`, background: manualType === 'income' ? '#f0fdf4' : '#fff', color: manualType === 'income' ? '#27AE60' : '#555', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}
+                    >
+                      Receita
+                    </button>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Valor (R$) <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <input
+                    className="invite-input"
+                    placeholder="0,00"
+                    value={manualAmount}
+                    onChange={e => setManualAmount(e.target.value)}
+                    style={{ textAlign: 'right' }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Data <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <input type="date" className="invite-input" value={manualDate} onChange={e => setManualDate(e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Categoria <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <select className="filter-select" style={{ width: '100%', padding: '8px 10px', height: 38 }} value={manualCat} onChange={e => setManualCat(e.target.value)}>
+                    <option value="">Selecione...</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={manualGroup} onChange={e => setManualGroup(e.target.checked)} />
+                  <span style={{ fontSize: 13, color: '#555' }}>
+                    <Users size={13} style={{ display: 'inline', marginRight: 4 }} />
+                    Compartilhar com <strong>{userGroupName}</strong>
+                  </span>
+                </label>
+                {manualGroup && (
+                  <select className="filter-select" style={{ width: '100%', marginTop: 8, padding: '8px 10px', height: 38 }} value={manualGroupCat} onChange={e => setManualGroupCat(e.target.value)}>
+                    <option value="">Categoria do grupo...</option>
+                    {groupCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                )}
+              </div>
+            </div>
+            <div className="invite-actions" style={{ marginTop: 16 }}>
+              <button className="invite-cancel" onClick={() => setShowManualModal(false)}>Cancelar</button>
+              <button
+                className="btn-primary small"
+                onClick={handleSaveManual}
+                disabled={!manualTitle.trim() || !manualAmount || !manualCat}
+              >
+                Salvar transação
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Export modal */}
       {showExportModal && (
@@ -551,7 +712,7 @@ function TransactionsTab() {
         </div>
       </div>
 
-      {/* Search + Type + Category */}
+      {/* Search + Type + Category + Sort */}
       <div className="tx-filter-row">
         <div className="search-input-wrap tx-search">
           <Search size={14} />
@@ -570,6 +731,16 @@ function TransactionsTab() {
           <option value="all">Todas as categorias</option>
           {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
         </select>
+        {/* Sort order */}
+        <button
+          className="tx-type-pill"
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', whiteSpace: 'nowrap' }}
+          onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
+          title={sortOrder === 'desc' ? 'Mais recentes primeiro' : 'Mais antigos primeiro'}
+        >
+          {sortOrder === 'desc' ? <ArrowDown size={13} /> : <ArrowUp size={13} />}
+          {sortOrder === 'desc' ? 'Mais recentes' : 'Mais antigos'}
+        </button>
       </div>
 
       {/* List */}
@@ -590,13 +761,19 @@ function TransactionsTab() {
                     <CatIcon size={17} />
                   </div>
                   <div className="ind-tx-row-main">
-                    <span className="ind-tx-row-desc">{tx.description}</span>
-                    <span className="ind-cat-badge" style={{ background: color + '18', color }}>
-                      <span className="ind-cat-badge-icon" style={{ background: color }}>
-                        <CatIcon size={10} color="white" />
+                    <span className="ind-tx-row-desc">{tx.title}</span>
+                    {tx.description && <span style={{ fontSize: 11, color: '#888', display: 'block', marginTop: 2 }}>{tx.description}</span>}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                      <span className="ind-cat-badge" style={{ background: color + '18', color }}>
+                        <span className="ind-cat-badge-icon" style={{ background: color }}>
+                          <CatIcon size={10} color="white" />
+                        </span>
+                        {tx.category}
                       </span>
-                      {tx.category}
-                    </span>
+                      {tx.isManual && (
+                        <span style={{ fontSize: 11, color: '#8E44AD', background: '#8E44AD18', borderRadius: 4, padding: '1px 6px' }}>Manual</span>
+                      )}
+                    </div>
                   </div>
                   <div className="ind-tx-row-right">
                     <span className={`ind-tx-amount ${isIncome ? 'positive' : 'negative'}`}>
@@ -616,8 +793,6 @@ function TransactionsTab() {
   );
 }
 
-/* CategoriesTab replaced by CategoriesPage component */
-
 /* ─── UPLOAD TAB ─── */
 function UploadTab() {
   const [step, setStep] = useState<UploadStep>('select');
@@ -628,13 +803,23 @@ function UploadTab() {
   const [newCatName, setNewCatName] = useState<Record<number, string>>({});
   const [newCatColor, setNewCatColor] = useState<Record<number, string>>({});
   const [extraCats, setExtraCats] = useState<string[]>([]);
-  // Compartilhamento com grupo
   const [sharedWithGroup, setSharedWithGroup] = useState<Record<number, boolean>>({});
   const [groupCat, setGroupCat] = useState<Record<number, string>>({});
+
+  // Staging: preview data editável
+  const [previewRows, setPreviewRows] = useState<PreviewRow[]>(initialPreviewData.map(r => ({ ...r })));
+  const [editingTitle, setEditingTitle] = useState<number | null>(null);
+  const [editTitleValue, setEditTitleValue] = useState('');
+  const [removeWarning, setRemoveWarning] = useState<number | null>(null);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const fmt = (v: number) => Math.abs(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const allUploadCats = [...uploadCategories, ...extraCats];
+
+  const activeRows = previewRows.filter(r => !r.removed);
+  const activeTotal = activeRows.reduce((s, r) => s + r.amount, 0);
+  const originalTotal = previewRows.reduce((s, r) => s + r.amount, 0);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -648,7 +833,37 @@ function UploadTab() {
     if (file) { setFileName(file.name); setStep('preview'); }
   };
 
-  const needsCat = previewData.filter(r => !r.category);
+  const handleDiscard = () => {
+    setStep('select');
+    setFileName('');
+    setPreviewRows(initialPreviewData.map(r => ({ ...r })));
+    setCats({});
+    setSharedWithGroup({});
+    setGroupCat({});
+    setExtraCats([]);
+    setEditingTitle(null);
+    setRemoveWarning(null);
+    setShowDiscardConfirm(false);
+  };
+
+  const startEditTitle = (i: number) => {
+    setEditingTitle(i);
+    setEditTitleValue(previewRows[i].title);
+  };
+
+  const saveTitle = (i: number) => {
+    const val = editTitleValue.trim();
+    if (!val) return;
+    setPreviewRows(prev => prev.map((r, idx) => idx === i ? { ...r, title: val } : r));
+    setEditingTitle(null);
+  };
+
+  const requestRemove = (i: number) => setRemoveWarning(i);
+
+  const confirmRemove = (i: number) => {
+    setPreviewRows(prev => prev.map((r, idx) => idx === i ? { ...r, removed: true } : r));
+    setRemoveWarning(null);
+  };
 
   const handleCatChange = (i: number, val: string) => {
     if (val === '__new__') {
@@ -669,6 +884,7 @@ function UploadTab() {
     setShowNewCat(prev => ({ ...prev, [i]: false }));
   };
 
+  const needsCat = activeRows.filter(r => !r.category);
   const steps = ['select', 'preview', 'categorize', 'done'];
 
   return (
@@ -695,43 +911,132 @@ function UploadTab() {
 
       {/* STEP 1: Select */}
       {step === 'select' && (
-        <div
-          className={`drop-zone ${dragging ? 'dragging' : ''}`}
-          onDragOver={e => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-        >
-          <div><FolderOpen size={56} /></div>
-          <h3>Arraste seu extrato aqui</h3>
-          <p>Suporta arquivos <strong>OFX</strong> e <strong>CSV</strong> exportados pelo seu banco</p>
-          <label className="upload-btn">
-            Selecionar Arquivo
-            <input type="file" accept=".ofx,.csv" hidden onChange={handleFile} />
-          </label>
-          <div className="format-info">
-            <div className="format-badge"><FileText size={14} /> OFX — Padrão bancário universal</div>
-            <div className="format-badge"><Table size={14} /> CSV — Planilha de transações</div>
+        <>
+          {/* Banner: sem conta bancária */}
+          {!userHasBankAccount && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13 }}>
+              <AlertCircle size={16} style={{ color: '#d97706', flexShrink: 0, marginTop: 1 }} />
+              <div>
+                <strong style={{ color: '#92400e' }}>Nenhuma conta bancária cadastrada.</strong>
+                <span style={{ color: '#78350f', marginLeft: 6 }}>
+                  Para vincular automaticamente o extrato ao banco correto,{' '}
+                  <span style={{ color: '#d97706', cursor: 'pointer', textDecoration: 'underline' }}>cadastre uma conta bancária</span>.
+                  Você pode continuar sem isso.
+                </span>
+              </div>
+            </div>
+          )}
+          <div
+            className={`drop-zone ${dragging ? 'dragging' : ''}`}
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={handleDrop}
+          >
+            <div><FolderOpen size={56} /></div>
+            <h3>Arraste seu extrato aqui</h3>
+            <p>Suporta arquivos <strong>OFX</strong> e <strong>CSV</strong> exportados pelo seu banco</p>
+            <label className="upload-btn">
+              Selecionar Arquivo
+              <input type="file" accept=".ofx,.csv" hidden onChange={handleFile} />
+            </label>
+            <div className="format-info">
+              <div className="format-badge"><FileText size={14} /> OFX — Padrão bancário universal</div>
+              <div className="format-badge"><Table size={14} /> CSV — Planilha de transações</div>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* STEP 2: Preview */}
       {step === 'preview' && (
         <div className="preview-section">
+          {/* Discard confirm modal */}
+          {showDiscardConfirm && (
+            <div className="modal-overlay" onClick={() => setShowDiscardConfirm(false)}>
+              <div className="export-modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+                <div className="export-modal-header">
+                  <span>Descartar rascunho?</span>
+                  <button className="export-modal-close" onClick={() => setShowDiscardConfirm(false)}>✕</button>
+                </div>
+                <p style={{ fontSize: 13, color: '#555', margin: '8px 0 16px' }}>
+                  O extrato em revisão será descartado e nenhuma transação será salva. Esta ação não pode ser desfeita.
+                </p>
+                <div className="invite-actions">
+                  <button className="invite-cancel" onClick={() => setShowDiscardConfirm(false)}>Cancelar</button>
+                  <button style={{ padding: '8px 18px', background: '#E74C3C', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }} onClick={handleDiscard}>
+                    Sim, descartar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Remove warning modal */}
+          {removeWarning !== null && (
+            <div className="modal-overlay" onClick={() => setRemoveWarning(null)}>
+              <div className="export-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+                <div className="export-modal-header">
+                  <span>Remover transação?</span>
+                  <button className="export-modal-close" onClick={() => setRemoveWarning(null)}>✕</button>
+                </div>
+                <div style={{ fontSize: 13, color: '#555', margin: '8px 0 4px' }}>
+                  <p style={{ marginBottom: 8 }}>
+                    Você está prestes a remover <strong>"{previewRows[removeWarning]?.title}"</strong> do extrato.
+                  </p>
+                  <div style={{ background: '#fff7ed', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 12px', color: '#92400e', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span>
+                      Isso vai <strong>alterar o saldo final</strong> do extrato. O valor de <strong>{fmt(previewRows[removeWarning]?.amount ?? 0)}</strong> não será importado.
+                      O saldo passará de <strong>{fmt(originalTotal)}</strong> para <strong>{fmt(activeTotal - (previewRows[removeWarning]?.amount ?? 0))}</strong>.
+                    </span>
+                  </div>
+                  <p style={{ marginTop: 10, color: '#888' }}>
+                    Considere <strong>renomear</strong> em vez de remover para manter o histórico correto.
+                  </p>
+                </div>
+                <div className="invite-actions" style={{ marginTop: 12 }}>
+                  <button className="invite-cancel" onClick={() => setRemoveWarning(null)}>Cancelar</button>
+                  <button style={{ padding: '8px 18px', background: '#E74C3C', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }} onClick={() => confirmRemove(removeWarning)}>
+                    Remover mesmo assim
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="file-info-bar">
             <span><FileText size={14} /> {fileName}</span>
-            <span className="badge-green">{previewData.length} transações encontradas</span>
+            <span className="badge-green">{activeRows.length} transações ativas</span>
+            {previewRows.some(r => r.removed) && (
+              <span style={{ fontSize: 12, color: '#E74C3C' }}>{previewRows.filter(r => r.removed).length} removida(s)</span>
+            )}
           </div>
           <div className="table-card">
             <table className="tx-table">
               <thead>
-                <tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Categoria</th></tr>
+                <tr><th>Data</th><th>Título</th><th>Valor</th><th>Categoria</th><th style={{ width: 80 }}>Ações</th></tr>
               </thead>
               <tbody>
-                {previewData.map((r, i) => (
-                  <tr key={i}>
+                {previewRows.map((r, i) => (
+                  <tr key={i} style={r.removed ? { opacity: 0.4, textDecoration: 'line-through' } : {}}>
                     <td>{new Date(r.date).toLocaleDateString('pt-BR')}</td>
-                    <td>{r.desc}</td>
+                    <td>
+                      {editingTitle === i ? (
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <input
+                            autoFocus
+                            style={{ flex: 1, padding: '4px 8px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 13 }}
+                            value={editTitleValue}
+                            onChange={e => setEditTitleValue(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveTitle(i); if (e.key === 'Escape') setEditingTitle(null); }}
+                          />
+                          <button onClick={() => saveTitle(i)} style={{ background: '#27AE60', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}>OK</button>
+                          <button onClick={() => setEditingTitle(null)} style={{ background: '#f3f4f6', color: '#555', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: 12 }}>✕</button>
+                        </div>
+                      ) : (
+                        r.title
+                      )}
+                    </td>
                     <td className={r.amount > 0 ? 'amount-cell positive' : 'amount-cell negative'}>
                       {r.amount > 0 ? '+' : '-'}{fmt(r.amount)}
                     </td>
@@ -740,16 +1045,47 @@ function UploadTab() {
                         ? <span className="upload-cat-auto"><CheckCircle size={12} /> {r.category}</span>
                         : <span className="upload-cat-pending"><Tag size={12} /> A categorizar</span>}
                     </td>
+                    <td>
+                      {!r.removed && (
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            onClick={() => startEditTitle(i)}
+                            title="Renomear"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2980B9', padding: 4 }}
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            onClick={() => requestRemove(i)}
+                            title="Remover"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E74C3C', padding: 4 }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {activeRows.length > 0 && (
+              <div style={{ padding: '10px 16px', borderTop: '1px solid #f3f4f6', fontSize: 13, color: '#555', display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+                <span>Saldo do extrato:</span>
+                <strong style={{ color: activeTotal >= 0 ? '#27AE60' : '#E74C3C' }}>{activeTotal >= 0 ? '+' : ''}{fmt(activeTotal)}</strong>
+              </div>
+            )}
           </div>
           <div className="action-bar">
-            <button className="btn-secondary" onClick={() => setStep('select')}><ArrowLeft size={16} /> Voltar</button>
-            <button className="btn-primary" onClick={() => setStep('categorize')}>
-              Categorizar {needsCat.length} transações <ArrowRight size={16} />
+            <button className="btn-secondary" style={{ color: '#E74C3C', borderColor: '#fca5a5' }} onClick={() => setShowDiscardConfirm(true)}>
+              Descartar rascunho
             </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn-secondary" onClick={() => setStep('select')}><ArrowLeft size={16} /> Voltar</button>
+              <button className="btn-primary" onClick={() => setStep('categorize')} disabled={activeRows.length === 0}>
+                Categorizar {needsCat.length > 0 ? `${needsCat.length} transações` : ''} <ArrowRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -762,12 +1098,11 @@ function UploadTab() {
             <p>Estas transações são novas. Ao categorizá-las agora, o sistema aprenderá a reconhecê-las automaticamente nas próximas importações.</p>
           </div>
           <div className="cat-list">
-            {needsCat.map((r, i) => (
+            {activeRows.filter(r => !r.category).map((r, i) => (
               <div key={i} className="cat-item-full">
-                {/* Linha principal: descrição + categoria individual */}
                 <div className="cat-item-row">
                   <div className="cat-item-info">
-                    <div className="cat-desc">{r.desc}</div>
+                    <div className="cat-desc">{r.title}</div>
                     <div className="cat-amount">{fmt(r.amount)}</div>
                   </div>
                   <select
@@ -781,7 +1116,6 @@ function UploadTab() {
                   </select>
                 </div>
 
-                {/* Criar categoria inline */}
                 {showNewCat[i] && (
                   <div className="inline-new-cat">
                     <input
@@ -799,7 +1133,6 @@ function UploadTab() {
                   </div>
                 )}
 
-                {/* Toggle: compartilhar com grupo */}
                 <div className="group-share-row">
                   <label className="group-share-toggle">
                     <input
@@ -846,18 +1179,18 @@ function UploadTab() {
           <div className="done-section">
             <div><CheckCircle size={64} color="#27AE60" /></div>
             <h2>Extrato importado com sucesso!</h2>
-            <p>{previewData.length} transações foram adicionadas à sua conta.</p>
+            <p>{activeRows.length} transações foram adicionadas à sua conta.</p>
             <div className="done-stats">
               <div className="done-stat">
-                <span className="stat-num green">{previewData.filter(r => r.amount > 0).length}</span>
+                <span className="stat-num green">{activeRows.filter(r => r.amount > 0).length}</span>
                 <span className="stat-label">Receitas</span>
               </div>
               <div className="done-stat">
-                <span className="stat-num red">{previewData.filter(r => r.amount < 0).length}</span>
+                <span className="stat-num red">{activeRows.filter(r => r.amount < 0).length}</span>
                 <span className="stat-label">Despesas</span>
               </div>
               <div className="done-stat">
-                <span className="stat-num">{previewData.length}</span>
+                <span className="stat-num">{activeRows.length}</span>
                 <span className="stat-label">Total</span>
               </div>
             </div>
@@ -870,8 +1203,8 @@ function UploadTab() {
               </div>
             )}
             <div className="action-bar center">
-              <button className="btn-secondary" onClick={() => setStep('select')}>Importar Outro</button>
-              <button className="btn-primary" onClick={() => setStep('select')}>
+              <button className="btn-secondary" onClick={handleDiscard}>Importar Outro</button>
+              <button className="btn-primary" onClick={handleDiscard}>
                 Ver Dashboard <ArrowRight size={16} />
               </button>
             </div>

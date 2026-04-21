@@ -232,6 +232,26 @@ const NAME_TO_ICON: Record<string, string> = {
   'Outros': 'Package',
 };
 
+/* ─── DUPLICATE DETECTION ─── */
+function normalizeForDuplicate(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function isSimilar(a: string, b: string): boolean {
+  const na = normalizeForDuplicate(a);
+  const nb = normalizeForDuplicate(b);
+  if (na === nb) return true;
+  // substring match: one is contained within the other (min 3 chars)
+  if (na.length >= 3 && nb.length >= 3) {
+    if (na.includes(nb) || nb.includes(na)) return true;
+  }
+  return false;
+}
+
 /* ─── MAIN PAGE ─── */
 interface UserCat { id: string; name: string; color: string; iconKey: string; }
 
@@ -242,6 +262,7 @@ export default function CategoriesPage() {
   const [iconSearch, setIconSearch] = useState('');
   const [userCats, setUserCats] = useState<UserCat[]>([]);
   const [success, setSuccess] = useState('');
+  const [duplicateWarning, setDuplicateWarning] = useState('');
 
   const filteredIcons = iconSearch
     ? ICON_ENTRIES.filter(([k]) => k.toLowerCase().includes(iconSearch.toLowerCase()))
@@ -249,8 +270,26 @@ export default function CategoriesPage() {
 
   const SelectedIconComp = ICON_MAP[selectedIcon] ?? Tag;
 
+  const allCatNames = [
+    ...defaultCategories.map(c => c.name),
+    ...userCats.map(c => c.name),
+  ];
+
+  const handleNameChange = (val: string) => {
+    setName(val);
+    setDuplicateWarning('');
+    if (!val.trim()) return;
+    const similar = allCatNames.find(n => isSimilar(n, val.trim()));
+    if (similar) setDuplicateWarning(`Já existe uma categoria similar: "${similar}"`);
+  };
+
   const handleCreate = () => {
     if (!name.trim()) return;
+    const similar = allCatNames.find(n => isSimilar(n, name.trim()));
+    if (similar) {
+      setDuplicateWarning(`Já existe uma categoria similar: "${similar}". Escolha um nome diferente.`);
+      return;
+    }
     const newCat: UserCat = {
       id: Date.now().toString(),
       name: name.trim(),
@@ -260,6 +299,7 @@ export default function CategoriesPage() {
     setUserCats(prev => [...prev, newCat]);
     setSuccess(`Categoria "${name.trim()}" criada com sucesso!`);
     setName('');
+    setDuplicateWarning('');
     setTimeout(() => setSuccess(''), 3000);
   };
 
@@ -314,11 +354,16 @@ export default function CategoriesPage() {
             <label>Nome</label>
             <input
               type="text"
-              className="cat-name-input"
+              className={`cat-name-input${duplicateWarning ? ' input-warning' : ''}`}
               placeholder="Ex: Pets, Viagens, Streaming..."
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => handleNameChange(e.target.value)}
             />
+            {duplicateWarning && (
+              <div style={{ marginTop: 6, fontSize: 12, color: '#d97706', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>⚠️</span> {duplicateWarning}
+              </div>
+            )}
           </div>
 
           {/* Icon + Color + Preview row */}
@@ -375,9 +420,9 @@ export default function CategoriesPage() {
 
           <button
             className="btn-create-cat"
-            style={{ background: color }}
+            style={{ background: duplicateWarning ? '#d1d5db' : color }}
             onClick={handleCreate}
-            disabled={!name.trim()}
+            disabled={!name.trim() || !!duplicateWarning}
           >
             <Plus size={16} />
             Criar Categoria

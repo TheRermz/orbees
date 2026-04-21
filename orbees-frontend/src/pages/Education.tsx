@@ -76,7 +76,7 @@ function Fonte({ href, label }: { href: string; label: string }) {
 const PATH_STEPS = [
   { num: 1, label: 'Fundamentos',        desc: 'Os 4 pilares, regra 50-30-20 e juros compostos',        to: '/education/fundamentos', color: '#27AE60', textColor: '#fff' },
   { num: 2, label: 'Direitos e Tributos', desc: 'CLT, holerite, IRPF, crédito, LGPD e Open Finance',    to: '/education/direitos',    color: '#2980B9', textColor: '#fff' },
-  { num: 3, label: 'Calculadoras',        desc: 'Simule juros, metas, férias, parcelamento e investimentos', to: '/education/calculadoras', color: '#111', textColor: '#F5A623' },
+  { num: 3, label: 'Calculadoras',        desc: 'Simule juros, metas, férias, parcelamento e IRPF', to: '/education/calculadoras', color: '#111', textColor: '#F5A623' },
 ];
 
 function LearningPath() {
@@ -649,14 +649,13 @@ export function EducationDireitos() {
    TAB 4 — CALCULADORAS
 ══════════════════════════════════════════════════════ */
 const CALC_LIST = [
-  { id: 'simples',       label: 'Juros Simples',              formula: 'M = C × (1 + i × t)' },
-  { id: 'compostos',     label: 'Juros Compostos',            formula: 'M = C × (1 + i)ⁿ' },
-  { id: 'ferias',        label: 'Férias CLT',                 formula: 'Férias + ⅓ + Abono' },
-  { id: 'parcelamento',  label: 'Custo do Parcelamento',      formula: 'Total = PMT × n' },
-  { id: 'metas',         label: 'Metas de Poupança',          formula: '(Meta − Atual) ÷ Meses' },
-  { id: 'dividas',       label: 'Quitação de Dívidas',        formula: 'Bola de Neve / Avalanche' },
-  { id: 'investimentos', label: 'Comparador de Investimentos', formula: 'M = C × (1 + i)ⁿ' },
-  { id: 'irpf',          label: 'Simulador IRPF',             formula: 'Base − Deduções → IR' },
+  { id: 'simples',      label: 'Juros Simples',         formula: 'M = C × (1 + i × t)' },
+  { id: 'compostos',    label: 'Juros Compostos',       formula: 'M = C × (1 + i)ⁿ' },
+  { id: 'ferias',       label: 'Férias CLT',            formula: 'Férias + ⅓ + Abono' },
+  { id: 'parcelamento', label: 'Custo do Parcelamento', formula: 'Total = PMT × n' },
+  { id: 'metas',        label: 'Metas de Poupança',     formula: '(Meta − Atual) ÷ Meses' },
+  { id: 'dividas',      label: 'Quitação de Dívidas',   formula: 'Bola de Neve / Avalanche' },
+  { id: 'irpf',         label: 'Simulador IRPF',        formula: 'Base − Deduções → IR' },
 ];
 
 export function EducationCalculadoras() {
@@ -670,7 +669,6 @@ export function EducationCalculadoras() {
       case 'parcelamento':  return <ParcelamentoCalc />;
       case 'metas':         return <MetaCalc />;
       case 'dividas':       return <DividasCalc />;
-      case 'investimentos': return <ComparadorInvest />;
       case 'irpf':          return <IrpfSimuladorCalc />;
       default:              return null;
     }

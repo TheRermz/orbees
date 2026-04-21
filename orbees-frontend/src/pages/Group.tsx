@@ -10,11 +10,29 @@ import './Individual.css';
 
 const currentUserRole: 'admin' | 'viewer' = 'admin';
 
-const members = [
-  { id: '1', name: 'Gabriella', initials: 'G', color: '#F5A623', role: 'admin' },
-  { id: '2', name: 'Murilo',    initials: 'M', color: '#2980B9', role: 'viewer' },
-  { id: '3', name: 'Ana',       initials: 'A', color: '#27AE60', role: 'viewer' },
+const MAX_ADMINS = 1;
+const MAX_VIEWERS = 2;
+
+interface Member {
+  id: string;
+  internalGroupMemberId: number;
+  name: string;
+  initials: string;
+  color: string;
+  role: 'admin' | 'viewer';
+  email: string;
+  joinedAt: string;
+  cancelledAt: string | null;
+  isActive: boolean;
+}
+
+const initialMembers: Member[] = [
+  { id: '1', internalGroupMemberId: 1, name: 'Gabriella', initials: 'G', color: '#F5A623', role: 'admin',  email: 'gabriella@email.com', joinedAt: '2026-01-01', cancelledAt: null, isActive: true },
+  { id: '2', internalGroupMemberId: 2, name: 'Murilo',    initials: 'M', color: '#2980B9', role: 'viewer', email: 'murilo@email.com',    joinedAt: '2026-01-05', cancelledAt: null, isActive: true },
+  { id: '3', internalGroupMemberId: 3, name: 'Ana',       initials: 'A', color: '#27AE60', role: 'viewer', email: 'ana@email.com',       joinedAt: '2026-01-10', cancelledAt: null, isActive: true },
 ];
+
+const members = initialMembers;
 
 const groupTransactions = [
   { id: '1',  date: '2026-03-10', description: 'Aluguel compartilhado',  amount: -2400, category: 'Moradia',    member: 'Gabriella' },
@@ -600,14 +618,29 @@ export function GroupCategories() {
 /* ─── IMPORTAR EXTRATO ─── */
 /* ─── MEMBROS ─── */
 export function GroupMembers() {
+  const [memberList, setMemberList] = useState<Member[]>(initialMembers);
   const [showInvite, setShowInvite] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'viewer'>('viewer');
   const [sent, setSent] = useState(false);
+  const [archiveConfirm, setArchiveConfirm] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+
+  const activeMembers = memberList.filter(m => m.isActive);
+  const archivedMembers = memberList.filter(m => !m.isActive);
+  const activeAdmins = activeMembers.filter(m => m.role === 'admin').length;
+  const activeViewers = activeMembers.filter(m => m.role === 'viewer').length;
+  const canInviteAdmin = activeAdmins < MAX_ADMINS;
+  const canInviteViewer = activeViewers < MAX_VIEWERS;
+  const canInvite = canInviteAdmin || canInviteViewer;
+
+  const nextInternalId = Math.max(...memberList.map(m => m.internalGroupMemberId)) + 1;
 
   const handleSend = () => {
     if (!inviteName.trim() || !inviteEmail.trim()) return;
+    if (inviteRole === 'admin' && !canInviteAdmin) return;
+    if (inviteRole === 'viewer' && !canInviteViewer) return;
     setSent(true);
     setTimeout(() => {
       setSent(false);
@@ -626,16 +659,64 @@ export function GroupMembers() {
     setSent(false);
   };
 
+  const handleArchive = (id: string) => {
+    setMemberList(prev => prev.map(m =>
+      m.id === id
+        ? { ...m, isActive: false, cancelledAt: new Date().toISOString().slice(0, 10) }
+        : m
+    ));
+    setArchiveConfirm(null);
+  };
+
   return (
     <div className="group-page">
       <GroupHeader />
       <div className="group-content">
         <div className="members-header">
-          <h3>Membros do Grupo</h3>
-          <button className="btn-primary small" onClick={() => setShowInvite(true)}>
-            <Plus size={14} /> Convidar Membro
-          </button>
+          <div>
+            <h3>Membros do Grupo</h3>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+              {activeAdmins}/{MAX_ADMINS} admin · {activeViewers}/{MAX_VIEWERS} membros
+            </p>
+          </div>
+          {currentUserRole === 'admin' && (
+            <button className="btn-primary small" onClick={() => setShowInvite(true)} disabled={!canInvite} title={!canInvite ? 'Limite de membros atingido (1 admin + 2 membros)' : ''}>
+              <Plus size={14} /> Convidar Membro
+            </button>
+          )}
         </div>
+
+        {!canInvite && (
+          <div style={{ background: '#fff7ed', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#92400e', marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span>⚠️</span> Limite de membros atingido: máximo 1 administrador e 2 membros por grupo.
+          </div>
+        )}
+
+        {/* Archive confirm modal */}
+        {archiveConfirm && (
+          <div className="modal-overlay" onClick={() => setArchiveConfirm(null)}>
+            <div className="export-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+              <div className="export-modal-header">
+                <span>Arquivar membro?</span>
+                <button className="export-modal-close" onClick={() => setArchiveConfirm(null)}>✕</button>
+              </div>
+              <div style={{ fontSize: 13, color: '#555', margin: '8px 0 16px' }}>
+                <p style={{ marginBottom: 8 }}>
+                  O membro <strong>{memberList.find(m => m.id === archiveConfirm)?.name}</strong> será arquivado.
+                </p>
+                <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '10px 12px', color: '#0c4a6e', fontSize: 12 }}>
+                  As transações deste membro <strong>continuam salvas no grupo</strong> e ficam arquivadas para consulta. Apenas o administrador pode visualizar os dados arquivados — ninguém pode apagá-los.
+                </div>
+              </div>
+              <div className="invite-actions">
+                <button className="invite-cancel" onClick={() => setArchiveConfirm(null)}>Cancelar</button>
+                <button style={{ padding: '8px 18px', background: '#E74C3C', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }} onClick={() => handleArchive(archiveConfirm)}>
+                  Arquivar membro
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Invite Modal */}
         {showInvite && (
@@ -682,11 +763,11 @@ export function GroupMembers() {
                     <div className="invite-field">
                       <label className="invite-label">Permissão</label>
                       <div className="invite-role-options">
-                        <label className={`invite-role-opt${inviteRole === 'viewer' ? ' selected' : ''}`}>
-                          <input type="radio" name="role" value="viewer" checked={inviteRole === 'viewer'} onChange={() => setInviteRole('viewer')} />
+                        <label className={`invite-role-opt${inviteRole === 'viewer' ? ' selected' : ''}${!canInviteViewer ? ' disabled' : ''}`} style={!canInviteViewer ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
+                          <input type="radio" name="role" value="viewer" checked={inviteRole === 'viewer'} onChange={() => canInviteViewer && setInviteRole('viewer')} disabled={!canInviteViewer} />
                           <Eye size={16} style={{ flexShrink: 0 }} />
                           <div>
-                            <div className="invite-role-name">Membro</div>
+                            <div className="invite-role-name">Membro {!canInviteViewer && <span style={{ color: '#E74C3C', fontSize: 11 }}>(limite atingido)</span>}</div>
                             <ul className="invite-role-perms">
                               <li>Visualizar transações do grupo</li>
                               <li>Incluir novas transações</li>
@@ -694,11 +775,11 @@ export function GroupMembers() {
                             </ul>
                           </div>
                         </label>
-                        <label className={`invite-role-opt${inviteRole === 'admin' ? ' selected' : ''}`}>
-                          <input type="radio" name="role" value="admin" checked={inviteRole === 'admin'} onChange={() => setInviteRole('admin')} />
+                        <label className={`invite-role-opt${inviteRole === 'admin' ? ' selected' : ''}${!canInviteAdmin ? ' disabled' : ''}`} style={!canInviteAdmin ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
+                          <input type="radio" name="role" value="admin" checked={inviteRole === 'admin'} onChange={() => canInviteAdmin && setInviteRole('admin')} disabled={!canInviteAdmin} />
                           <Crown size={16} style={{ flexShrink: 0 }} />
                           <div>
-                            <div className="invite-role-name">Administrador</div>
+                            <div className="invite-role-name">Administrador {!canInviteAdmin && <span style={{ color: '#E74C3C', fontSize: 11 }}>(limite atingido)</span>}</div>
                             <ul className="invite-role-perms">
                               <li>Convidar novos membros</li>
                               <li>Criar e editar categorias</li>
@@ -726,24 +807,67 @@ export function GroupMembers() {
         )}
 
         <div className="members-list">
-          {members.map(m => (
+          {activeMembers.map(m => (
             <div key={m.id} className="member-row">
               <div className="member-avatar" style={{ background: m.color }}>{m.initials}</div>
               <div className="member-row-info">
                 <div className="member-name">{m.name}</div>
-                <div className="member-email">{m.name.toLowerCase()}@email.com</div>
+                <div className="member-email">{m.email}</div>
+                <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>ID #{m.internalGroupMemberId} · desde {new Date(m.joinedAt).toLocaleDateString('pt-BR')}</div>
               </div>
               <div className={`member-role-badge ${m.role}`}>
                 {m.role === 'admin' ? <><Crown size={11} /> Administrador</> : <><Eye size={11} /> Visualizador</>}
               </div>
+              {currentUserRole === 'admin' && m.role !== 'admin' && (
+                <button
+                  onClick={() => setArchiveConfirm(m.id)}
+                  title="Arquivar membro"
+                  style={{ marginLeft: 8, background: 'none', border: '1px solid #fca5a5', color: '#E74C3C', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12 }}
+                >
+                  Arquivar
+                </button>
+              )}
             </div>
           ))}
         </div>
-        <div className="invite-info">
+
+        {/* Archived members */}
+        {archivedMembers.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={() => setShowArchived(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#888', display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}
+            >
+              {showArchived ? '▾' : '▸'} {archivedMembers.length} membro(s) arquivado(s)
+            </button>
+            {showArchived && (
+              <div className="members-list" style={{ marginTop: 8, opacity: 0.7 }}>
+                {archivedMembers.map(m => (
+                  <div key={m.id} className="member-row" style={{ background: '#f9fafb' }}>
+                    <div className="member-avatar" style={{ background: '#d1d5db', color: '#6b7280' }}>{m.initials}</div>
+                    <div className="member-row-info">
+                      <div className="member-name" style={{ color: '#6b7280' }}>{m.name}</div>
+                      <div className="member-email">{m.email}</div>
+                      <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>
+                        ID #{m.internalGroupMemberId} · Arquivado em {m.cancelledAt ? new Date(m.cancelledAt).toLocaleDateString('pt-BR') : '—'}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 6, padding: '3px 8px' }}>Arquivado</span>
+                  </div>
+                ))}
+                <p style={{ fontSize: 12, color: '#9ca3af', padding: '8px 0', margin: 0 }}>
+                  Os dados e transações destes membros estão preservados e não podem ser excluídos.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="invite-info" style={{ marginTop: 12 }}>
           <strong>Permissões:</strong> Administradores podem convidar membros, criar/editar categorias e incluir ou excluir qualquer transação. Membros podem visualizar transações, incluir novas e excluir apenas as próprias.
         </div>
         <div className="invite-info" style={{ marginTop: 0 }}>
-          Cada usuário pode pertencer a apenas um grupo.
+          Limite: 1 administrador e 2 membros por grupo. Se um membro sair e retornar, receberá um novo ID interno.
         </div>
       </div>
     </div>
