@@ -451,7 +451,55 @@ function TransactionsTab() {
   const [manualGroupCat, setManualGroupCat] = useState('');
   const [manualTxs, setManualTxs] = useState<typeof transactions>([]);
 
-  const allTransactions = [...transactions, ...manualTxs];
+  // Edit transaction
+  type TxType = typeof transactions[0];
+  const [txOverrides, setTxOverrides] = useState<Record<string, Partial<TxType>>>({});
+  const [editingTx, setEditingTx] = useState<TxType | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+  const [editType, setEditType] = useState<'income' | 'expense'>('expense');
+  const [editCat, setEditCat] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editGroup, setEditGroup] = useState(false);
+  const [editGroupCat, setEditGroupCat] = useState('');
+
+  const openEdit = (tx: TxType) => {
+    setEditingTx(tx);
+    setEditTitle(tx.title);
+    setEditDesc(tx.description ?? '');
+    setEditAmount(Math.abs(tx.amount).toFixed(2).replace('.', ','));
+    setEditType(tx.type);
+    setEditCat(tx.category);
+    setEditDate(tx.date.slice(0, 10));
+    setEditGroup(!!tx.groupId);
+    setEditGroupCat(tx.groupCategoryId ?? '');
+  };
+
+  const saveEdit = () => {
+    if (!editingTx || !editTitle.trim() || !editAmount || !editCat) return;
+    const amt = parseFloat(editAmount.replace(',', '.'));
+    if (isNaN(amt)) return;
+    const finalAmount = editType === 'expense' ? -Math.abs(amt) : Math.abs(amt);
+    setTxOverrides(prev => ({
+      ...prev,
+      [editingTx.id]: {
+        title: editTitle.trim(),
+        description: editDesc.trim() || undefined,
+        amount: finalAmount,
+        type: editType,
+        category: editCat,
+        date: `${editDate}T${editingTx.date.slice(11)}`,
+        groupId: editGroup ? (editingTx.groupId ?? 'group-1') : undefined,
+        groupCategoryId: editGroup && editGroupCat ? editGroupCat : undefined,
+      },
+    }));
+    setEditingTx(null);
+  };
+
+  const allTransactions = [...transactions, ...manualTxs].map(t =>
+    txOverrides[t.id] ? { ...t, ...txOverrides[t.id] } : t
+  );
 
   const availableMonths = [...new Set(allTransactions.map(t => t.date.slice(0, 7)))].sort();
   const lastDayOf = (ym: string) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m, 0).toISOString().slice(0, 10); };
@@ -663,6 +711,75 @@ function TransactionsTab() {
         </div>
       )}
 
+      {/* Edit transaction modal */}
+      {editingTx && (
+        <div className="modal-overlay" onClick={() => setEditingTx(null)}>
+          <div className="export-modal" style={{ maxWidth: 480, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div className="export-modal-header">
+              <span>Editar transação</span>
+              <button className="export-modal-close" onClick={() => setEditingTx(null)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 0' }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Título <span style={{ color: '#E74C3C' }}>*</span></label>
+                <input className="invite-input" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Descrição <span style={{ color: '#999', fontWeight: 400 }}>(opcional)</span></label>
+                <input className="invite-input" placeholder="Detalhe da transação..." value={editDesc} onChange={e => setEditDesc(e.target.value)} />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Tipo <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setEditType('expense')} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `2px solid ${editType === 'expense' ? '#E74C3C' : '#e0e0e0'}`, background: editType === 'expense' ? '#fef2f2' : '#fff', color: editType === 'expense' ? '#E74C3C' : '#555', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Despesa</button>
+                    <button onClick={() => setEditType('income')} style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: `2px solid ${editType === 'income' ? '#27AE60' : '#e0e0e0'}`, background: editType === 'income' ? '#f0fdf4' : '#fff', color: editType === 'income' ? '#27AE60' : '#555', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Receita</button>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Valor (R$) <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <input className="invite-input" placeholder="0,00" value={editAmount} onChange={e => setEditAmount(e.target.value)} style={{ textAlign: 'right' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Data <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <input type="date" className="invite-input" value={editDate} onChange={e => setEditDate(e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 4 }}>Categoria <span style={{ color: '#E74C3C' }}>*</span></label>
+                  <select className="filter-select" style={{ width: '100%', padding: '8px 10px', height: 38 }} value={editCat} onChange={e => setEditCat(e.target.value)}>
+                    <option value="">Selecione...</option>
+                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={editGroup} onChange={e => setEditGroup(e.target.checked)} />
+                  <span style={{ fontSize: 13, color: '#555' }}>
+                    <Users size={13} style={{ display: 'inline', marginRight: 4 }} />
+                    Compartilhar com <strong>{userGroupName}</strong>
+                  </span>
+                </label>
+                {editGroup && (
+                  <select className="filter-select" style={{ width: '100%', marginTop: 8, padding: '8px 10px', height: 38 }} value={editGroupCat} onChange={e => setEditGroupCat(e.target.value)}>
+                    <option value="">Categoria do grupo...</option>
+                    {groupCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                )}
+              </div>
+            </div>
+            <div className="invite-actions" style={{ marginTop: 16 }}>
+              <button className="invite-cancel" onClick={() => setEditingTx(null)}>Cancelar</button>
+              <button className="btn-primary small" onClick={saveEdit} disabled={!editTitle.trim() || !editAmount || !editCat}>
+                Salvar alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Export modal */}
       {showExportModal && (
         <div className="modal-overlay" onClick={() => setShowExportModal(false)}>
@@ -756,7 +873,7 @@ function TransactionsTab() {
               const color = cat?.color ?? '#888';
               const isIncome = tx.amount > 0;
               return (
-                <div key={tx.id} className={`ind-tx-row ${i < filtered.length - 1 ? 'bordered' : ''}`}>
+                <div key={tx.id} className={`ind-tx-row ${i < filtered.length - 1 ? 'bordered' : ''}`} style={{ position: 'relative' }}>
                   <div className="ind-tx-row-icon" style={{ background: color + '18', color }}>
                     <CatIcon size={17} />
                   </div>
@@ -782,7 +899,19 @@ function TransactionsTab() {
                     <span className="ind-tx-date">
                       {new Date(tx.date).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
+                    <button
+                      onClick={() => openEdit(tx)}
+                      title="Editar transação"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '2px 4px', borderRadius: 4, marginTop: 2, display: 'flex', alignItems: 'center' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#2980B9')}
+                      onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+                    >
+                      <Edit3 size={13} />
+                    </button>
                   </div>
+                  {txOverrides[tx.id] && (
+                    <span style={{ fontSize: 10, color: '#8E44AD', background: '#8E44AD10', borderRadius: 4, padding: '1px 5px', position: 'absolute', top: 6, right: 6 }}>editado</span>
+                  )}
                 </div>
               );
             })}
