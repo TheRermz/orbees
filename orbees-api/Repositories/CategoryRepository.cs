@@ -35,7 +35,7 @@ namespace Api.Repositories
 
         public async Task<bool> NameExistsForUserAsync(Guid userId, string name) =>
           await context.Categories
-                  .AnyAsync(c => c.UserId == userId && c.Name == name && c.IsActive);
+                  .AnyAsync(c => c.UserId == userId && EF.Functions.ILike(c.Name, name) && c.IsActive);
 
         public async Task AddAsync(Category entity) =>
           await context.Categories.AddAsync(entity);
