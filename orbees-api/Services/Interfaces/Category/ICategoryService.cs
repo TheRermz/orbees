@@ -7,7 +7,7 @@ namespace Api.Services.Interfaces.Category
         Task<IEnumerable<CategoryReadDto>> GetAllForUserAsync(Guid userId, Guid? groupId = null);
         Task<CategoryReadDto> GetByIdAsync(Guid userId, Guid categoryId);
         Task<CategoryReadDto> CreateAsync(Guid userId, CategoryCreateDto dto);
-        Task<CategoryReadDto> UpdateAsync(Guid userId, CategoryUpdateDto dto);
+        Task<CategoryReadDto> UpdateAsync(Guid userId, Guid categoryId, CategoryUpdateDto dto);
         Task DeleteAsync(Guid userId, Guid groupId);
     }
 }

@@ -12,6 +12,8 @@ using Api.Services.Interfaces.Bank;
 using Api.Services.Interfaces.BankAccount;
 using Api.Services.Interfaces.Groups;
 using Api.Services.Groups;
+using Api.Services.Category;
+using Api.Services.Interfaces.Category;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -37,6 +39,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IBankAccountService, BankAccountService>();
             // --- Groups ---
             services.AddScoped<IGroupService, GroupService>();
+            // --- Categories ---
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
 
