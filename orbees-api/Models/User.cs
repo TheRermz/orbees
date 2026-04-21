@@ -36,5 +36,6 @@ namespace Api.Models
         public ICollection<Category> Categories { get; set; } = [];
         public ICollection<UserRole> UserRoles { get; set; } = [];
         public ICollection<GroupMember> GroupMembers { get; set; } = [];
+        public ICollection<Transaction> Transactions { get; set; } = [];
     }
 }
