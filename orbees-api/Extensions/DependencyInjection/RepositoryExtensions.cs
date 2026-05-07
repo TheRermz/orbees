@@ -19,6 +19,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IGroupRoleRepository, GroupRoleRepository>();
             // --- Categories ---
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            // --- Transactions ---
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
             return services;
         }
     }
