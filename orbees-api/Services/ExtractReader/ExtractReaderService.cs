@@ -42,10 +42,10 @@ namespace Api.Services.ExtractReader
             transactions = bank.BankCode switch
             {
                 "260" => await ReadNubankCSVAsync(reader),   // Nubank
-                "341" => await ReadItauCSVAsync(reader),     // Itaú
+                // "341" => await ReadItauCSVAsync(reader),     // Itaú
                 "237" => await ReadBradescoCSVAsync(reader), // Bradesco
                 "001" => await ReadBBCSVAsync(reader),       // Banco do Brasil
-                "104" => await ReadCaixaCSVAsync(reader),    // Caixa
+                // "104" => await ReadCaixaCSVAsync(reader),    // Caixa
                 "033" => await ReadSantanderCSVAsync(reader),// Santander
                 "077" => await ReadInterCSVAsync(reader),    // Inter
                 _ => throw new InvalidOperationException($"Leitura de CSV não suportada para o banco {bank.BankName}.")
