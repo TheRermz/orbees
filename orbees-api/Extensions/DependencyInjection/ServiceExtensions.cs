@@ -14,6 +14,8 @@ using Api.Services.Interfaces.Groups;
 using Api.Services.Groups;
 using Api.Services.Category;
 using Api.Services.Interfaces.Category;
+using Api.Services.Transactions;
+using Api.Services.Interfaces.Transactions;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -41,6 +43,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IGroupService, GroupService>();
             // --- Categories ---
             services.AddScoped<ICategoryService, CategoryService>();
+            // --- Transactions ---
+            services.AddScoped<ITransactionService, TransactionService>();
 
             return services;
 
