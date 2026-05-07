@@ -16,6 +16,8 @@ using Api.Services.Category;
 using Api.Services.Interfaces.Category;
 using Api.Services.Transactions;
 using Api.Services.Interfaces.Transactions;
+using Api.Services.ExtractReader;
+using Api.Services.Interfaces.ExtractReader;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -45,6 +47,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<ICategoryService, CategoryService>();
             // --- Transactions ---
             services.AddScoped<ITransactionService, TransactionService>();
+            // --- ExtractReader ---
+            services.AddScoped<IExtractReaderService, ExtractReaderService>();
 
             return services;
 

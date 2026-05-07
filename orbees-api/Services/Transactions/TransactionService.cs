@@ -3,6 +3,7 @@ using Api.Models;
 using Api.Models.Enums;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.Transactions;
+using Api.Services.Interfaces.ExtractReader;
 
 namespace Api.Services.Transactions
 {
@@ -10,7 +11,8 @@ namespace Api.Services.Transactions
           ITransactionRepository transactionRepository,
           ICategoryRepository categoryRepository,
           IGroupMemberRepository groupMemberRepository,
-          IBankAccountRepository bankAccountRepository) : ITransactionService
+          IBankAccountRepository bankAccountRepository,
+          IExtractReaderService extractReaderService) : ITransactionService
     {
 
         public async Task<IEnumerable<TransactionReadDto>> GetMyTransactionsAsync(Guid userId, DateTime? from = null, DateTime? to = null)
@@ -46,7 +48,7 @@ namespace Api.Services.Transactions
                 OriginalDescription = dto.Title,
                 Description = dto.Description,
                 Amount = dto.Amount,
-                TransactionDate = dto.TransactionDate,
+                TransactionDate = DateTime.SpecifyKind(dto.TransactionDate, DateTimeKind.Utc),
                 Type = dto.Type,
                 Origin = TransactionOrigin.Manual,
                 MerchantDocument = dto.MerchantDocument,
@@ -80,7 +82,7 @@ namespace Api.Services.Transactions
                     OriginalDescription = item.Title,
                     Description = item.Description,
                     Amount = item.Amount,
-                    TransactionDate = item.TransactionDate,
+                    TransactionDate = DateTime.SpecifyKind(item.TransactionDate, DateTimeKind.Utc),
                     Type = item.Type,
                     Origin = TransactionOrigin.Manual,
                     MerchantDocument = item.MerchantDocument,
@@ -102,12 +104,14 @@ namespace Api.Services.Transactions
 
         public async Task<IEnumerable<TransactionPreviewDto>> PreviewFromOFXAsync(Guid userId, IFormFile file)
         {
-            throw new NotImplementedException("Leitura de OFX será implementada em breve.");
+            var preview = await extractReaderService.ReadOFXAsync(file);
+            return await SuggestCategoriesAsync(userId, preview);
         }
 
         public async Task<IEnumerable<TransactionPreviewDto>> PreviewFromCSVAsync(Guid userId, IFormFile file, int bankId)
         {
-            throw new NotImplementedException("Leitura de CSV será implementada em breve.");
+            var preview = await extractReaderService.ReadCSVAsync(file, bankId);
+            return await SuggestCategoriesAsync(userId, preview);
         }
 
         public async Task<IEnumerable<TransactionReadDto>> ImportAsync(Guid userId, TransactionImportDto dto)
@@ -123,7 +127,7 @@ namespace Api.Services.Transactions
                     Title = item.Title,
                     OriginalDescription = item.OriginalDescription ?? item.Title,
                     Amount = item.Amount,
-                    TransactionDate = item.TransactionDate,
+                    TransactionDate = DateTime.SpecifyKind(item.TransactionDate, DateTimeKind.Utc),
                     Type = item.Type,
                     Origin = TransactionOrigin.OFX,
                     MerchantDocument = item.MerchantDocument,
@@ -190,12 +194,27 @@ namespace Api.Services.Transactions
             var similar = await transactionRepository.GetSimilarTransactionsAsync(userId, description, limit: 5);
             if (!similar.Any()) return null;
 
-            // pega a categoria mais usada nas transações similares
             return similar
                 .Where(t => t.CategoryId != null)
                 .GroupBy(t => t.CategoryId)
                 .OrderByDescending(g => g.Count())
                 .FirstOrDefault()?.Key;
+        }
+
+        private async Task<IEnumerable<TransactionPreviewDto>> SuggestCategoriesAsync(Guid userId, IEnumerable<TransactionPreviewDto> preview)
+        {
+            var result = preview.ToList();
+            foreach (var item in result)
+            {
+                var suggested = await SuggestCategoryAsync(userId, item.OriginalDescription ?? item.Title);
+                if (suggested.HasValue)
+                {
+                    var category = await categoryRepository.GetByIdAsync(suggested.Value);
+                    item.SuggestedCategoryId = suggested;
+                    item.SuggestedCategoryName = category?.Name;
+                }
+            }
+            return result;
         }
 
         private async Task ValidateTransactionDependenciesAsync(
