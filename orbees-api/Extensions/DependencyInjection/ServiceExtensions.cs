@@ -18,6 +18,8 @@ using Api.Services.Transactions;
 using Api.Services.Interfaces.Transactions;
 using Api.Services.ExtractReader;
 using Api.Services.Interfaces.ExtractReader;
+using Api.Services.Dashboard;
+using Api.Services.Interfaces.Dashboard;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -49,6 +51,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<ITransactionService, TransactionService>();
             // --- ExtractReader ---
             services.AddScoped<IExtractReaderService, ExtractReaderService>();
+            // --- Dashboard ---
+            services.AddScoped<IDashboardService, DashboardService>();
 
             return services;
 
