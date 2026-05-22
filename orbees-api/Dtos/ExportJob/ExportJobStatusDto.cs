@@ -1,4 +1,4 @@
-namespace Api.Dtos.Export
+namespace Api.Dtos.ExportJob
 {
     public class ExportJobStatusDto
     {
