@@ -1,0 +1,214 @@
+// src/hooks/useTransactions.ts
+import { useState } from "react";
+import { transactionService } from "../services/transactionService";
+import type {
+  TransactionReadDto,
+  TransactionCreateDto,
+  TransactionUpdateDto,
+  TransactionPreviewDto,
+  TransactionImportDto,
+  TransactionBulkCreateDto,
+} from "../interfaces/transaction";
+import { ExportFormat } from "../interfaces/enums";
+import { downloadBlob } from "../helpers/download";
+import { getErrorMessage } from "../helpers/error";
+
+export const useTransactions = () => {
+  const [transactions, setTransactions] = useState<TransactionReadDto[]>([]);
+  const [preview, setPreview] = useState<TransactionPreviewDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMyTransactions = async (from?: string, to?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.getMyTransactions(from, to);
+      setTransactions(data);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao buscar transações."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGroupTransactions = async (
+    groupId: string,
+    from?: string,
+    to?: string
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.getGroupTransactions(
+        groupId,
+        from,
+        to
+      );
+      setTransactions(data);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao buscar transações do grupo."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const create = async (dto: TransactionCreateDto): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.create(dto);
+      setTransactions((prev) => [data, ...prev]);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao criar transação."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createBulk = async (
+    dto: TransactionBulkCreateDto
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.createBulk(dto);
+      setTransactions((prev) => [...data, ...prev]);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao criar transações."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const previewOFX = async (file: File): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.previewOFX(file);
+      setPreview(data);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao processar arquivo OFX."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const previewCSV = async (file: File, bankId: number): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.previewCSV(file, bankId);
+      setPreview(data);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao processar arquivo CSV."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const importTransactions = async (
+    dto: TransactionImportDto
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.import(dto);
+      setTransactions((prev) => [...data, ...prev]);
+      setPreview([]);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao importar transações."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const update = async (
+    id: string,
+    dto: TransactionUpdateDto
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.update(id, dto);
+      setTransactions((prev) => prev.map((t) => (t.id === id ? data : t)));
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao atualizar transação."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const remove = async (id: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await transactionService.delete(id);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao deletar transação."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportTransactions = async (
+    format: ExportFormat,
+    from?: string,
+    to?: string
+  ): Promise<{ queued: boolean; jobId?: string }> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await transactionService.export(format, from, to);
+
+      if (result instanceof Blob) {
+        const extensions = {
+          [ExportFormat.CSV]: "csv",
+          [ExportFormat.Excel]: "xlsx",
+          [ExportFormat.PDF]: "pdf",
+        };
+        downloadBlob(result, `transacoes.${extensions[format]}`);
+        return { queued: false };
+      }
+
+      return { queued: true, jobId: result.jobId };
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao exportar transações."));
+      return { queued: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    transactions,
+    preview,
+    loading,
+    error,
+    fetchMyTransactions,
+    fetchGroupTransactions,
+    create,
+    createBulk,
+    previewOFX,
+    previewCSV,
+    importTransactions,
+    update,
+    remove,
+    exportTransactions,
+  };
+};
