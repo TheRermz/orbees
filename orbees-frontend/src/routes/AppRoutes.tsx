@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PrivateRoute } from "./PrivateRoute";
 import { PublicRoute } from "./PublicRoute";
+import { LoginPage } from "../pages/Login/Login";
 
 // rotas das páginas
 
@@ -13,7 +14,7 @@ export const AppRoutes = () => {
           path="/login"
           element={
             <PublicRoute>
-              <h1>Login</h1>
+              <LoginPage />
             </PublicRoute>
           }
         />
