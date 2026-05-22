@@ -20,6 +20,8 @@ using Api.Services.ExtractReader;
 using Api.Services.Interfaces.ExtractReader;
 using Api.Services.Dashboard;
 using Api.Services.Interfaces.Dashboard;
+using Api.Services.ExportJobs;
+using Api.Services.Interfaces.ExportJobs;
 
 namespace Api.Extensions.DependencyInjection
 {
@@ -53,6 +55,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<IExtractReaderService, ExtractReaderService>();
             // --- Dashboard ---
             services.AddScoped<IDashboardService, DashboardService>();
+            // --- ExportJobs ---
+            services.AddScoped<IExportService, ExportService>();
 
             return services;
 

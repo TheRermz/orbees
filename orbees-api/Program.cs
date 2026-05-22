@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Api.Extensions.DependencyInjection;
 using Api.Extensions.MiddlewareExtensions;
 using Api.Data.Seeds;
+using Api.Services.ExportJobs;
 
 Env.Load();
 
@@ -141,6 +142,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseNpgsql(connectionString));
+
+// ── BackgroundServices ───────────────────────────────────────────────────────────────────────
+builder.Services.AddHostedService<ExportBackgroundService>();
 
 var app = builder.Build();
 

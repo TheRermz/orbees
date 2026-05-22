@@ -21,6 +21,8 @@ namespace Api.Extensions.DependencyInjection
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             // --- Transactions ---
             services.AddScoped<ITransactionRepository, TransactionRepository>();
+            // --- ExportJobs ---
+            services.AddScoped<IExportJobRepository, ExportJobRepository>();
             return services;
         }
     }
