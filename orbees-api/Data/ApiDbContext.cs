@@ -20,6 +20,7 @@ namespace Api.Data
         public DbSet<GroupRole> GroupRoles { get; set; } = null!;
         public DbSet<GroupMember> GroupMembers { get; set; } = null!;
         public DbSet<Transaction> Transactions { get; set; } = null!;
+        public DbSet<ExportJob> ExportJobs { get; set; } = null!;
 
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
