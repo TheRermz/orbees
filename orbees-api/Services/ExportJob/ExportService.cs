@@ -2,14 +2,14 @@ using Api.Dtos.ExportJob;
 using Api.Models;
 using Api.Models.Enums;
 using Api.Repositories.Interfaces;
-using Api.Services.Interfaces.ExportJob;
+using Api.Services.Interfaces.ExportJobs;
 using CsvHelper;
 using CsvHelper.Configuration;
 using ClosedXML.Excel;
 using System.Globalization;
 using QuestPDF.Fluent;
 
-namespace Api.Services.Export
+namespace Api.Services.ExportJobs
 {
     public class ExportService(
         ITransactionRepository transactionRepository,
@@ -69,6 +69,11 @@ namespace Api.Services.Export
                 ErrorMessage = job.ErrorMessage,
                 CreatedAt = job.CreatedAt
             };
+        }
+
+        public async Task<ExportJob?> GetJobFileAsync(Guid userId, Guid jobId)
+        {
+            return await exportJobRepository.GetByIdAndUserIdAsync(jobId, userId);
         }
 
         // ── Geradores ──────────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 using Api.Dtos.ExportJob;
+using Api.Models;
 using Api.Models.Enums;
 
-namespace Api.Services.Interfaces.ExportJob
+namespace Api.Services.Interfaces.ExportJobs
 {
     public interface IExportService
     {
@@ -10,5 +11,6 @@ namespace Api.Services.Interfaces.ExportJob
         Task<Guid> EnqueueExportAsync(
             Guid userId, ExportFormat format, DateTime? from, DateTime? to);
         Task<ExportJobStatusDto> GetJobStatusAsync(Guid userId, Guid jobId);
+        Task<ExportJob?> GetJobFileAsync(Guid userId, Guid jobId);
     }
 }

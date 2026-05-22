@@ -1,10 +1,8 @@
 using Api.Models.Enums;
 using Api.Repositories.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Api.Services.Export
+namespace Api.Services.ExportJobs
 {
     public class ExportBackgroundService(IServiceScopeFactory scopeFactory) : BackgroundService
     {
