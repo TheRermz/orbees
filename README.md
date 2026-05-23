@@ -67,7 +67,8 @@ O projeto está estruturado em arquitetura monorepo com backend em ASP.NET Core 
 | Swagger | 6.6.2 | Documentação da API |
 | QuestPDF | 2026.2.3 | Geração de PDFs |
 | OFXSharp | 1.0.4002 | Importação de OFX |
-| CsvHelper | 33.1.0 | Importação de CSV |
+| CsvHelper | 33.1.0 | Importação e exportação de CSV |
+| ClosedXML | 0.105.0 | Geração de planilhas Excel (`.xlsx`) |
 | DotNetEnv | 3.1.1 | Gerenciamento de .env |
 
 ### Frontend (orbees-frontend)
@@ -219,6 +220,38 @@ orbees/
 - [x] Assinatura de cabeçalho CSV
 - [x] Seeds com bancos principais
 
+### Transações
+
+- [x] CRUD de transações manuais (controle individual)
+- [x] Criação em lote (até 100 por requisição)
+- [x] Importação de extrato OFX (preview + import com origem `OFX`)
+- [x] Importação de extrato CSV por banco (Nubank funcional; demais a implementar)
+- [x] Sugestão automática de categoria com base em histórico (até 5 transações similares)
+- [x] Vínculo opcional com grupo e categoria de grupo (preserva categoria pessoal)
+- [x] Filtros por período (`from`/`to`)
+- [x] Listagem de transações de grupo (apenas membros)
+- [x] Tipos: `Receita` / `Despesa`
+- [x] Origens: `Manual` / `OFX` / `CSV`
+
+### Dashboard
+
+- [x] Dashboard individual com período customizável (default = mês corrente)
+- [x] Totais de receita, despesa e saldo com variação % vs. período anterior
+- [x] Top categoria de despesa (nome, valor e % do total)
+- [x] Insights automáticos (média diária, top 3 categorias por frequência, alerta de inatividade ≥ 7 dias)
+- [x] Gráfico de receita vs. despesa (agrupamento semanal ou mensal conforme intervalo)
+- [x] Gráfico de despesas por categoria (top 10, com fatia "Sem categoria")
+- [x] Últimas 5 transações (sinal invertido para despesas)
+- [x] Lista de meses disponíveis no histórico
+
+### Exportação de Dados
+
+- [x] Exportação de transações em CSV, Excel (`.xlsx`) e PDF
+- [x] Geração síncrona quando volume ≤ 100 transações
+- [x] Geração assíncrona via `BackgroundService` (acima do limite) com `jobId` retornado em 202
+- [x] Polling de status (`Pending` / `Processing` / `Completed` / `Failed`)
+- [x] Download do arquivo gerado a partir do disco (`exports/{userId}/{jobId}_{fileName}`)
+
 ---
 
 ## Dependency Injection
@@ -252,6 +285,8 @@ public static IServiceCollection AddRepositories(this IServiceCollection service
     services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
     services.AddScoped<IGroupRoleRepository, GroupRoleRepository>();
     services.AddScoped<ICategoryRepository, CategoryRepository>();
+    services.AddScoped<ITransactionRepository, TransactionRepository>();
+    services.AddScoped<IExportJobRepository, ExportJobRepository>();
     return services;
 }
 ```
@@ -291,9 +326,21 @@ public static IServiceCollection AddApplicationServices(this IServiceCollection 
     // CATEGORIES
     services.AddScoped<ICategoryService, CategoryService>();
 
+    // TRANSACTIONS & IMPORT
+    services.AddScoped<ITransactionService, TransactionService>();
+    services.AddScoped<IExtractReaderService, ExtractReaderService>();
+
+    // DASHBOARD
+    services.AddScoped<IDashboardService, DashboardService>();
+
+    // EXPORT
+    services.AddScoped<IExportService, ExportService>();
+
     return services;
 }
 ```
+
+> **Nota:** `ExportBackgroundService` é um `BackgroundService` e **não** é registrado em `ServiceExtensions`. Ele é adicionado diretamente em `Program.cs` via `builder.Services.AddHostedService<ExportBackgroundService>();` (linha 147). O loop processa jobs `Pending` com delay de 10s entre ciclos.
 
 ### ValidatorsExtensions.cs
 
@@ -377,8 +424,24 @@ Services/
 │   ├── Bank/
 │   ├── BankAccount/
 │   ├── Email/
-│   └── FileService/
+│   ├── FileService/
+│   ├── Transactions/
+│   ├── ExtractReader/
+│   ├── Dashboard/
+│   └── ExportJob/
 └── [Implementações]/
+    ├── Auth/
+    ├── UserProfile/
+    ├── Category/
+    ├── Groups/
+    ├── Bank/
+    ├── BankAccount/
+    ├── Email/
+    ├── File/
+    ├── Transactions/
+    ├── ExtractReader/   # OFX/CSV parsers
+    ├── Dashboard/
+    └── ExportJob/       # ExportService + ExportBackgroundService
 ```
 
 ### Services de Autenticação
@@ -520,6 +583,87 @@ Atua como **facade** para centralizar operações de autenticação.
 **Métodos**:
 - `GetAllAsync()`: Retorna lista de bancos cadastrados
 
+### Services de Transação
+
+#### ITransactionService / TransactionService
+
+**Responsabilidade**: Gerenciamento de transações financeiras (CRUD, import OFX/CSV, listagens por escopo).
+
+**Métodos**:
+- `GetMyTransactionsAsync(userId, from?, to?)`: lista transações do usuário no período.
+- `GetGroupTransactionsAsync(userId, groupId, from?, to?)`: lista transações do grupo (exige membership ativa).
+- `GetByIdAsync(userId, transactionId)`: busca por id no escopo do usuário.
+- `CreateAsync(userId, TransactionCreateDto)`: cria transação manual (`Origin = Manual`).
+- `CreateBulkAsync(userId, TransactionBulkCreateDto)`: cria até 100 transações em lote.
+- `PreviewFromOFXAsync(userId, IFormFile)`: parseia OFX e retorna preview com sugestão de categoria.
+- `PreviewFromCSVAsync(userId, IFormFile, bankId)`: parseia CSV (por banco) e retorna preview.
+- `ImportAsync(userId, TransactionImportDto)`: persiste o lote vindo do preview (`Origin = OFX`, máx 500).
+- `UpdateAsync(userId, transactionId, TransactionUpdateDto)`: patch parcial (Title, Description, CategoryId, GroupCategoryId, GroupId).
+- `DeleteAsync(userId, transactionId)`: remove a transação.
+
+**Regras de Negócio**:
+- Conta bancária precisa pertencer ao usuário.
+- Quando `GroupId` é informado, `GroupCategoryId` é obrigatório.
+- `GroupId` só pode ser definido em `UpdateAsync` se atualmente nulo e usuário for membro.
+- `GroupCategoryId` não pode ser alterado quando `GroupLinkActive == false`.
+- Sugestão de categoria (`SuggestCategoryAsync`) busca até 5 transações com descrição similar do mesmo usuário e elege a categoria mais frequente.
+- `ImportAsync` força `Origin = OFX` mesmo para preview vindo de CSV (não diferencia origem real no momento).
+
+#### IExtractReaderService / ExtractReaderService
+
+**Responsabilidade**: Parsing de extratos bancários em OFX e CSV.
+
+**Métodos**:
+- `ReadOFXAsync(IFormFile)`: delega ao `OFXParser.Parse` (lê `STMTTRN`, normaliza vírgula→ponto em `TRNAMT`, parseia `DTPOSTED` como `yyyyMMdd`, usa `MEMO`/`NAME` como título). Valor negativo → `Despesa`; positivo → `Receita`. `Amount` sempre absoluto.
+- `ReadCSVAsync(IFormFile, bankId)`: faz switch pelo `BankCode` do banco. Apenas **Nubank (`260`)** está funcional. Bradesco (`237`), BB (`001`), Santander (`033`) e Inter (`077`) lançam `NotImplementedException`. Itaú (`341`) e Caixa (`104`) estão comentados no switch (mesmo havendo implementação privada para Itaú). Banco desconhecido → `InvalidOperationException`.
+
+### Services de Dashboard
+
+#### IDashboardService / DashboardService
+
+**Responsabilidade**: Agregação e cálculo de métricas para o dashboard individual.
+
+**Métodos**:
+- `GetSelfDashboardAsync(userId, from, to)`: retorna `DashboardResponseDto` com totais, variações, top categoria, insights, dois gráficos e meses disponíveis.
+- `GetLastTransactionsAsync(userId)`: últimas 5 transações (com `Amount` invertido para despesas).
+
+**Regras de Negócio**:
+- Variação % calculada contra período anterior de mesmo tamanho (`prevTo = from-1d`, `prevFrom = prevTo - duration`).
+- Top categoria considera só despesas; ordena por valor desc, depois por contagem.
+- Insights gerados: média diária no período; top 3 categorias de despesa por frequência; alerta se nenhuma transação nos últimos 7 dias.
+- Gráfico **receita vs despesa**: agrupa por semana (`Dias N-M`) se intervalo está dentro do mesmo mês; senão agrupa por mês (`MMM yy`).
+- Gráfico **despesas por categoria**: top 10, incluindo fatia "Sem categoria".
+- Percentuais arredondados para `int`.
+
+### Services de Exportação
+
+#### IExportService / ExportService
+
+**Responsabilidade**: Geração de relatórios de transações em CSV, Excel e PDF, com modo síncrono e assíncrono.
+
+**Métodos**:
+- `ExportDirectAsync(userId, format, from, to)`: gera arquivo em memória se `transactions.Count ≤ 100`; caso contrário retorna `null` para o controller enfileirar job.
+- `EnqueueExportAsync(userId, format, from, to)`: cria `ExportJob` com `Status = Pending` e retorna o `Id`.
+- `GetJobStatusAsync(userId, jobId)`: retorna status + `DownloadUrl` quando `Completed`.
+- `GetJobFileAsync(userId, jobId)`: retorna a entidade `ExportJob` (controller usa para acessar `FilePath` e `Format`).
+
+**Geradores internos**:
+- `GenerateCSV`: CsvHelper com delimiter `;` e cultura pt-BR; classe `TransactionExportRow` (Data/Título/Tipo/Valor/Categoria/Conta/Origem).
+- `GenerateExcel`: ClosedXML, planilha "Transações" com as mesmas colunas.
+- `GeneratePDF`: QuestPDF, A4, tabela com 5 colunas (Data/Título/Tipo/Valor/Categoria) e paginação no rodapé.
+
+**Constantes**:
+- `BackgroundThreshold = 100`: limite para alternar entre exportação síncrona e assíncrona.
+
+#### ExportBackgroundService
+
+**Responsabilidade**: Processa jobs `Pending` em background.
+
+**Comportamento**:
+- Registrado em `Program.cs` via `AddHostedService<ExportBackgroundService>()`.
+- Loop infinito com `Task.Delay(10s)` entre ciclos.
+- Para cada job `Pending`: marca `Processing` → gera arquivo → grava em `exports/{userId}/{jobId}_{fileName}` → atualiza `FilePath` e `Status = Completed`. Em erro, marca `Failed` com `ErrorMessage`.
+
 ### Services Auxiliares
 
 #### IEmailService / EmailService
@@ -558,7 +702,9 @@ Repositories/
 │   ├── IGroupMemberRepository.cs
 │   ├── IGroupRoleRepository.cs
 │   ├── IBankRepository.cs
-│   └── IBankAccountRepository.cs
+│   ├── IBankAccountRepository.cs
+│   ├── ITransactionRepository.cs
+│   └── IExportJobRepository.cs
 └── [Implementações]
 ```
 
@@ -621,6 +767,24 @@ public interface IRepository<T> where T : class
 - `GetByBankCodeAsync(string bankCode)`
 - `GetAllActiveAsync()`
 
+#### ITransactionRepository / TransactionRepository
+
+**Métodos**:
+- `GetByUserAsync(Guid userId, DateTime? from, DateTime? to)`
+- `GetByGroupAsync(Guid groupId, DateTime? from, DateTime? to)`
+- `GetByIdAsync(Guid id, Guid userId)`
+- `AddAsync(Transaction)`, `AddRangeAsync(IEnumerable<Transaction>)`
+- `UpdateAsync(Transaction)`, `DeleteAsync(Transaction)`
+- `GetSimilarByDescriptionAsync(Guid userId, string description, int take)` (usado pela sugestão de categoria)
+
+#### IExportJobRepository / ExportJobRepository
+
+**Métodos**:
+- `AddAsync(ExportJob)`
+- `GetByIdAsync(Guid jobId, Guid userId)`
+- `GetPendingAsync()` (consumido pelo `ExportBackgroundService`)
+- `UpdateAsync(ExportJob)`
+
 ---
 
 ## Controllers
@@ -641,8 +805,14 @@ Controllers/
 │   └── GroupController.cs
 ├── BankAccount/
 │   └── BankAccountController.cs
-└── Bank/
-    └── BankController.cs
+├── Bank/
+│   └── BankController.cs
+├── Transaction/
+│   └── TransactionController.cs
+├── Dashboard/
+│   └── DashboardController.cs
+└── ExportJob/
+    └── ExportController.cs
 ```
 
 ### Padrão de Controllers
@@ -805,6 +975,73 @@ public class Bank
 }
 ```
 
+### Transaction
+
+**Localização**: `orbees-api/Models/Transaction.cs`
+
+```csharp
+public class Transaction : AuditableEntity
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string? OriginalDescription { get; set; }    // Vinda do extrato OFX/CSV
+    public string? Description { get; set; }            // Editável pelo usuário
+    public decimal Amount { get; set; }
+    public DateTime TransactionDate { get; set; }
+    public TransactionType Type { get; set; }           // Receita | Despesa
+    public TransactionOrigin Origin { get; set; }       // Manual | OFX | CSV
+    public string? MerchantDocument { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool GroupLinkActive { get; set; } = true;   // Bloqueia edição de GroupCategoryId
+
+    public Guid UserId { get; set; }
+    public User User { get; set; }
+
+    public Guid? BankAccountId { get; set; }
+    public BankAccount? BankAccount { get; set; }
+
+    public Guid? CategoryId { get; set; }               // Categoria pessoal
+    public Category? Category { get; set; }
+
+    public Guid? GroupCategoryId { get; set; }          // Categoria do grupo
+    public Category? GroupCategory { get; set; }
+
+    public Guid? GroupId { get; set; }
+    public Group? Group { get; set; }
+}
+```
+
+### ExportJob
+
+**Localização**: `orbees-api/Models/ExportJob.cs`
+
+```csharp
+public class ExportJob : AuditableEntity
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public ExportFormat Format { get; set; }            // CSV | Excel | PDF
+    public DateTime? From { get; set; }
+    public DateTime? To { get; set; }
+    public ExportJobStatus Status { get; set; } = ExportJobStatus.Pending;
+    public string? FilePath { get; set; }               // Definido após geração
+    public string? ErrorMessage { get; set; }
+
+    public User User { get; set; }
+}
+```
+
+### Enums
+
+**Localização**: `orbees-api/Models/Enums/`
+
+```csharp
+public enum TransactionType    { Receita, Despesa }
+public enum TransactionOrigin  { Manual, OFX, CSV }
+public enum ExportFormat       { CSV, Excel, PDF }
+public enum ExportJobStatus    { Pending, Processing, Completed, Failed }
+```
+
 ### AuditableEntity
 
 **Localização**: `orbees-api/Models/Common/AuditableEntity.cs`
@@ -844,10 +1081,24 @@ Validators/
 ├── BankAccount/
 │   ├── BankAccountCreateDtoValidator.cs
 │   └── BankAccountUpdateDtoValidator.cs
-└── GroupMember/
-    ├── GroupMemberCreateDtoValidator.cs
-    └── GroupMemberUpdateDtoValidator.cs
+├── GroupMember/
+│   ├── GroupMemberCreateDtoValidator.cs
+│   └── GroupMemberUpdateDtoValidator.cs
+└── Transaction/
+    ├── TransactionCreateDtoValidator.cs
+    ├── TransactionBulkCreateDtoValidator.cs
+    ├── TransactionImportDtoValidator.cs
+    └── TransactionUpdateDtoValidator.cs
 ```
+
+### Regras dos Validators de Transação
+
+| Validator | Regras-chave |
+|-----------|--------------|
+| `TransactionCreateDtoValidator` | Title (2..256), Description ≤ 512, Amount ≠ 0 e > 0, TransactionDate ≤ UtcNow, Type em enum, MerchantDocument ≤ 18, `GroupCategoryId` obrigatório quando `GroupId != null` |
+| `TransactionBulkCreateDtoValidator` | Lista não vazia, máx **100** itens, valida cada item com o validator de criação |
+| `TransactionImportDtoValidator` | Lista não vazia, máx **500** itens, Title obrigatório/≤256, Amount ≠ 0, TransactionDate obrigatória, `GroupCategoryId` obrigatório se `GroupId != null` |
+| `TransactionUpdateDtoValidator` | Title (2..256) quando informado, Description ≤ 512 quando informado, `GroupCategoryId` obrigatório quando `GroupId != null` |
 
 ### Exemplo de Validador
 
@@ -944,6 +1195,56 @@ Validadores são executados automaticamente antes de chamar o controller action.
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
 | GET | `/` | Lista bancos disponíveis | Não |
+
+### Transações (`/api/transactions`)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/?from&to` | Lista transações do usuário no período | Sim |
+| GET | `/group/{groupId}?from&to` | Lista transações de um grupo (membership obrigatória) | Sim |
+| GET | `/{id}` | Obtém transação por id (escopo do usuário) | Sim |
+| POST | `/` | Cria transação manual | Sim |
+| POST | `/bulk` | Cria várias transações (máx 100) | Sim |
+| POST | `/preview/ofx` | Faz parse de OFX (multipart) e retorna preview com sugestão de categoria | Sim |
+| POST | `/preview/csv/{bankId}` | Faz parse de CSV do banco informado e retorna preview | Sim |
+| POST | `/import` | Persiste lote vindo do preview (`Origin = OFX`, máx 500) | Sim |
+| PUT | `/{id}` | Atualiza Title/Description/CategoryId/GroupCategoryId/GroupId | Sim |
+| DELETE | `/{id}` | Remove transação | Sim |
+
+**Query Params** (`GET /` e `GET /group/{groupId}`):
+- `from` (opcional): data inicial do período (ISO 8601)
+- `to` (opcional): data final do período (ISO 8601)
+
+### Dashboard (`/api/dashboard`)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/self?from&to` | Dashboard pessoal do período (default = mês corrente) | Sim |
+| GET | `/self/last-transactions` | Últimas 5 transações (Amount invertido para despesas) | Sim |
+
+**Resposta de `/self`** (`DashboardResponseDto`):
+- `summary`: totais (Balance, TotalIncome, TotalExpenses) com variações `%` e `topCategory`
+- `insights`: lista de mensagens (média diária, top 3 categorias, alerta de inatividade)
+- `revenueVsExpensesChart`: série semanal ou mensal conforme intervalo
+- `expensesByCategoryChart`: top 10 categorias com `%` (inclui "Sem categoria")
+- `availableMonths`: lista `"yyyy-MM"` com meses do histórico
+- `periodStart`, `periodEnd`: limites do período usado
+
+### Exportação (`/api/transactions/export`)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/?format&from&to` | Exporta direto (≤100 tx) ou retorna 202 com `jobId` (assíncrono) | Sim |
+| GET | `/{jobId}/status` | Status do job (Pending/Processing/Completed/Failed) + `downloadUrl` quando pronto | Sim |
+| GET | `/{jobId}/download` | Download do arquivo (somente quando `Status == Completed`) | Sim |
+
+**Query Params** (`GET /`):
+- `format`: `CSV` | `Excel` | `PDF` (obrigatório)
+- `from`, `to`: período (opcional)
+
+**Comportamento**:
+- Se `transactions.Count ≤ 100` (`BackgroundThreshold`), o arquivo é gerado em memória e retornado direto (200).
+- Acima do limite, um `ExportJob` é enfileirado e o controller responde `202 Accepted` com `{ message, jobId }`. O `ExportBackgroundService` processa em loop a cada 10s e grava o arquivo em `exports/{userId}/{jobId}_{fileName}`.
 
 ---
 
@@ -1120,7 +1421,7 @@ docker-compose -f docker-compose.development.yml down -v
 
 ### Migrations
 
-O projeto possui 9 migrations aplicadas:
+O projeto possui 11 migrations aplicadas:
 
 | Migration | Data | Descrição |
 |-----------|------|-----------|
@@ -1133,6 +1434,8 @@ O projeto possui 9 migrations aplicadas:
 | `AddGroups` | 2026-04-04 | Sistema de grupos |
 | `AdicionaPromotedAtGroupMember` | 2026-04-07 | Campo PromotedAt |
 | `AdicionaCampoGroupId` | 2026-04-07 | GroupId em Category |
+| `AddTransactions` | 2026-04-21 | Tabela `Transactions` + enums Type/Origin |
+| `AddExportJobs` | 2026-05-22 | Tabela `ExportJobs` + enums Format/Status |
 
 ### Aplicar Migrations
 
@@ -1157,11 +1460,11 @@ dotnet ef migrations add NomeDaMigration
 Seeds executados automaticamente no startup (via `DefaultSeeder.SeedAsync()`):
 
 - **AdminSeeder**: Cria usuário admin padrão
-- **RoleSeeder**: Cria roles (Admin, User)
+- **RoleSeeder**: Cria roles globais (Admin, User)
 - **GroupRoleSeeder**: Cria roles de grupo (Admin, Member)
 - **BankSeeder**: Popula bancos brasileiros
 - **CategorySeeder**: Categorias padrão
-- **DebugUserSeeder**: Usuários de teste (se `SEED_DB=true`)
+- **DebugUserSeeder**: Usuários e dados de teste (executa apenas se `SEED_DB=true`)
 
 ---
 
@@ -1288,23 +1591,27 @@ Validação declarativa e reutilizável.
 
 ## Roadmap
 
+### Concluído Recentemente
+
+- [x] Importação de extratos OFX (preview + import com sugestão de categoria)
+- [x] Importação de extratos CSV (Nubank funcional; demais bancos pendentes)
+- [x] Dashboard de análise financeira (totais, variações, insights, gráficos)
+- [x] Transações manuais (CRUD individual + lote até 100)
+- [x] Relatórios em PDF (QuestPDF), Excel (ClosedXML) e CSV
+- [x] Exportação de dados síncrona e assíncrona (BackgroundService com polling)
+
 ### Em Desenvolvimento
 
 - [ ] Implementação completa do frontend
-- [ ] Importação de extratos OFX
-- [ ] Importação de extratos CSV
-- [ ] Dashboard de análise financeira
 
 ### Próximas Features
 
-- [ ] Transações manuais
-- [ ] Relatórios em PDF
-- [ ] Gráficos e visualizações
+- [ ] Gráficos e visualizações adicionais no frontend
 - [ ] Metas financeiras
 - [ ] Notificações de alertas
 - [ ] Módulo de educação financeira
-- [ ] Exportação de dados
 - [ ] API de terceiros (Open Banking)
+- [ ] Compartilhamento de relatórios exportados
 
 ### Melhorias Técnicas
 
