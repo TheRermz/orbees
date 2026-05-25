@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/Login/Login";
 import { useAuthContext } from "../contexts/useAuthContext";
 import { GoogleCallbackPage } from "../pages/Auth/GoogleCallback";
 import { RegisterPage } from "../pages/Register/Register";
+import { ConfirmEmailPage } from "../pages/Auth/ConfirmEmail";
 
 // rotas das páginas
 
@@ -53,6 +54,15 @@ export const AppRoutes = () => {
           element={
             <PublicRoute>
               <h1>Reset Password</h1>
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/auth/confirm-email"
+          element={
+            <PublicRoute>
+              <ConfirmEmailPage />
             </PublicRoute>
           }
         />
