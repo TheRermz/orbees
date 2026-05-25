@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthContext } from "../../contexts/useAuthContext";
 import type { LoginDto } from "../../interfaces/auth";
+import { Button, Input, Divider, ErrorMessage } from "../../components/ui";
 import {
   Container,
   LeftPanel,
@@ -15,16 +16,8 @@ import {
   FormCard,
   FormTitle,
   FormSubtitle,
-  FormGroup,
-  Label,
-  Input,
-  SubmitButton,
-  Divider,
-  GoogleButton,
-  GoogleIcon,
   FooterText,
-  ErrorMessage,
-  FieldError,
+  GoogleIcon,
 } from "./Login.styles";
 import orbeesLogo from "../../assets/orbees-logo-full.png";
 
@@ -40,7 +33,7 @@ export const LoginPage = () => {
 
   const onSubmit = async (dto: LoginDto) => {
     const success = await login(dto);
-    if (success) navigate("/individual/dashboard");
+    if (success) navigate("/dashboard");
   };
 
   const handleGoogleLogin = () => {
@@ -73,48 +66,45 @@ export const LoginPage = () => {
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          <FormGroup>
-            <Label>E-MAIL</Label>
-            <Input
-              type="email"
-              placeholder="seu@email.com"
-              {...register("email", {
-                required: "E-mail é obrigatório.",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "E-mail inválido.",
-                },
-              })}
-              $hasError={!!errors.email}
-            />
-            {errors.email && <FieldError>{errors.email.message}</FieldError>}
-          </FormGroup>
+          <Input
+            label="E-MAIL"
+            type="email"
+            placeholder="seu@email.com"
+            error={errors.email?.message}
+            {...register("email", {
+              required: "E-mail é obrigatório.",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "E-mail inválido.",
+              },
+            })}
+          />
 
-          <FormGroup>
-            <Label>SENHA</Label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              {...register("password", {
-                required: "Senha é obrigatória.",
-              })}
-              $hasError={!!errors.password}
-            />
-            {errors.password && (
-              <FieldError>{errors.password.message}</FieldError>
-            )}
-          </FormGroup>
+          <Input
+            label="SENHA"
+            type="password"
+            placeholder="••••••••"
+            error={errors.password?.message}
+            {...register("password", {
+              required: "Senha é obrigatória.",
+            })}
+          />
 
-          <SubmitButton type="submit" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar →"}
-          </SubmitButton>
+          <Button type="submit" fullWidth loading={loading}>
+            Entrar →
+          </Button>
 
-          <Divider>ou</Divider>
+          <Divider />
 
-          <GoogleButton type="button" onClick={handleGoogleLogin}>
+          <Button
+            type="button"
+            variant="google"
+            fullWidth
+            onClick={handleGoogleLogin}
+          >
             <GoogleIcon>G</GoogleIcon>
             Continuar com Google
-          </GoogleButton>
+          </Button>
 
           <FooterText>
             Não tem conta? <Link to="/register">Cadastre-se grátis</Link>
