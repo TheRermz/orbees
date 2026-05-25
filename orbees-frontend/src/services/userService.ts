@@ -7,33 +7,33 @@ import type {
 
 export const userService = {
   getMe: async (): Promise<UserReadDto> => {
-    const { data } = await api.get<UserReadDto>("/users/me");
+    const { data } = await api.get<UserReadDto>("/user/me");
     return data;
   },
 
   updateMe: async (dto: UserUpdateDto): Promise<UserReadDto> => {
-    const { data } = await api.put<UserReadDto>("/users/me", dto);
+    const { data } = await api.put<UserReadDto>("/user/me", dto);
     return data;
   },
 
   updatePassword: async (dto: UpdatePasswordDto): Promise<void> => {
-    await api.put("/users/me/password", dto);
+    await api.put("/user/me/password", dto);
   },
 
   updateProfilePicture: async (file: File): Promise<UserReadDto> => {
     const formData = new FormData();
     formData.append("file", file);
-    const { data } = await api.put<UserReadDto>("/users/me/picture", formData, {
+    const { data } = await api.put<UserReadDto>("/user/me/picture", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data;
   },
 
   deleteProfilePicture: async (): Promise<void> => {
-    await api.delete("/users/me/picture");
+    await api.delete("/user/me/picture");
   },
 
   deleteMe: async (): Promise<void> => {
-    await api.delete("/users/me");
+    await api.delete("/user/me");
   },
 };
