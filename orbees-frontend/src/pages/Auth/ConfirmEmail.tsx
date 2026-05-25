@@ -5,7 +5,7 @@ import { getErrorMessage } from "../../helpers/error";
 import { Button, Card, PageContainer } from "../../components/ui";
 import orbeesLogo from "../../assets/orbees-logo-full.png";
 import { Logo } from "../../components/Layouts/AuthLayout/AuthLayout.styles";
-import { Description, StatusIcon, Title } from "./ConfirmEmail.styles";
+import { Description, StatusIcon, Title } from "./Auth.styles";
 
 export const ConfirmEmailPage = () => {
   const [searchParams] = useSearchParams();
