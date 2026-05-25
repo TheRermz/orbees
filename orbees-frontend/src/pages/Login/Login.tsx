@@ -10,22 +10,13 @@ import {
   SuccessMessage,
 } from "../../components/ui";
 import {
-  Container,
-  LeftPanel,
-  RightPanel,
-  Logo,
-  Slogan,
-  SloganHighlight,
-  SloganDescription,
-  BenefitList,
-  BenefitItem,
-  FormCard,
-  FormTitle,
-  FormSubtitle,
-  FooterText,
-  GoogleIcon,
-} from "./Login.styles";
-import orbeesLogo from "../../assets/orbees-logo-full.png";
+  AuthCard,
+  AuthCardFooter,
+  AuthCardSubtitle,
+  AuthCardTitle,
+  AuthLayout,
+} from "../../components/Layouts";
+import { GoogleIcon } from "./Login.styles";
 
 export const LoginPage = () => {
   const { login, loading, error } = useAuthContext();
@@ -49,32 +40,12 @@ export const LoginPage = () => {
   const handleGoogleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
-
   return (
-    <Container>
-      <LeftPanel>
-        <Logo src={orbeesLogo} alt="Orbees" />
-        <Slogan>
-          Controle suas finanças <SloganHighlight>sem esforço</SloganHighlight>
-        </Slogan>
-        <SloganDescription>
-          Importe seu extrato bancário e tenha uma visão completa da sua vida
-          financeira em segundos.
-        </SloganDescription>
-        <BenefitList>
-          <BenefitItem>Importação automática de OFX e CSV</BenefitItem>
-          <BenefitItem>Categorização inteligente de transações</BenefitItem>
-          <BenefitItem>Controle financeiro individual e em grupo</BenefitItem>
-          <BenefitItem>Educação financeira</BenefitItem>
-        </BenefitList>
-      </LeftPanel>
-
-      <RightPanel>
-        <FormCard onSubmit={handleSubmit(onSubmit)}>
-          <FormTitle>Entrar na conta</FormTitle>
-          <FormSubtitle>Bem-vindo de volta!</FormSubtitle>
-
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+    <>
+      <AuthLayout>
+        <AuthCard onSubmit={handleSubmit(onSubmit)}>
+          <AuthCardTitle>Entrar na conta</AuthCardTitle>
+          <AuthCardSubtitle>Bem-vindo de volta!</AuthCardSubtitle>
           {registered && (
             <SuccessMessage>
               Confirme seu email para acessar o Orbees.
@@ -85,7 +56,7 @@ export const LoginPage = () => {
               Falha na autenticação com Google. Tente novamente.
             </ErrorMessage>
           )}
-
+          {error && <ErrorMessage>{error}</ErrorMessage>}
           <Input
             label="E-MAIL"
             type="email"
@@ -113,9 +84,7 @@ export const LoginPage = () => {
           <Button type="submit" fullWidth loading={loading}>
             Entrar →
           </Button>
-
           <Divider />
-
           <Button
             type="button"
             variant="google"
@@ -125,12 +94,11 @@ export const LoginPage = () => {
             <GoogleIcon>G</GoogleIcon>
             Continuar com Google
           </Button>
-
-          <FooterText>
+          <AuthCardFooter>
             Não tem conta? <Link to="/register">Cadastre-se grátis</Link>
-          </FooterText>
-        </FormCard>
-      </RightPanel>
-    </Container>
+          </AuthCardFooter>
+        </AuthCard>
+      </AuthLayout>
+    </>
   );
 };

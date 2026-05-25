@@ -1,4 +1,3 @@
-// src/pages/Register/Register.tsx
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
@@ -6,23 +5,12 @@ import { useAuthContext } from "../../contexts/useAuthContext";
 import { Button, Input, ErrorMessage, Modal } from "../../components/ui";
 import { CheckboxWrapper } from "../../components/ui/Modal/Modal.styles";
 import {
-  Container,
-  LeftPanel,
-  RightPanel,
-  Logo,
-  Slogan,
-  SloganHighlight,
-  SloganDescription,
-  BenefitList,
-  BenefitItem,
-} from "../Login/Login.styles";
-import {
-  FormCard,
-  FormTitle,
-  FormSubtitle,
-  FooterText,
-} from "./Register.styles";
-import orbeesLogo from "../../assets/orbees-logo-full.png";
+  AuthCard,
+  AuthCardFooter,
+  AuthCardSubtitle,
+  AuthLayout,
+  AuthCardTitle,
+} from "../../components/Layouts";
 
 interface RegisterForm {
   fullname: string;
@@ -94,118 +82,93 @@ export const RegisterPage = () => {
 
   return (
     <>
-      <Container>
-        <LeftPanel>
-          <Logo src={orbeesLogo} alt="Orbees" />
-          <Slogan>
-            Controle suas finanças{" "}
-            <SloganHighlight>sem esforço</SloganHighlight>
-          </Slogan>
-          <SloganDescription>
-            Importe seu extrato bancário e tenha uma visão completa da sua vida
-            financeira em segundos.
-          </SloganDescription>
-          <BenefitList>
-            <BenefitItem>Importação automática de OFX e CSV</BenefitItem>
-            <BenefitItem>Categorização inteligente de transações</BenefitItem>
-            <BenefitItem>Controle financeiro individual e em grupo</BenefitItem>
-            <BenefitItem>Educação financeira</BenefitItem>
-          </BenefitList>
-        </LeftPanel>
+      <AuthLayout>
+        <AuthCard onSubmit={handleSubmit(onSubmit)}>
+          <AuthCardTitle>Criar conta</AuthCardTitle>
+          <AuthCardSubtitle>Comece gratuitamente!</AuthCardSubtitle>
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          <Input
+            label="NOME COMPLETO"
+            type="text"
+            placeholder="Seu nome completo"
+            error={errors.fullname?.message}
+            {...register("fullname", {
+              required: "Nome é obrigatório.",
+              pattern: {
+                value: /^[a-zA-ZÀ-ÿ\s]+$/,
+                message:
+                  "Nome não pode conter números ou caracteres especiais.",
+              },
+            })}
+          />
 
-        <RightPanel>
-          <FormCard onSubmit={handleSubmit(onSubmit)}>
-            <FormTitle>Criar conta</FormTitle>
-            <FormSubtitle>Comece gratuitamente!</FormSubtitle>
+          <Input
+            label="E-MAIL"
+            type="email"
+            placeholder="seu@email.com"
+            error={errors.email?.message}
+            {...register("email", {
+              required: "E-mail é obrigatório.",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "E-mail inválido.",
+              },
+            })}
+          />
 
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+          <Input
+            label="USUÁRIO"
+            type="text"
+            placeholder="seu.usuario"
+            error={errors.username?.message}
+            {...register("username", {
+              required: "Usuário é obrigatório.",
+              minLength: {
+                value: 3,
+                message: "Usuário deve ter no mínimo 3 caracteres.",
+              },
+            })}
+          />
 
-            <Input
-              label="NOME COMPLETO"
-              type="text"
-              placeholder="Seu nome completo"
-              error={errors.fullname?.message}
-              {...register("fullname", {
-                required: "Nome é obrigatório.",
-                pattern: {
-                  value: /^[a-zA-ZÀ-ÿ\s]+$/,
-                  message:
-                    "Nome não pode conter números ou caracteres especiais.",
-                },
-              })}
-            />
+          <Input
+            label="SENHA"
+            type="password"
+            placeholder="••••••••"
+            error={errors.password?.message}
+            {...register("password", {
+              required: "Senha é obrigatória.",
+              minLength: {
+                value: 8,
+                message: "Senha deve ter no mínimo 8 caracteres.",
+              },
+              pattern: {
+                value:
+                  /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
+                message:
+                  "Senha deve ter ao menos 1 letra maiúscula e 1 caractere especial.",
+              },
+            })}
+          />
 
-            <Input
-              label="E-MAIL"
-              type="email"
-              placeholder="seu@email.com"
-              error={errors.email?.message}
-              {...register("email", {
-                required: "E-mail é obrigatório.",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "E-mail inválido.",
-                },
-              })}
-            />
-
-            <Input
-              label="USUÁRIO"
-              type="text"
-              placeholder="seu.usuario"
-              error={errors.username?.message}
-              {...register("username", {
-                required: "Usuário é obrigatório.",
-                minLength: {
-                  value: 3,
-                  message: "Usuário deve ter no mínimo 3 caracteres.",
-                },
-              })}
-            />
-
-            <Input
-              label="SENHA"
-              type="password"
-              placeholder="••••••••"
-              error={errors.password?.message}
-              {...register("password", {
-                required: "Senha é obrigatória.",
-                minLength: {
-                  value: 8,
-                  message: "Senha deve ter no mínimo 8 caracteres.",
-                },
-                pattern: {
-                  value:
-                    /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
-                  message:
-                    "Senha deve ter ao menos 1 letra maiúscula e 1 caractere especial.",
-                },
-              })}
-            />
-
-            <Input
-              label="CONFIRMAR SENHA"
-              type="password"
-              placeholder="••••••••"
-              error={errors.confirmPassword?.message}
-              {...register("confirmPassword", {
-                required: "Confirmação de senha é obrigatória.",
-                validate: (value) =>
-                  value === getValues("password") || "As senhas não coincidem.",
-              })}
-            />
-
-            <Button type="submit" fullWidth loading={loading}>
-              Cadastrar →
-            </Button>
-
-            <FooterText>
-              Já tem conta? <Link to="/login">Entrar</Link>
-            </FooterText>
-          </FormCard>
-        </RightPanel>
-      </Container>
-
+          <Input
+            label="CONFIRMAR SENHA"
+            type="password"
+            placeholder="••••••••"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword", {
+              required: "Confirmação de senha é obrigatória.",
+              validate: (value) =>
+                value === getValues("password") || "As senhas não coincidem.",
+            })}
+          />
+          <Button type="submit" fullWidth loading={loading}>
+            Cadastrar →
+          </Button>
+          <AuthCardFooter>
+            Já tem conta? <Link to="/login">Entrar</Link>
+          </AuthCardFooter>
+        </AuthCard>
+      </AuthLayout>
       {showTerms && (
         <Modal
           title="Termos de Uso e Serviço"
