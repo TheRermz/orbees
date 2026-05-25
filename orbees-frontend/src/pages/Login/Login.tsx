@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../../contexts/useAuthContext";
 import type { LoginDto } from "../../interfaces/auth";
 import { Button, Input, Divider, ErrorMessage } from "../../components/ui";
@@ -24,6 +24,9 @@ import orbeesLogo from "../../assets/orbees-logo-full.png";
 export const LoginPage = () => {
   const { login, loading, error } = useAuthContext();
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const googleError = searchParams.get("error");
 
   const {
     register,
@@ -65,6 +68,11 @@ export const LoginPage = () => {
           <FormSubtitle>Bem-vindo de volta!</FormSubtitle>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
+          {googleError && (
+            <ErrorMessage>
+              Falha na autenticação com Google. Tente novamente.
+            </ErrorMessage>
+          )}
 
           <Input
             label="E-MAIL"

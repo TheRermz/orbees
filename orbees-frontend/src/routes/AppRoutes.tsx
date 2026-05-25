@@ -3,6 +3,7 @@ import { PrivateRoute } from "./PrivateRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoginPage } from "../pages/Login/Login";
 import { useAuthContext } from "../contexts/useAuthContext";
+import { GoogleCallbackPage } from "../pages/Auth/GoogleCallback";
 
 // rotas das páginas
 
@@ -29,6 +30,7 @@ export const AppRoutes = () => {
             </PublicRoute>
           }
         />
+        <Route path="/auth/callback" element={<GoogleCallbackPage />} />
         <Route
           path="/register"
           element={
