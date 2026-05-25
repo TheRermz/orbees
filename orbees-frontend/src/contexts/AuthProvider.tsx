@@ -64,6 +64,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.location.href = "/login";
   };
 
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await authService.forgotPassword(email);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao enviar e-mail de recuperação."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -74,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        forgotPassword,
       }}
     >
       {children}

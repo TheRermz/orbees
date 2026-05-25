@@ -9,4 +9,5 @@ export interface AuthContextData {
   login: (dto: LoginDto) => Promise<boolean>;
   register: (dto: RegisterDto) => Promise<boolean>;
   logout: () => void;
+  forgotPassword: (email: string) => Promise<boolean>;
 }

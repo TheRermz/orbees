@@ -37,9 +37,31 @@ export const useAuth = () => {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await authService.forgotPassword(email);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao enviar e-mail de recuperação."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => authService.logout();
 
   const isAuthenticated = (): boolean => !!tokenStorage.get();
 
-  return { login, register, logout, isAuthenticated, loading, error };
+  return {
+    login,
+    register,
+    logout,
+    isAuthenticated,
+    loading,
+    error,
+    forgotPassword,
+  };
 };
