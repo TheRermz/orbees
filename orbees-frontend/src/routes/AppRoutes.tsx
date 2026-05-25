@@ -2,13 +2,24 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PrivateRoute } from "./PrivateRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoginPage } from "../pages/Login/Login";
+import { useAuthContext } from "../contexts/useAuthContext";
 
 // rotas das páginas
 
 export const AppRoutes = () => {
+  const { isAuthenticated } = useAuthContext();
+
   return (
     <BrowserRouter>
       <Routes>
+        {/* raiz */}
+        <Route
+          path="/"
+          element={
+            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          }
+        />
+
         {/* públicas */}
         <Route
           path="/login"
@@ -94,7 +105,7 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* fallback */}
+        {/* not-found */}
         <Route path="*" element={<Navigate to="/not-found" replace />} />
       </Routes>
     </BrowserRouter>
