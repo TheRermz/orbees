@@ -15,6 +15,7 @@ export const Button = ({
   loading = false,
   children,
   disabled,
+  type = "button",
   ...rest
 }: ButtonProps) => {
   return (
@@ -22,6 +23,7 @@ export const Button = ({
       $variant={variant}
       $fullWidth={fullWidth}
       disabled={disabled || loading}
+      type={type}
       {...rest}
     >
       {loading ? "Carregando..." : children}

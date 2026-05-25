@@ -8,3 +8,18 @@ export const GoogleIcon = styled.span`
   font-weight: ${theme.fontWeight.bold};
   font-size: ${theme.fontSize.lg};
 `;
+
+export const ForgotPasswordLink = styled.button`
+  background: none;
+  border: none;
+  color: ${theme.colors.primary};
+  font-size: ${theme.fontSize.xs};
+  cursor: pointer;
+  text-align: right;
+  padding: 0;
+  align-self: flex-end;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;

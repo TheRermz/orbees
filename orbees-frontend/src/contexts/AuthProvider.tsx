@@ -1,97 +1,89 @@
-// src/contexts/AuthProvider.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthStateContext, AuthActionsContext } from "./AuthContext";
 import { authService } from "../services/authService";
 import { userService } from "../services/userService";
 import { tokenStorage } from "../helpers/storage";
 import { getErrorMessage } from "../helpers/error";
 import type { LoginDto, RegisterDto } from "../interfaces/auth";
 import type { UserReadDto } from "../interfaces/user";
+import type { AuthResult } from "./AuthContext.types";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserReadDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(() => !!tokenStorage.get());
 
   useEffect(() => {
     const token = tokenStorage.get();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    if (!token) return;
+
     userService
       .getMe()
       .then(setUser)
       .catch(() => tokenStorage.remove())
-      .finally(() => setLoading(false));
+      .finally(() => setInitializing(false));
   }, []);
 
-  const login = async (dto: LoginDto): Promise<boolean> => {
+  const login = useCallback(async (dto: LoginDto): Promise<AuthResult> => {
     try {
-      setLoading(true);
-      setError(null);
       const { token } = await authService.login(dto);
       tokenStorage.set(token);
       const me = await userService.getMe();
       setUser(me);
-      return true;
+      return { success: true };
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao fazer login."));
-      return false;
-    } finally {
-      setLoading(false);
+      return {
+        success: false,
+        error: getErrorMessage(err, "E-mail ou senha inválidos."),
+      };
     }
-  };
+  }, []);
 
-  const register = async (dto: RegisterDto): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      await authService.register(dto);
-      return true;
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao criar conta."));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const register = useCallback(
+    async (dto: RegisterDto): Promise<AuthResult> => {
+      try {
+        await authService.register(dto);
+        return { success: true };
+      } catch (err: unknown) {
+        return {
+          success: false,
+          error: getErrorMessage(err, "Erro ao criar conta."),
+        };
+      }
+    },
+    []
+  );
 
-  const logout = () => {
+  const forgotPassword = useCallback(
+    async (email: string): Promise<AuthResult> => {
+      try {
+        await authService.forgotPassword(email);
+        return { success: true };
+      } catch (err: unknown) {
+        return {
+          success: false,
+          error: getErrorMessage(err, "Erro ao enviar e-mail de recuperação."),
+        };
+      }
+    },
+    []
+  );
+
+  const logout = useCallback(() => {
     tokenStorage.remove();
     setUser(null);
     window.location.href = "/login";
-  };
-
-  const forgotPassword = async (email: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      await authService.forgotPassword(email);
-      return true;
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao enviar e-mail de recuperação."));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        forgotPassword,
-      }}
+    <AuthActionsContext.Provider
+      value={{ login, register, forgotPassword, logout }}
     >
-      {children}
-    </AuthContext.Provider>
+      <AuthStateContext.Provider
+        value={{ user, isAuthenticated: !!user, initializing }}
+      >
+        {children}
+      </AuthStateContext.Provider>
+    </AuthActionsContext.Provider>
   );
 };

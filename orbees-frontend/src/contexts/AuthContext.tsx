@@ -1,6 +1,12 @@
 import { createContext } from "react";
-import type { AuthContextData } from "./AuthContext.types";
+import type {
+  AuthStateContextData,
+  AuthActionsContextData,
+} from "./AuthContext.types";
 
-export const AuthContext = createContext<AuthContextData>(
-  {} as AuthContextData
+export const AuthStateContext = createContext<AuthStateContextData>(
+  {} as AuthStateContextData
+);
+export const AuthActionsContext = createContext<AuthActionsContextData>(
+  {} as AuthActionsContextData
 );

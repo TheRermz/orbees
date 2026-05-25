@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthContext } from "../../contexts/useAuthContext";
 import { Button, Input, ErrorMessage, Modal } from "../../components/ui";
 import { CheckboxWrapper } from "../../components/ui/Modal/Modal.styles";
 import {
@@ -11,6 +10,7 @@ import {
   AuthLayout,
   AuthCardTitle,
 } from "../../components/Layouts";
+import { useAuthActions } from "../../contexts/useAuthContext";
 
 interface RegisterForm {
   fullname: string;
@@ -46,11 +46,13 @@ Dúvidas? Entre em contato: suporte@orbees.com.br
 `;
 
 export const RegisterPage = () => {
-  const { register: registerUser, loading, error } = useAuthContext();
+  const { register: registerUser } = useAuthActions();
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [pendingData, setPendingData] = useState<RegisterForm | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -66,17 +68,20 @@ export const RegisterPage = () => {
 
   const handleConfirmRegister = async () => {
     if (!pendingData || !agreedToTerms) return;
-
-    const success = await registerUser({
+    setLoading(true);
+    const { success, error } = await registerUser({
       fullname: pendingData.fullname,
       email: pendingData.email,
       username: pendingData.username,
       password: pendingData.password,
     });
-
+    setLoading(false);
     if (success) {
       setShowTerms(false);
       navigate("/login?registered=true");
+    } else {
+      setShowTerms(false);
+      setRegisterError(error ?? "Erro ao criar conta.");
     }
   };
 
@@ -86,7 +91,7 @@ export const RegisterPage = () => {
         <AuthCard onSubmit={handleSubmit(onSubmit)}>
           <AuthCardTitle>Criar conta</AuthCardTitle>
           <AuthCardSubtitle>Comece gratuitamente!</AuthCardSubtitle>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {registerError && <ErrorMessage>{registerError}</ErrorMessage>}
           <Input
             label="NOME COMPLETO"
             type="text"

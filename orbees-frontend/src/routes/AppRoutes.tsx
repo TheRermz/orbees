@@ -2,15 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PrivateRoute } from "./PrivateRoute";
 import { PublicRoute } from "./PublicRoute";
 import { LoginPage } from "../pages/Login/Login";
-import { useAuthContext } from "../contexts/useAuthContext";
 import { GoogleCallbackPage } from "../pages/Auth/GoogleCallback";
 import { RegisterPage } from "../pages/Register/Register";
 import { ConfirmEmailPage } from "../pages/Auth/ConfirmEmail";
+import { useAuthState } from "../contexts/useAuthContext";
 
 // rotas das páginas
 
 export const AppRoutes = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated } = useAuthState();
 
   return (
     <BrowserRouter>

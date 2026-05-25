@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { useAuthContext } from "../../contexts/useAuthContext";
+import { useAuthActions } from "../../contexts/useAuthContext";
 import type { LoginDto } from "../../interfaces/auth";
 import {
   Button,
@@ -8,6 +8,7 @@ import {
   Divider,
   ErrorMessage,
   SuccessMessage,
+  Modal,
 } from "../../components/ui";
 import {
   AuthCard,
@@ -16,11 +17,21 @@ import {
   AuthCardTitle,
   AuthLayout,
 } from "../../components/Layouts";
-import { GoogleIcon } from "./Login.styles";
+import { ForgotPasswordLink, GoogleIcon } from "./Login.styles";
+import { useState } from "react";
 
 export const LoginPage = () => {
-  const { login, loading, error } = useAuthContext();
+  const { login, forgotPassword } = useAuthActions();
+
   const navigate = useNavigate();
+
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   const [searchParams] = useSearchParams();
   const googleError = searchParams.get("error");
@@ -33,13 +44,38 @@ export const LoginPage = () => {
   } = useForm<LoginDto>();
 
   const onSubmit = async (dto: LoginDto) => {
-    const success = await login(dto);
+    setLoading(true);
+    setLoginError(null);
+    const { success, error } = await login(dto);
+    setLoading(false);
     if (success) navigate("/dashboard");
+    else setLoginError(error ?? "E-mail ou senha inválidos.");
   };
 
   const handleGoogleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      setForgotError("E-mail é obrigatório.");
+      return;
+    }
+    const { success, error } = await forgotPassword(forgotEmail);
+    if (success) {
+      setForgotSuccess(true);
+    } else {
+      setForgotError(error ?? "Erro ao enviar e-mail.");
+    }
+  };
+
+  const handleCloseForgotPassword = () => {
+    setShowForgotPassword(false);
+    setForgotEmail("");
+    setForgotError(null);
+    setForgotSuccess(false);
+  };
+
   return (
     <>
       <AuthLayout>
@@ -56,7 +92,7 @@ export const LoginPage = () => {
               Falha na autenticação com Google. Tente novamente.
             </ErrorMessage>
           )}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
           <Input
             label="E-MAIL"
             type="email"
@@ -81,6 +117,13 @@ export const LoginPage = () => {
             })}
           />
 
+          <ForgotPasswordLink
+            type="button"
+            onClick={() => setShowForgotPassword(true)}
+          >
+            Esqueceu sua senha?
+          </ForgotPasswordLink>
+
           <Button type="submit" fullWidth loading={loading}>
             Entrar →
           </Button>
@@ -99,6 +142,45 @@ export const LoginPage = () => {
           </AuthCardFooter>
         </AuthCard>
       </AuthLayout>
+      {showForgotPassword && (
+        <Modal
+          title="Recuperar senha"
+          onClose={handleCloseForgotPassword}
+          actions={
+            !forgotSuccess ? (
+              <Button fullWidth onClick={handleForgotPassword}>
+                Enviar
+              </Button>
+            ) : (
+              <Button
+                fullWidth
+                onClick={handleCloseForgotPassword}
+                loading={loading}
+              >
+                Fechar
+              </Button>
+            )
+          }
+        >
+          {forgotSuccess ? (
+            <SuccessMessage>
+              Enviamos um link de recuperação para {forgotEmail}. Verifique sua
+              caixa de entrada.
+            </SuccessMessage>
+          ) : (
+            <>
+              {forgotError && <ErrorMessage>{forgotError}</ErrorMessage>}
+              <Input
+                label="E-MAIL"
+                type="email"
+                placeholder="seu@email.com"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+              />
+            </>
+          )}
+        </Modal>
+      )}
     </>
   );
 };

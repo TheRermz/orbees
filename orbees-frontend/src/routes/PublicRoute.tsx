@@ -1,16 +1,15 @@
-// src/routes/PublicRoute.tsx
 import { Navigate } from "react-router-dom";
-import { useAuthContext } from "../contexts/useAuthContext";
 import type { ReactNode } from "react";
+import { useAuthState } from "../contexts/useAuthContext";
 
 interface PublicRouteProps {
   children: ReactNode;
 }
 
 export const PublicRoute = ({ children }: PublicRouteProps) => {
-  const { isAuthenticated, loading } = useAuthContext();
+  const { isAuthenticated, initializing } = useAuthState();
 
-  if (loading) return null;
+  if (initializing) return null;
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 

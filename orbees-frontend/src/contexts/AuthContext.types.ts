@@ -1,13 +1,20 @@
 import type { LoginDto, RegisterDto } from "../interfaces/auth";
 import type { UserReadDto } from "../interfaces/user";
 
-export interface AuthContextData {
+export interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
+export interface AuthStateContextData {
   user: UserReadDto | null;
-  loading: boolean;
-  error: string | null;
   isAuthenticated: boolean;
-  login: (dto: LoginDto) => Promise<boolean>;
-  register: (dto: RegisterDto) => Promise<boolean>;
+  initializing: boolean;
+}
+
+export interface AuthActionsContextData {
+  login: (dto: LoginDto) => Promise<AuthResult>;
+  register: (dto: RegisterDto) => Promise<AuthResult>;
+  forgotPassword: (email: string) => Promise<AuthResult>;
   logout: () => void;
-  forgotPassword: (email: string) => Promise<boolean>;
 }
