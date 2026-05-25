@@ -4,6 +4,7 @@ import { PublicRoute } from "./PublicRoute";
 import { LoginPage } from "../pages/Login/Login";
 import { useAuthContext } from "../contexts/useAuthContext";
 import { GoogleCallbackPage } from "../pages/Auth/GoogleCallback";
+import { RegisterPage } from "../pages/Register/Register";
 
 // rotas das páginas
 
@@ -35,7 +36,7 @@ export const AppRoutes = () => {
           path="/register"
           element={
             <PublicRoute>
-              <h1>Register</h1>
+              <RegisterPage />
             </PublicRoute>
           }
         />
