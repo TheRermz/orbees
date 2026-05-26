@@ -7,6 +7,7 @@ import { RegisterPage } from "../pages/Register/Register";
 import { ConfirmEmailPage } from "../pages/Auth/ConfirmEmail";
 import { useAuthState } from "../contexts/useAuthContext";
 import { ResetPasswordPage } from "../pages/Auth/PasswordReset";
+import { DashboardPage } from "../pages/Individual/Dashboard/DashboardPage";
 
 // rotas das páginas
 
@@ -77,7 +78,7 @@ export const AppRoutes = () => {
           path="/individual/dashboard"
           element={
             <PrivateRoute>
-              <h1>Dashboard Individual</h1>
+              <DashboardPage />
             </PrivateRoute>
           }
         />

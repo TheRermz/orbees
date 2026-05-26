@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { dashboardService } from "../services/dashboardService";
 import type {
   DashboardResponseDto,
@@ -14,7 +14,7 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboard = async (from?: string, to?: string) => {
+  const fetchDashboard = useCallback(async (from?: string, to?: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -25,9 +25,9 @@ export const useDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchLastTransactions = async () => {
+  const fetchLastTransactions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,7 +38,7 @@ export const useDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     dashboard,
