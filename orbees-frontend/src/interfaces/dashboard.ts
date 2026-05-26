@@ -35,6 +35,7 @@ export interface RevenueVsExpensesChartDto {
 export interface ExpensesByCategoryChartDto {
   categoryId?: string;
   categoryName: string;
+  categoryColor: string;
   amount: number;
   transactionCount: number;
   percentage: number;

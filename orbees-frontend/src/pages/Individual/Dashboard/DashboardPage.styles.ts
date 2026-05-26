@@ -153,16 +153,4 @@ export const TransactionList = styled.div`
   padding: 8px 16px;
 `;
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Moradia: "#a855f7",
-  Alimentação: "#ef4444",
-  Transporte: "#3b82f6",
-  Saúde: "#22c55e",
-  Outros: "#9ca3af",
-  Educação: "#f59e0b",
-  Lazer: "#14b8a6",
-  Salário: "#22c55e",
-};
-
-export const getCategoryColor = (name: string): string =>
-  CATEGORY_COLORS[name] ?? "#9ca3af";
+export const getCategoryColor = (color?: string): string => color ?? "#9ca3af";

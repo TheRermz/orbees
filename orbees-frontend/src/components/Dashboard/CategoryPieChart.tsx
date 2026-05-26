@@ -1,5 +1,4 @@
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { getCategoryColor } from "../../pages/Individual/Dashboard/DashboardPage.styles";
 import type { RevenueByCategoryProps } from "./interface";
 import { PieTooltip } from "./PieTooltip";
 
@@ -7,7 +6,7 @@ export const CategoryPieChart = ({ data, metric }: RevenueByCategoryProps) => {
   const chartData = data.map((c) => ({
     name: c.categoryName,
     value: metric === "value" ? c.amount : c.transactionCount,
-    fill: getCategoryColor(c.categoryName),
+    fill: c.categoryColor ?? "#9ca3af",
   }));
 
   const renderLabel = ({
