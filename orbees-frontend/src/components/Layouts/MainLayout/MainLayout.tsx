@@ -19,11 +19,13 @@ import {
   Sidebar,
 } from "./MainLayout.styles";
 import { menuGroups } from "./MenuGroup";
+import { Button, Modal } from "../../ui";
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuthActions();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
@@ -87,12 +89,33 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <Settings size={16} />
             Configurações
           </FooterButton>
-          <FooterButton $danger onClick={logout}>
+          <FooterButton $danger onClick={() => setShowLogoutModal(true)}>
             <LogOut size={16} />
             Sair
           </FooterButton>
         </SidebarFooter>
       </Sidebar>
+
+      {showLogoutModal && (
+        <Modal
+          title="Sair da conta"
+          description="Tem certeza que deseja sair da sua conta?"
+          onClose={() => setShowLogoutModal(false)}
+          actions={
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button variant="danger" onClick={logout}>
+                Sair
+              </Button>
+            </>
+          }
+        />
+      )}
 
       <MainContent>{children}</MainContent>
     </Container>
