@@ -14,6 +14,11 @@ import {
 export const TopBar = () => {
   const { user } = useAuthState();
 
+  const pfp = user?.profilePicturePath?.replace("-", "");
+  const pfpUrl = pfp
+    ? `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "")}${pfp}`
+    : null;
+
   const initials =
     user?.fullname
       ?.split(" ")
@@ -30,7 +35,22 @@ export const TopBar = () => {
       </NotificationButton>
 
       <UserInfo>
-        <Avatar>{initials}</Avatar>
+        <Avatar>
+          {pfpUrl ? (
+            <img
+              src={pfpUrl}
+              alt={user?.fullname}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            initials
+          )}
+        </Avatar>
         <UserDetails>
           <UserName>{user?.fullname}</UserName>
           <UserRole>Conta Pessoal</UserRole>
