@@ -19,7 +19,7 @@ import {
   Sidebar,
 } from "./MainLayout.styles";
 import { menuGroups } from "./MenuGroup";
-import { Button, Modal } from "../../ui";
+import { Button, Modal, TopBar } from "../../ui";
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const navigate = useNavigate();
@@ -42,6 +42,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <Container>
+      <TopBar />
       <Sidebar>
         <SidebarHeader>
           <SidebarLogo src={orbeesLogo} alt="Orbees" />
