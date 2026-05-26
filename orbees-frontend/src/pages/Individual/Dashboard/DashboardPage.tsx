@@ -203,10 +203,13 @@ export const DashboardPage = () => {
                     : 0;
                 return (
                   <CategoryItem key={cat.categoryId}>
-                    <CategoryDot $color={cat.categoryName} />
+                    <CategoryDot $color={cat.categoryColor ?? "#9ca3af"} />
                     <CategoryName>{cat.categoryName}</CategoryName>
                     <CategoryBar>
-                      <CategoryBarFill $pct={pct} $color={cat.categoryName} />
+                      <CategoryBarFill
+                        $pct={pct}
+                        $color={cat.categoryColor ?? "#9ca3af"}
+                      />
                     </CategoryBar>
                     <CategoryValue $isTop={cat === expensesByCategoryChart[0]}>
                       {metric === "value"
