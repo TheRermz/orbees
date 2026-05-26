@@ -6,6 +6,7 @@ import { GoogleCallbackPage } from "../pages/Auth/GoogleCallback";
 import { RegisterPage } from "../pages/Register/Register";
 import { ConfirmEmailPage } from "../pages/Auth/ConfirmEmail";
 import { useAuthState } from "../contexts/useAuthContext";
+import { ResetPasswordPage } from "../pages/Auth/PasswordReset";
 
 // rotas das páginas
 
@@ -42,18 +43,10 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path="/forgot-password"
+          path="/auth/reset-password"
           element={
             <PublicRoute>
-              <h1>Forgot Password</h1>
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/reset-password"
-          element={
-            <PublicRoute>
-              <h1>Reset Password</h1>
+              <ResetPasswordPage />
             </PublicRoute>
           }
         />
