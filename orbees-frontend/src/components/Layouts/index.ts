@@ -5,3 +5,4 @@ export {
   AuthCardSubtitle,
   AuthCardFooter,
 } from "./AuthLayout/AuthCard.styles";
+export { MainLayout } from "./MainLayout/MainLayout";

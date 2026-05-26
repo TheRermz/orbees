@@ -48,7 +48,7 @@ export const LoginPage = () => {
     setLoginError(null);
     const { success, error } = await login(dto);
     setLoading(false);
-    if (success) navigate("/dashboard");
+    if (success) navigate("/individual/dashboard");
     else setLoginError(error ?? "E-mail ou senha inválidos.");
   };
 

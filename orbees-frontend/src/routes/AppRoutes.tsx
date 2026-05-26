@@ -20,7 +20,10 @@ export const AppRoutes = () => {
         <Route
           path="/"
           element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+            <Navigate
+              to={isAuthenticated ? "/individual/dashboard" : "/login"}
+              replace
+            />
           }
         />
 
@@ -71,46 +74,109 @@ export const AppRoutes = () => {
 
         {/* privadas */}
         <Route
-          path="/dashboard"
+          path="/individual/dashboard"
           element={
             <PrivateRoute>
-              <h1>Dashboard</h1>
+              <h1>Dashboard Individual</h1>
             </PrivateRoute>
           }
         />
         <Route
-          path="/transactions"
+          path="/individual/transactions"
           element={
             <PrivateRoute>
-              <h1>Transactions</h1>
+              <h1>Transações</h1>
             </PrivateRoute>
           }
         />
         <Route
-          path="/categories"
+          path="/individual/categories"
           element={
             <PrivateRoute>
-              <h1>Categories</h1>
+              <h1>Categorias</h1>
             </PrivateRoute>
           }
         />
         <Route
-          path="/groups"
+          path="/individual/import"
           element={
             <PrivateRoute>
-              <h1>Groups</h1>
+              <h1>Importar Extrato</h1>
             </PrivateRoute>
           }
         />
         <Route
-          path="/profile"
+          path="/group/dashboard"
           element={
             <PrivateRoute>
-              <h1>Profile</h1>
+              <h1>Dashboard Grupo</h1>
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/group/transactions"
+          element={
+            <PrivateRoute>
+              <h1>Transações Grupo</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/group/categories"
+          element={
+            <PrivateRoute>
+              <h1>Categorias Grupo</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/group/members"
+          element={
+            <PrivateRoute>
+              <h1>Membros</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/education/home"
+          element={
+            <PrivateRoute>
+              <h1>Educação Financeira</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/education/fundamentals"
+          element={
+            <PrivateRoute>
+              <h1>Fundamentos</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/education/law"
+          element={
+            <PrivateRoute>
+              <h1>Direito e Tributos</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/education/calculators"
+          element={
+            <PrivateRoute>
+              <h1>Calculadoras</h1>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <h1>Configurações</h1>
+            </PrivateRoute>
+          }
+        />
         {/* not-found */}
         <Route path="*" element={<Navigate to="/not-found" replace />} />
       </Routes>
