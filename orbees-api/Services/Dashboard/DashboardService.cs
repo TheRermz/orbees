@@ -30,11 +30,12 @@ namespace Api.Services.Dashboard
 
             var expensesByCategory = transactions
                 .Where(t => t.Type == TransactionType.Despesa && t.CategoryId != null)
-                .GroupBy(t => new { t.CategoryId, t.Category?.Name })
+                .GroupBy(t => new { t.CategoryId, t.Category?.Name, t.Category?.Color })
                 .Select(g => new
                 {
                     g.Key.CategoryId,
                     Name = g.Key.Name ?? "Sem categoria",
+                    Color = g.Key.Color,
                     Amount = g.Sum(t => t.Amount),
                     Count = g.Count()
                 })
@@ -61,15 +62,6 @@ namespace Api.Services.Dashboard
             var culture = new System.Globalization.CultureInfo("pt-BR");
             insights.Add($"Você está gastando em média {dailyAvg.ToString("C", culture)}/dia no período selecionado.");
 
-            // var topCategories = transactions
-            //     .Where(t => t.Type == TransactionType.Despesa && t.CategoryId != null)
-            //     .GroupBy(t => new { t.CategoryId, t.Category?.Name })
-            //     .Select(g => new { Name = g.Key.Name ?? "Sem categoria", Count = g.Count() })
-            //     .OrderByDescending(g => g.Count)
-            //     .ThenBy(g => g.Name)
-            //     .Take(3)
-            //     .ToList();
-
             var topCategories = transactions
                 .Where(t => t.Type == TransactionType.Despesa)
                 .GroupBy(t => t.Category?.Name ?? "Sem categoria")
@@ -80,12 +72,6 @@ namespace Api.Services.Dashboard
                 .ToList();
 
             var despesas = transactions.Where(t => t.Type == TransactionType.Despesa).ToList();
-            Log.Information("Total despesas: {Count}", despesas.Count);
-            Log.Information("Total transactions: {Count}", transactions.Count);
-            Log.Information("topCategories count: {Count}", topCategories.Count);
-            Log.Information("Primeira despesa categoria: {Cat}", despesas.FirstOrDefault()?.Category?.Name ?? "NULL");
-            foreach (var t in transactions.Take(3))
-                Log.Information("Type: {Type} ({TypeInt})", t.Type, (int)t.Type);
 
             if (!topCategories.Any())
             {
@@ -118,6 +104,7 @@ namespace Api.Services.Dashboard
                 {
                     CategoryId = c.CategoryId,
                     CategoryName = c.Name,
+                    CategoryColor = c.Color,
                     Amount = c.Amount,
                     TransactionCount = c.Count,
                     Percentage = totalExpenses > 0 ? (int)Math.Round(c.Amount / totalExpenses * 100) : 0
