@@ -42,7 +42,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <Container>
-      <TopBar />
       <Sidebar>
         <SidebarHeader>
           <SidebarLogo src={orbeesLogo} alt="Orbees" />
@@ -118,7 +117,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         />
       )}
 
-      <MainContent>{children}</MainContent>
+      <MainContent>
+        <TopBar />
+        {children}
+      </MainContent>
     </Container>
   );
 };
