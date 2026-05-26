@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   getFirstDayOfMonth,
   getLastDayOfMonth,
@@ -25,11 +25,6 @@ export const PeriodSelector = ({
   const [localFrom, setLocalFrom] = useState(from);
   const [localTo, setLocalTo] = useState(to);
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLocalFrom(from);
-    setLocalTo(to);
-  }, [from, to]);
 
   const handleMonthClick = (yearMonth: string) => {
     const { year, month } = parseYearMonth(yearMonth);
