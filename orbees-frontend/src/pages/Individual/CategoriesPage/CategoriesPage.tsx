@@ -1,10 +1,11 @@
+// src/pages/Individual/Categories/CategoriesPage.tsx
 import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import { useCategories } from "../../../hooks/useCategories";
 import { ColorPicker } from "../../../components/ui/ColorPicker/ColorPicker";
 import { IconPicker } from "../../../components/ui/IconPicker/IconPicker";
-import { Button, Modal, ErrorMessage } from "../../../components/ui";
-import { Plus } from "lucide-react";
+import { Button, ErrorMessage, Modal } from "../../../components/ui";
+import { Plus, Pencil } from "lucide-react";
 import type { CategoryReadDto } from "../../../interfaces/category";
 import {
   Container,
@@ -20,7 +21,7 @@ import {
   PreviewCircle,
   PreviewLabel,
   PreviewChip,
-  ModalActions,
+  FormActions,
   DeleteButton,
 } from "./CategoriesPage.styles";
 
@@ -30,23 +31,18 @@ const DEFAULT_ICON = "Tag";
 export const CategoriesPage = () => {
   const { categories, create, update, remove, error } = useCategories();
 
+  const [editing, setEditing] = useState<CategoryReadDto | null>(null);
   const [name, setName] = useState("");
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [loading, setLoading] = useState(false);
-
-  const [editing, setEditing] = useState<CategoryReadDto | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editColor, setEditColor] = useState(DEFAULT_COLOR);
-  const [editIcon, setEditIcon] = useState(DEFAULT_ICON);
-  const [editLoading, setEditLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleCreate = async () => {
-    if (!name.trim()) return;
-    setLoading(true);
-    await create({ name, color, icon });
-    setLoading(false);
+  const isEditing = !!editing;
+
+  const resetForm = () => {
+    setEditing(null);
     setName("");
     setColor(DEFAULT_COLOR);
     setIcon(DEFAULT_ICON);
@@ -54,21 +50,22 @@ export const CategoriesPage = () => {
 
   const openEdit = (cat: CategoryReadDto) => {
     setEditing(cat);
-    setEditName(cat.name);
-    setEditColor(cat.color ?? DEFAULT_COLOR);
-    setEditIcon(cat.icon ?? DEFAULT_ICON);
+    setName(cat.name);
+    setColor(cat.color ?? DEFAULT_COLOR);
+    setIcon(cat.icon ?? DEFAULT_ICON);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
-  const handleUpdate = async () => {
-    if (!editing) return;
-    setEditLoading(true);
-    await update(editing.id, {
-      name: editName,
-      color: editColor,
-      icon: editIcon,
-    });
-    setEditLoading(false);
-    setEditing(null);
+  const handleSubmit = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    if (isEditing) {
+      await update(editing.id, { name, color, icon });
+    } else {
+      await create({ name, color, icon });
+    }
+    setLoading(false);
+    resetForm();
   };
 
   const handleDelete = async () => {
@@ -76,17 +73,13 @@ export const CategoriesPage = () => {
     setDeleteLoading(true);
     await remove(editing.id);
     setDeleteLoading(false);
-    setEditing(null);
+    setShowDeleteModal(false);
+    resetForm();
   };
 
   const PreviewIcon = LucideIcons[icon as keyof typeof LucideIcons] as
     | React.ComponentType<{ size?: number }>
     | undefined;
-  const EditPreviewIcon = editing
-    ? (LucideIcons[editIcon as keyof typeof LucideIcons] as
-      | React.ComponentType<{ size?: number }>
-      | undefined)
-    : undefined;
 
   return (
     <Container>
@@ -103,10 +96,17 @@ export const CategoriesPage = () => {
               <EditableChip
                 key={cat.id}
                 $color={cat.color ?? "#9ca3af"}
-                onClick={() => openEdit(cat)}
+                $active={editing?.id === cat.id}
+                $disabled={cat.isSystem}
+                onClick={() => {
+                  if (!cat.isSystem)
+                    return editing?.id === cat.id ? resetForm() : openEdit(cat);
+                }}
+                title={cat.isSystem ? "Categoria padrão do sistema" : undefined}
               >
                 {Icon && <Icon size={14} />}
                 {cat.name}
+                {editing?.id === cat.id && <Pencil size={12} />}
               </EditableChip>
             );
           })}
@@ -114,7 +114,10 @@ export const CategoriesPage = () => {
       </Section>
 
       <Section>
-        <SectionTitle>Nova categoria</SectionTitle>
+        <SectionTitle>
+          {isEditing ? `Editar: ${editing.name}` : "Nova categoria"}
+        </SectionTitle>
+
         <FormGrid>
           <FormColumn>
             <Label>NOME</Label>
@@ -147,70 +150,58 @@ export const CategoriesPage = () => {
           </FormColumn>
         </FormGrid>
 
-        <Button
-          onClick={handleCreate}
-          loading={loading}
-          disabled={!name.trim()}
-          style={{ alignSelf: "flex-start", marginTop: 8 }}
-        >
-          <Plus size={16} />
-          Criar Categoria
-        </Button>
+        <FormActions>
+          {isEditing && (
+            <DeleteButton onClick={() => setShowDeleteModal(true)}>
+              Remover categoria
+            </DeleteButton>
+          )}
+          {isEditing && (
+            <Button variant="secondary" onClick={resetForm}>
+              Cancelar
+            </Button>
+          )}
+          <Button
+            onClick={handleSubmit}
+            loading={loading}
+            disabled={!name.trim()}
+          >
+            {isEditing ? (
+              <>
+                <Pencil size={16} /> Salvar alterações
+              </>
+            ) : (
+              <>
+                <Plus size={16} /> Criar Categoria
+              </>
+            )}
+          </Button>
+        </FormActions>
       </Section>
 
-      {editing && (
+      {showDeleteModal && (
         <Modal
-          title={`Editar: ${editing.name}`}
-          onClose={() => setEditing(null)}
+          title="Remover categoria"
+          description={`Tem certeza que deseja remover a categoria "${editing?.name}"? As transações vinculadas ficarão sem categoria.`}
+          onClose={() => setShowDeleteModal(false)}
           actions={
-            <ModalActions>
-              <DeleteButton onClick={handleDelete} disabled={deleteLoading}>
-                {deleteLoading ? "Removendo..." : "Remover categoria"}
-              </DeleteButton>
-              <Button variant="secondary" onClick={() => setEditing(null)}>
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteModal(false)}
+              >
                 Cancelar
               </Button>
-              <Button loading={editLoading} onClick={handleUpdate}>
-                Salvar
+              <Button
+                variant="danger"
+                loading={deleteLoading}
+                onClick={handleDelete}
+              >
+                Remover
               </Button>
-            </ModalActions>
+            </>
           }
-        >
-          <FormGrid style={{ gridTemplateColumns: "1fr 1fr 160px" }}>
-            <FormColumn>
-              <Label>NOME</Label>
-              <NameInput
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-              />
-              <Label style={{ marginTop: 16 }}>ÍCONE</Label>
-              <IconPicker
-                value={editIcon}
-                color={editColor}
-                onChange={setEditIcon}
-              />
-            </FormColumn>
-
-            <FormColumn>
-              <Label>COR</Label>
-              <ColorPicker value={editColor} onChange={setEditColor} />
-            </FormColumn>
-
-            <FormColumn>
-              <Label>PREVIEW</Label>
-              <Preview>
-                <PreviewCircle $color={editColor}>
-                  {EditPreviewIcon && <EditPreviewIcon size={28} />}
-                </PreviewCircle>
-                <PreviewLabel>{editName}</PreviewLabel>
-                <PreviewChip $color={editColor}>
-                  {EditPreviewIcon && <EditPreviewIcon size={12} />}
-                  {editName}
-                </PreviewChip>
-              </Preview>
-            </FormColumn>
-          </FormGrid>
-        </Modal>
+        />
       )}
     </Container>
   );

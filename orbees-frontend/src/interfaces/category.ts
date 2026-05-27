@@ -6,6 +6,7 @@ export interface CategoryReadDto {
   isSystemCategory: boolean;
   groupId?: string;
   groupName?: string;
+  isSystem: boolean;
 }
 
 export interface CategoryCreateDto {

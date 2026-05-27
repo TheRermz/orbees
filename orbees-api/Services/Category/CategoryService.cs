@@ -132,7 +132,8 @@ namespace Api.Services.Category
             Color = category.Color,
             IsSystemCategory = category.UserId == null && category.GroupId == null,
             GroupId = category.GroupId,
-            GroupName = category.Group?.Name
+            GroupName = category.Group?.Name,
+            IsSystem = category.GroupId == null && category.UserId == null
         };
     }
 }

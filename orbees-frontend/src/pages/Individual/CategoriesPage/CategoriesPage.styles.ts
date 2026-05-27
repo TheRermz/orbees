@@ -32,22 +32,33 @@ export const ChipsGrid = styled.div`
   gap: 10px;
 `;
 
-export const EditableChip = styled.button<{ $color: string }>`
+export const EditableChip = styled.button<{
+  $color: string;
+  $active: boolean;
+  $disabled: boolean;
+}>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
   border-radius: 20px;
-  background-color: ${({ $color }) => $color}22;
-  border: 1px solid ${({ $color }) => $color}44;
+  background-color: ${({ $color, $active }) =>
+    $active ? `${$color}44` : `${$color}22`};
+  border: 2px solid
+    ${({ $color, $active }) => ($active ? $color : `${$color}44`)};
   color: ${({ $color }) => $color};
   font-size: ${theme.fontSize.sm};
   font-weight: ${theme.fontWeight.semibold};
   cursor: pointer;
   transition: all 0.2s;
+  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
 
   &:hover {
-    background-color: ${({ $color }) => $color}44;
+    background-color: ${({ $color, $disabled }) =>
+    $disabled ? `${$color}22` : `${$color}44`};
+    border-color: ${({ $color, $disabled }) =>
+    $disabled ? `${$color}44` : $color};
   }
 `;
 
@@ -132,11 +143,18 @@ export const ModalActions = styled.div`
   justify-content: flex-end;
 `;
 
+export const FormActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
 export const DeleteButton = styled.button`
   background: none;
   border: none;
   color: ${theme.colors.error};
-  font-size: ${theme.fontSize.xs};
+  font-size: ${theme.fontSize.sm};
   cursor: pointer;
   padding: 0;
   margin-right: auto;

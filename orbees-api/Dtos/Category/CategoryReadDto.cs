@@ -9,5 +9,6 @@ namespace Api.Dtos.Category
         public bool IsSystemCategory { get; set; }
         public Guid? GroupId { get; set; }
         public string? GroupName { get; set; }
+        public bool IsSystem { get; set; }
     }
 }
