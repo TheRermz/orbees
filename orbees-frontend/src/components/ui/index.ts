@@ -16,3 +16,4 @@ export { SearchInput } from "./SearchInput/SearchInput";
 export { TypeFilter } from "./TypeFilter/TypeFilter";
 export { Pagination } from "./Pagination/Pagination";
 export { TransactionRow } from "./TransactionRow/TransactionRow";
+export { TransactionEditModal } from "./TransactionEditModal/TransactionEditModal";

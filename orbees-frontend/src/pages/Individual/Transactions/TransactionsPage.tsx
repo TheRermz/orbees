@@ -8,6 +8,7 @@ import {
   Pagination,
   TransactionRow,
   PeriodSelector,
+  TransactionEditModal,
 } from "../../../components/ui";
 import { ExportFormat } from "../../../interfaces/enums";
 import { dashboardService } from "../../../services/dashboardService";
@@ -38,10 +39,12 @@ const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const TransactionsPage = () => {
-  const { transactions, fetchMyTransactions, exportTransactions } =
+  const { transactions, fetchMyTransactions, exportTransactions, update } =
     useTransactions();
   const { categories } = useCategories();
 
+  const [editingTransaction, setEditingTransaction] =
+    useState<TransactionReadDto | null>(null);
   const [page, setPage] = useState(1);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
@@ -147,9 +150,27 @@ export const TransactionsPage = () => {
         {filtered.length === 0 ? (
           <EmptyState>Nenhuma transação encontrada.</EmptyState>
         ) : (
-          filtered.map((t) => <TransactionRow key={t.id} transaction={t} />)
+          filtered.map((t) => (
+            <TransactionRow
+              key={t.id}
+              transaction={t}
+              onClick={() => setEditingTransaction(t)}
+            />
+          ))
         )}
       </ListCard>
+
+      {editingTransaction && (
+        <TransactionEditModal
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onSave={async (id, dto) => {
+            const success = await update(id, dto);
+            if (success) fetchData(from, to, page);
+            return success;
+          }}
+        />
+      )}
 
       {transactions.totalPages > 1 && (
         <Pagination
