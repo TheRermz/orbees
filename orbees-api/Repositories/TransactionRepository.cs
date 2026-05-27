@@ -84,8 +84,11 @@ namespace Api.Repositories
                 .ToListAsync();
 
         public async Task<(IEnumerable<Transaction> Items, int Total)> GetByUserIdPagedAsync(
-            Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
+              Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
         {
+            var utcFrom = from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : (DateTime?)null;
+            var utcTo = to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : (DateTime?)null;
+
             var query = context.Transactions
                 .Include(t => t.Category)
                 .Include(t => t.GroupCategory)
@@ -95,8 +98,8 @@ namespace Api.Repositories
                 .Where(t =>
                     t.UserId == userId &&
                     t.IsActive &&
-                    (from == null || t.TransactionDate >= from) &&
-                    (to == null || t.TransactionDate <= to))
+                    (utcFrom == null || t.TransactionDate >= utcFrom) &&
+                    (utcTo == null || t.TransactionDate <= utcTo))
                 .OrderByDescending(t => t.TransactionDate);
 
             var total = await query.CountAsync();

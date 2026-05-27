@@ -1,5 +1,4 @@
-// src/hooks/useTransactions.ts
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { transactionService } from "../services/transactionService";
 import type {
   TransactionReadDto,
@@ -8,57 +7,81 @@ import type {
   TransactionPreviewDto,
   TransactionImportDto,
   TransactionBulkCreateDto,
+  PagedResultDto,
 } from "../interfaces/transaction";
 import { ExportFormat } from "../interfaces/enums";
 import { downloadBlob } from "../helpers/download";
 import { getErrorMessage } from "../helpers/error";
 
 export const useTransactions = () => {
-  const [transactions, setTransactions] = useState<TransactionReadDto[]>([]);
+  const [transactions, setTransactions] = useState<
+    PagedResultDto<TransactionReadDto>
+  >({
+    items: [],
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 10,
+  });
   const [preview, setPreview] = useState<TransactionPreviewDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMyTransactions = async (from?: string, to?: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionService.getMyTransactions(from, to);
-      setTransactions(data);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao buscar transações."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchMyTransactions = useCallback(
+    async (page: number, pageSize: number, from?: string, to?: string) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await transactionService.getMyTransactions(
+          page,
+          pageSize,
+          from,
+          to
+        );
+        setTransactions(data);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Erro ao buscar transações."));
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const fetchGroupTransactions = async (
-    groupId: string,
-    from?: string,
-    to?: string
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionService.getGroupTransactions(
-        groupId,
-        from,
-        to
-      );
-      setTransactions(data);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao buscar transações do grupo."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchGroupTransactions = useCallback(
+    async (
+      groupId: string,
+      page: number,
+      pageSize: number,
+      from?: string,
+      to?: string
+    ) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await transactionService.getGroupTransactions(
+          groupId,
+          page,
+          pageSize,
+          from,
+          to
+        );
+        setTransactions(data);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Erro ao buscar transações do grupo."));
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const create = async (dto: TransactionCreateDto): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
       const data = await transactionService.create(dto);
-      setTransactions((prev) => [data, ...prev]);
+      setTransactions((prev) => ({ ...prev, items: [data, ...prev.items] }));
       return true;
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao criar transação."));
@@ -75,7 +98,7 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
       const data = await transactionService.createBulk(dto);
-      setTransactions((prev) => [...data, ...prev]);
+      setTransactions((prev) => ({ ...prev, items: [...data, ...prev.items] }));
       return true;
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao criar transações."));
@@ -122,7 +145,7 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
       const data = await transactionService.import(dto);
-      setTransactions((prev) => [...data, ...prev]);
+      setTransactions((prev) => ({ ...prev, items: [...data, ...prev.items] }));
       setPreview([]);
       return true;
     } catch (err: unknown) {
@@ -141,7 +164,10 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
       const data = await transactionService.update(id, dto);
-      setTransactions((prev) => prev.map((t) => (t.id === id ? data : t)));
+      setTransactions((prev) => ({
+        ...prev,
+        items: prev.items.map((t) => (t.id === id ? data : t)),
+      }));
       return true;
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao atualizar transação."));
@@ -156,7 +182,10 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
       await transactionService.delete(id);
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
+      setTransactions((prev) => ({
+        ...prev,
+        items: prev.items.filter((t) => t.id !== id),
+      }));
       return true;
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao deletar transação."));

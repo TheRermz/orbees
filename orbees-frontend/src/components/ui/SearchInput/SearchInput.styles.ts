@@ -4,6 +4,7 @@ import { theme } from "../../../styles/theme";
 export const Wrapper = styled.div`
   position: relative;
   flex: 1;
+  min-width: 200px;
 `;
 
 export const IconWrapper = styled.div`

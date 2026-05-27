@@ -8,6 +8,7 @@ import { ConfirmEmailPage } from "../pages/Auth/ConfirmEmail";
 import { useAuthState } from "../contexts/useAuthContext";
 import { ResetPasswordPage } from "../pages/Auth/PasswordReset";
 import { DashboardPage } from "../pages/Individual/Dashboard/DashboardPage";
+import { TransactionsPage } from "../pages/Individual/Transactions/TransactionsPage";
 
 // rotas das páginas
 
@@ -86,7 +87,7 @@ export const AppRoutes = () => {
           path="/individual/transactions"
           element={
             <PrivateRoute>
-              <h1>Transações</h1>
+              <TransactionsPage />
             </PrivateRoute>
           }
         />

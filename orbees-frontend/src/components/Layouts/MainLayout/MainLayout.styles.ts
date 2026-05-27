@@ -145,4 +145,6 @@ export const MainContent = styled.main`
   flex: 1;
   min-height: 100vh;
   background-color: #f5f5f5;
+  overflow-x: hidden;
+  max-width: calc(100vw - 250px);
 `;
