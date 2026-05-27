@@ -11,3 +11,8 @@ export { SummaryCard } from "./SummaryCard/SummaryCard";
 export { InsightItem } from "./InsightItem/InsightItem";
 export { TransactionItem } from "./TransactionItem/TransactionItem";
 export { PeriodSelector } from "./PeriodSelector/PeriodSelector";
+export { CategoryChip } from "./CategoryChip/CategoryChip";
+export { SearchInput } from "./SearchInput/SearchInput";
+export { TypeFilter } from "./TypeFilter/TypeFilter";
+export { Pagination } from "./Pagination/Pagination";
+export { TransactionRow } from "./TransactionRow/TransactionRow";
