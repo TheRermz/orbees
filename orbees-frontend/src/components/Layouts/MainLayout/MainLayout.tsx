@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthActions } from "../../../contexts/useAuthContext";
 import orbeesLogo from "../../../assets/orbees-branco.png";
@@ -20,12 +20,14 @@ import {
 } from "./MainLayout.styles";
 import { menuGroups } from "./MenuGroup";
 import { Button, Modal, TopBar } from "../../ui";
+import { groupService } from "../../../services/groupService";
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuthActions();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [groupId, setGroupId] = useState<string | null>(null);
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
@@ -40,6 +42,20 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     );
   };
 
+  useEffect(() => {
+    groupService.getMyGroups().then((groups) => {
+      if (groups.length > 0) setGroupId(groups[0].id);
+    });
+  }, []);
+
+  const resolvedMenuGroups = menuGroups.map((group) => ({
+    ...group,
+    subMenus: group.subMenus.map((sub) => ({
+      ...sub,
+      path: groupId ? sub.path.replace(":groupId", groupId) : sub.path,
+    })),
+  }));
+
   return (
     <Container>
       <Sidebar>
@@ -48,7 +64,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </SidebarHeader>
 
         <SidebarContent>
-          {menuGroups.map((group) => {
+          {resolvedMenuGroups.map((group) => {
             const isOpen = openSections.includes(group.label);
             const isGroupActive = location.pathname.startsWith(group.basePath);
 

@@ -11,6 +11,7 @@ import { DashboardPage } from "../pages/Individual/Dashboard/DashboardPage";
 import { TransactionsPage } from "../pages/Individual/Transactions/TransactionsPage";
 import { CategoriesPage } from "../pages/Individual/CategoriesPage/CategoriesPage";
 import { ImportPage } from "../pages/Individual/Import/ImportPage";
+import { GroupTransactionsPage } from "../pages/Group/Transactions/GroupTransactionsPage";
 
 // rotas das páginas
 
@@ -110,7 +111,7 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path="/group/dashboard"
+          path="/group/:groupId/dashboard"
           element={
             <PrivateRoute>
               <h1>Dashboard Grupo</h1>
@@ -118,15 +119,15 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path="/group/transactions"
+          path="/group/:groupId/transactions"
           element={
             <PrivateRoute>
-              <h1>Transações Grupo</h1>
+              <GroupTransactionsPage />
             </PrivateRoute>
           }
         />
         <Route
-          path="/group/categories"
+          path="/group/:groupId/categories"
           element={
             <PrivateRoute>
               <h1>Categorias Grupo</h1>
@@ -134,7 +135,7 @@ export const AppRoutes = () => {
           }
         />
         <Route
-          path="/group/members"
+          path="/group/:groupId/members"
           element={
             <PrivateRoute>
               <h1>Membros</h1>

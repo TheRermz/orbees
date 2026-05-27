@@ -17,8 +17,10 @@ export interface TransactionReadDto {
   groupCategoryId?: string;
   groupCategoryName?: string;
   groupCategoryColor?: string;
+  groupCategoryIcon?: string;
   groupId?: string;
   groupName?: string;
+  memberName?: string;
   groupLinkActive: boolean;
   bankAccountId?: string;
   bankAccountName?: string;

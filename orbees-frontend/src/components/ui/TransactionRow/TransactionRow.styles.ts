@@ -80,3 +80,11 @@ export const DateText = styled.span`
   font-size: ${theme.fontSize.xs};
   color: ${theme.colors.textMuted};
 `;
+
+export const MemberBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: ${theme.fontSize.xs};
+  color: ${theme.colors.textMuted};
+`;

@@ -285,6 +285,7 @@ namespace Api.Services.Transactions
             CategoryIcon = t.Category?.Icon,
             GroupCategoryId = t.GroupCategoryId,
             GroupCategoryName = t.GroupCategory?.Name,
+            GroupCategoryIcon = t.GroupCategory?.Icon,
             GroupId = t.GroupId,
             GroupName = t.Group?.Name,
             GroupLinkActive = t.GroupLinkActive,
@@ -292,7 +293,8 @@ namespace Api.Services.Transactions
             BankAccountName = t.BankAccount?.Name,
             CreatedAt = t.CreatedAt,
             UpdatedAt = t.UpdatedAt,
-            GroupCategoryColor = t.GroupCategory?.Color
+            GroupCategoryColor = t.GroupCategory?.Color,
+            MemberName = t.User?.Fullname
         };
     }
 }

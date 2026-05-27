@@ -12,22 +12,32 @@ import {
   Amount,
   DateText,
   Description,
+  MemberBadge,
 } from "./TransactionRow.styles";
 import type { TransactionRowProps } from "./interface";
 
 export const TransactionRow = ({
   transaction,
   onClick,
+  isGroupView = false,
 }: TransactionRowProps) => {
   const isIncome = transaction.type === TransactionType.Receita;
-  const color = transaction.categoryColor ?? "#9ca3af";
-  const IconComponent = transaction.categoryIcon
+  const isGroupTransaction = !!transaction.groupId;
+  const iconName =
+    isGroupTransaction && transaction.groupCategoryIcon
+      ? transaction.groupCategoryIcon
+      : transaction.categoryIcon;
+  const color = isGroupTransaction
+    ? (transaction.groupCategoryColor ?? "#6366f1")
+    : (transaction.categoryColor ?? "#9ca3af");
+
+  const IconComponent = iconName
     ? (
       LucideIcons as unknown as Record<
         string,
         React.ComponentType<{ size?: number }>
       >
-    )[transaction.categoryIcon]
+    )[iconName]
     : null;
 
   const date = new Date(transaction.transactionDate);
@@ -45,19 +55,37 @@ export const TransactionRow = ({
       <Info>
         <Title>{transaction.title}</Title>
         <ChipsRow>
-          {transaction.categoryName && (
-            <CategoryChip
-              name={transaction.categoryName}
-              color={transaction.categoryColor}
-              icon={transaction.categoryIcon}
-            />
-          )}
-          {transaction.groupId && transaction.groupCategoryName && (
-            <CategoryChip
-              name={transaction.groupCategoryName}
-              color={transaction.groupCategoryColor ?? "#6366f1"}
-              groupName={transaction.groupName ?? undefined}
-            />
+          {isGroupView ? (
+            <>
+              {transaction.groupCategoryName && (
+                <CategoryChip
+                  name={transaction.groupCategoryName}
+                  color={transaction.groupCategoryColor}
+                  icon={transaction.groupCategoryIcon}
+                />
+              )}
+              {transaction.memberName && (
+                <MemberBadge>{transaction.memberName}</MemberBadge>
+              )}
+            </>
+          ) : (
+            <>
+              {transaction.categoryName && (
+                <CategoryChip
+                  name={transaction.categoryName}
+                  color={transaction.categoryColor}
+                  icon={transaction.categoryIcon}
+                />
+              )}
+              {transaction.groupId && transaction.groupCategoryName && (
+                <CategoryChip
+                  name={transaction.groupCategoryName}
+                  color={transaction.groupCategoryColor}
+                  icon={transaction.groupCategoryIcon}
+                  groupName={transaction.groupName ?? undefined}
+                />
+              )}
+            </>
           )}
         </ChipsRow>
         {transaction.description && (

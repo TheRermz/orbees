@@ -47,20 +47,24 @@ export const menuGroups: MenuGroup[] = [
     subMenus: [
       {
         label: "Dashboard",
-        path: "/group/dashboard",
+        path: "/group/:groupId/dashboard",
         icon: <LayoutDashboard size={14} />,
       },
       {
         label: "Transações",
-        path: "/group/transactions",
+        path: "/group/:groupId/transactions",
         icon: <ArrowLeftRight size={14} />,
       },
       {
         label: "Categorias",
-        path: "/group/categories",
+        path: "/group/:groupId/categories",
         icon: <Tag size={14} />,
       },
-      { label: "Membros", path: "/group/members", icon: <Users size={14} /> },
+      {
+        label: "Membros",
+        path: "/group/:groupId/members",
+        icon: <Users size={14} />,
+      },
     ],
   },
   {

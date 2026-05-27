@@ -22,10 +22,12 @@ namespace Api.Dtos.Transaction
         public Guid? GroupCategoryId { get; set; }
         public string? GroupCategoryName { get; set; }
         public string? GroupCategoryColor { get; set; }
+        public string? GroupCategoryIcon { get; set; }
 
         public Guid? GroupId { get; set; }
         public string? GroupName { get; set; }
         public bool GroupLinkActive { get; set; }
+        public string? MemberName { get; set; }
 
         public Guid? BankAccountId { get; set; }
         public string? BankAccountName { get; set; }
