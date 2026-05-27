@@ -10,9 +10,11 @@ import {
   UserRole,
   UserDetails,
 } from "./TopBar.styles";
+import { useNavigate } from "react-router-dom";
 
 export const TopBar = () => {
   const { user } = useAuthState();
+  const navigate = useNavigate();
 
   const pfp = user?.profilePicturePath?.replace("-", "");
   const pfpUrl = pfp
@@ -35,7 +37,7 @@ export const TopBar = () => {
       </NotificationButton>
 
       <UserInfo>
-        <Avatar>
+        <Avatar onClick={() => navigate("/settings")}>
           {pfpUrl ? (
             <img
               src={pfpUrl}
