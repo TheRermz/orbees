@@ -9,6 +9,7 @@ import { useAuthState } from "../contexts/useAuthContext";
 import { ResetPasswordPage } from "../pages/Auth/PasswordReset";
 import { DashboardPage } from "../pages/Individual/Dashboard/DashboardPage";
 import { TransactionsPage } from "../pages/Individual/Transactions/TransactionsPage";
+import { CategoriesPage } from "../pages/Individual/CategoriesPage/CategoriesPage";
 
 // rotas das páginas
 
@@ -95,7 +96,7 @@ export const AppRoutes = () => {
           path="/individual/categories"
           element={
             <PrivateRoute>
-              <h1>Categorias</h1>
+              <CategoriesPage />
             </PrivateRoute>
           }
         />

@@ -17,3 +17,5 @@ export { TypeFilter } from "./TypeFilter/TypeFilter";
 export { Pagination } from "./Pagination/Pagination";
 export { TransactionRow } from "./TransactionRow/TransactionRow";
 export { TransactionEditModal } from "./TransactionEditModal/TransactionEditModal";
+export { ColorPicker } from "./ColorPicker/ColorPicker";
+export { IconPicker } from "./IconPicker/IconPicker";

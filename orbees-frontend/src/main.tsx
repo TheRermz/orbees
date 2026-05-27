@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/AuthProvider.tsx";
 import { AppRoutes } from "./routes/AppRoutes.tsx";
 import { createGlobalStyle } from "styled-components";
+import { ColorPickerGlobalStyle } from "./components/ui/ColorPicker/ColorPicker.styles.ts";
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -27,6 +28,7 @@ const GlobalStyle = createGlobalStyle`
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <GlobalStyle />
+    <ColorPickerGlobalStyle />
     <AuthProvider>
       <AppRoutes />
     </AuthProvider>
