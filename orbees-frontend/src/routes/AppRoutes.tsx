@@ -10,6 +10,7 @@ import { ResetPasswordPage } from "../pages/Auth/PasswordReset";
 import { DashboardPage } from "../pages/Individual/Dashboard/DashboardPage";
 import { TransactionsPage } from "../pages/Individual/Transactions/TransactionsPage";
 import { CategoriesPage } from "../pages/Individual/CategoriesPage/CategoriesPage";
+import { ImportPage } from "../pages/Individual/Import/ImportPage";
 
 // rotas das páginas
 
@@ -104,7 +105,7 @@ export const AppRoutes = () => {
           path="/individual/import"
           element={
             <PrivateRoute>
-              <h1>Importar Extrato</h1>
+              <ImportPage />
             </PrivateRoute>
           }
         />
