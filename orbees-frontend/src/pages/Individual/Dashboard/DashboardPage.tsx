@@ -144,7 +144,7 @@ export const DashboardPage = () => {
                 text={insight}
                 variant={
                   insight.includes("Nenhuma transação registrada")
-                    ? "muted"
+                    ? "warning"
                     : insight.includes("acima")
                       ? "warning"
                       : "info"
