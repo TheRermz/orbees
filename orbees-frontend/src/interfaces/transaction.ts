@@ -16,6 +16,7 @@ export interface TransactionReadDto {
   categoryIcon?: string;
   groupCategoryId?: string;
   groupCategoryName?: string;
+  groupCategoryColor?: string;
   groupId?: string;
   groupName?: string;
   groupLinkActive: boolean;

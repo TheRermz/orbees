@@ -21,6 +21,7 @@ namespace Api.Dtos.Transaction
 
         public Guid? GroupCategoryId { get; set; }
         public string? GroupCategoryName { get; set; }
+        public string? GroupCategoryColor { get; set; }
 
         public Guid? GroupId { get; set; }
         public string? GroupName { get; set; }

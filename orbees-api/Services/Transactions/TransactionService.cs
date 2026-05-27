@@ -291,7 +291,8 @@ namespace Api.Services.Transactions
             BankAccountId = t.BankAccountId,
             BankAccountName = t.BankAccount?.Name,
             CreatedAt = t.CreatedAt,
-            UpdatedAt = t.UpdatedAt
+            UpdatedAt = t.UpdatedAt,
+            GroupCategoryColor = t.GroupCategory?.Color
         };
     }
 }

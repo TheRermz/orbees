@@ -11,6 +11,7 @@ import {
   Right,
   Amount,
   DateText,
+  Description,
 } from "./TransactionRow.styles";
 import type { TransactionRowProps } from "./interface";
 
@@ -41,7 +42,6 @@ export const TransactionRow = ({
       <IconBox $color={color}>
         {IconComponent ? <IconComponent size={18} /> : null}
       </IconBox>
-
       <Info>
         <Title>{transaction.title}</Title>
         <ChipsRow>
@@ -55,13 +55,15 @@ export const TransactionRow = ({
           {transaction.groupId && transaction.groupCategoryName && (
             <CategoryChip
               name={transaction.groupCategoryName}
-              color="#6366f1"
+              color={transaction.groupCategoryColor ?? "#6366f1"}
               groupName={transaction.groupName ?? undefined}
             />
           )}
         </ChipsRow>
+        {transaction.description && (
+          <Description>Descrição: {transaction.description}</Description>
+        )}
       </Info>
-
       <Right>
         <Amount $income={isIncome}>
           {isIncome ? "+" : "-"}

@@ -38,6 +38,14 @@ export const Info = styled.div`
   min-width: 0;
 `;
 
+export const Description = styled.span`
+  font-size: ${theme.fontSize.xs};
+  color: ${theme.colors.textMuted};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 export const Title = styled.span`
   font-size: ${theme.fontSize.sm};
   font-weight: ${theme.fontWeight.semibold};

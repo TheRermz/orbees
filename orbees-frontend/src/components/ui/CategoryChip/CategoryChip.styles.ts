@@ -13,6 +13,9 @@ export const Chip = styled.div<{ $color: string }>`
   font-weight: ${theme.fontWeight.semibold};
   color: ${({ $color }) => $color};
   white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const ChipIcon = styled.div`
@@ -24,10 +27,15 @@ export const ChipIcon = styled.div`
 export const GroupName = styled.div`
   font-size: ${theme.fontSize.xs};
   color: ${theme.colors.textMuted};
-  margin-top: 2px;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const ChipWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 `;
