@@ -6,29 +6,37 @@ import type {
   TransactionPreviewDto,
   TransactionImportDto,
   TransactionBulkCreateDto,
+  PagedResultDto,
 } from "../interfaces/transaction";
 import { ExportFormat } from "../interfaces/enums";
 
 export const transactionService = {
   getMyTransactions: async (
+    page = 1,
+    pageSize = 10,
     from?: string,
     to?: string
-  ): Promise<TransactionReadDto[]> => {
-    const { data } = await api.get<TransactionReadDto[]>("/transactions", {
-      params: { from, to },
-    });
+  ): Promise<PagedResultDto<TransactionReadDto>> => {
+    const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
+      "/transactions",
+      {
+        params: { page, pageSize, from, to },
+      }
+    );
     return data;
   },
 
   getGroupTransactions: async (
     groupId: string,
+    page = 1,
+    pageSize = 10,
     from?: string,
     to?: string
-  ): Promise<TransactionReadDto[]> => {
-    const { data } = await api.get<TransactionReadDto[]>(
+  ): Promise<PagedResultDto<TransactionReadDto>> => {
+    const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
       `/transactions/group/${groupId}`,
       {
-        params: { from, to },
+        params: { page, pageSize, from, to },
       }
     );
     return data;

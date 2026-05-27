@@ -68,3 +68,11 @@ export interface TransactionImportDto {
 export interface TransactionBulkCreateDto {
   transactions: TransactionCreateDto[];
 }
+
+export interface PagedResultDto<T> {
+  items: T[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+}
