@@ -1,11 +1,14 @@
+using Api.Dtos.Common;
 using Api.Dtos.Transaction;
 
 namespace Api.Services.Interfaces.Transactions
 {
     public interface ITransactionService
     {
-        Task<IEnumerable<TransactionReadDto>> GetMyTransactionsAsync(Guid userId, DateTime? from = null, DateTime? to = null);
-        Task<IEnumerable<TransactionReadDto>> GetGroupTransactionsAsync(Guid userId, Guid groupId, DateTime? from = null, DateTime? to = null);
+        Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
+            Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null);
+        Task<PagedResultDto<TransactionReadDto>> GetGroupTransactionsAsync(
+            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null);
         Task<TransactionReadDto> GetByIdAsync(Guid userId, Guid transactionId);
         Task<TransactionReadDto> CreateAsync(Guid userId, TransactionCreateDto dto);
         Task<IEnumerable<TransactionReadDto>> CreateBulkAsync(Guid userId, TransactionBulkCreateDto dto);

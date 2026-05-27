@@ -4,6 +4,7 @@ using Api.Models.Enums;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.Transactions;
 using Api.Services.Interfaces.ExtractReader;
+using Api.Dtos.Common;
 
 namespace Api.Services.Transactions
 {
@@ -15,19 +16,37 @@ namespace Api.Services.Transactions
           IExtractReaderService extractReaderService) : ITransactionService
     {
 
-        public async Task<IEnumerable<TransactionReadDto>> GetMyTransactionsAsync(Guid userId, DateTime? from = null, DateTime? to = null)
+        public async Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
+    Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
         {
-            var transactions = await transactionRepository.GetByUserIdAsync(userId, from, to);
-            return transactions.Select(MapToReadDto);
+            var (items, total) = await transactionRepository.GetByUserIdPagedAsync(userId, page, pageSize, from, to);
+
+            return new PagedResultDto<TransactionReadDto>
+            {
+                Items = items.Select(MapToReadDto),
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(total / (double)pageSize),
+                TotalItems = total,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<IEnumerable<TransactionReadDto>> GetGroupTransactionsAsync(Guid userId, Guid groupId, DateTime? from = null, DateTime? to = null)
+        public async Task<PagedResultDto<TransactionReadDto>> GetGroupTransactionsAsync(
+            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
         {
             if (!await groupMemberRepository.IsMemberAsync(userId, groupId))
                 throw new UnauthorizedAccessException("Você não faz parte deste grupo.");
 
-            var transactions = await transactionRepository.GetByGroupIdAsync(groupId, from, to);
-            return transactions.Select(MapToReadDto);
+            var (items, total) = await transactionRepository.GetByGroupIdPagedAsync(groupId, page, pageSize, from, to);
+
+            return new PagedResultDto<TransactionReadDto>
+            {
+                Items = items.Select(MapToReadDto),
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(total / (double)pageSize),
+                TotalItems = total,
+                PageSize = pageSize
+            };
         }
 
         public async Task<TransactionReadDto> GetByIdAsync(Guid userId, Guid transactionId)

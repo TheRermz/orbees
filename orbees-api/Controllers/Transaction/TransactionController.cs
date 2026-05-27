@@ -20,22 +20,26 @@ namespace Api.Controllers.Transaction
         // GET /api/transactions
         [HttpGet]
         public async Task<IActionResult> GetMyTransactions(
-            [FromQuery] DateTime? from,
-            [FromQuery] DateTime? to)
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null)
         {
-            var transactions = await transactionService.GetMyTransactionsAsync(GetUserId(), from, to);
-            return Ok(transactions);
+            var result = await transactionService.GetMyTransactionsAsync(GetUserId(), page, pageSize, from, to);
+            return Ok(result);
         }
 
         // GET /api/transactions/group/{groupId}
         [HttpGet("group/{groupId}")]
         public async Task<IActionResult> GetGroupTransactions(
             Guid groupId,
-            [FromQuery] DateTime? from,
-            [FromQuery] DateTime? to)
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null)
         {
-            var transactions = await transactionService.GetGroupTransactionsAsync(GetUserId(), groupId, from, to);
-            return Ok(transactions);
+            var result = await transactionService.GetGroupTransactionsAsync(GetUserId(), groupId, page, pageSize, from, to);
+            return Ok(result);
         }
 
         // GET /api/transactions/{id}

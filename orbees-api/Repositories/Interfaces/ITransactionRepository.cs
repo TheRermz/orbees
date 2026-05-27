@@ -10,5 +10,9 @@ namespace Api.Repositories.Interfaces
         Task<Transaction?> GetByIdAndUserIdAsync(Guid id, Guid userId);
         Task<IEnumerable<Transaction>> GetSimilarTransactionsAsync(Guid userId, string originalDescription, int limit = 5);
         Task AddRangeAsync(IEnumerable<Transaction> transactions);
+        Task<(IEnumerable<Transaction> Items, int Total)> GetByUserIdPagedAsync(
+            Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null);
+        Task<(IEnumerable<Transaction> Items, int Total)> GetByGroupIdPagedAsync(
+            Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null);
     }
 }

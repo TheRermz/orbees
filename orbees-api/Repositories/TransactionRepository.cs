@@ -83,6 +83,55 @@ namespace Api.Repositories
                 .Take(limit)
                 .ToListAsync();
 
+        public async Task<(IEnumerable<Transaction> Items, int Total)> GetByUserIdPagedAsync(
+            Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
+        {
+            var query = context.Transactions
+                .Include(t => t.Category)
+                .Include(t => t.GroupCategory)
+                .Include(t => t.BankAccount)
+                    .ThenInclude(ba => ba != null ? ba.Bank : null)
+                .Include(t => t.Group)
+                .Where(t =>
+                    t.UserId == userId &&
+                    t.IsActive &&
+                    (from == null || t.TransactionDate >= from) &&
+                    (to == null || t.TransactionDate <= to))
+                .OrderByDescending(t => t.TransactionDate);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
+        public async Task<(IEnumerable<Transaction> Items, int Total)> GetByGroupIdPagedAsync(
+            Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
+        {
+            var query = context.Transactions
+                .Include(t => t.Category)
+                .Include(t => t.GroupCategory)
+                .Include(t => t.User)
+                .Where(t =>
+                    t.GroupId == groupId &&
+                    t.GroupLinkActive &&
+                    t.IsActive &&
+                    (from == null || t.TransactionDate >= from) &&
+                    (to == null || t.TransactionDate <= to))
+                .OrderByDescending(t => t.TransactionDate);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
         public async Task AddAsync(Transaction entity) =>
             await context.Transactions.AddAsync(entity);
 
