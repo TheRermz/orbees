@@ -20,23 +20,22 @@ namespace Api.Controllers.Export
         // GET /api/transactions/export?format=CSV&from=...&to=...
         [HttpGet]
         public async Task<IActionResult> Export(
-            [FromQuery] ExportFormat format,
-            [FromQuery] DateTime? from,
-            [FromQuery] DateTime? to)
+              [FromQuery] ExportFormat format,
+              [FromQuery] DateTime? from,
+              [FromQuery] DateTime? to,
+              [FromQuery] Guid? groupId = null)
         {
             var userId = GetUserId();
-            var result = await exportService.ExportDirectAsync(userId, format, from, to);
-
+            var result = await exportService.ExportDirectAsync(userId, format, from, to, groupId);
             if (result == null)
             {
-                var jobId = await exportService.EnqueueExportAsync(userId, format, from, to);
+                var jobId = await exportService.EnqueueExportAsync(userId, format, from, to, groupId);
                 return Accepted(new
                 {
                     message = "Muitos dados para exportar. Você será notificado quando o arquivo estiver pronto.",
                     jobId
                 });
             }
-
             var (file, contentType, fileName) = result.Value;
             return File(file, contentType, fileName);
         }

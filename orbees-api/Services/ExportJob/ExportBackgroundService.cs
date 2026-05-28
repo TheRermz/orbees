@@ -31,10 +31,15 @@ namespace Api.Services.ExportJobs
                     await exportJobRepository.UpdateAsync(job);
                     await exportJobRepository.SaveChangesAsync();
 
-                    var transactions = (await transactionRepository.GetByUserIdAsync(
-                        job.UserId,
-                        job.From.HasValue ? DateTime.SpecifyKind(job.From.Value, DateTimeKind.Utc) : null,
-                        job.To.HasValue ? DateTime.SpecifyKind(job.To.Value, DateTimeKind.Utc) : null)).ToList();
+                    var transactions = job.GroupId.HasValue
+                      ? (await transactionRepository.GetByGroupIdAsync(
+                          job.GroupId.Value,
+                          job.From.HasValue ? DateTime.SpecifyKind(job.From.Value, DateTimeKind.Utc) : null,
+                          job.To.HasValue ? DateTime.SpecifyKind(job.To.Value, DateTimeKind.Utc) : null)).ToList()
+                      : (await transactionRepository.GetByUserIdAsync(
+                          job.UserId,
+                          job.From.HasValue ? DateTime.SpecifyKind(job.From.Value, DateTimeKind.Utc) : null,
+                          job.To.HasValue ? DateTime.SpecifyKind(job.To.Value, DateTimeKind.Utc) : null)).ToList();
 
                     var (file, _, fileName) = job.Format switch
                     {

@@ -18,12 +18,17 @@ namespace Api.Services.ExportJobs
         private const int BackgroundThreshold = 100;
 
         public async Task<(byte[] file, string contentType, string fileName)?> ExportDirectAsync(
-            Guid userId, ExportFormat format, DateTime? from, DateTime? to)
+               Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null)
         {
-            var transactions = (await transactionRepository.GetByUserIdAsync(
-                userId,
-                from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : null,
-                to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : null)).ToList();
+            var utcFrom = from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : (DateTime?)null;
+            var utcTo = to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : (DateTime?)null;
+
+            List<Transaction> transactions;
+
+            if (groupId.HasValue)
+                transactions = (await transactionRepository.GetByGroupIdAsync(groupId.Value, utcFrom, utcTo)).ToList();
+            else
+                transactions = (await transactionRepository.GetByUserIdAsync(userId, utcFrom, utcTo)).ToList();
 
             if (transactions.Count > BackgroundThreshold)
                 return null;
@@ -38,7 +43,7 @@ namespace Api.Services.ExportJobs
         }
 
         public async Task<Guid> EnqueueExportAsync(
-            Guid userId, ExportFormat format, DateTime? from, DateTime? to)
+                Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null)
         {
             var job = new ExportJob
             {
@@ -46,6 +51,7 @@ namespace Api.Services.ExportJobs
                 Format = format,
                 From = from,
                 To = to,
+                GroupId = groupId,
                 Status = ExportJobStatus.Pending
             };
 
@@ -108,8 +114,9 @@ namespace Api.Services.ExportJobs
             ws.Cell(1, 3).Value = "Tipo";
             ws.Cell(1, 4).Value = "Valor";
             ws.Cell(1, 5).Value = "Categoria";
-            ws.Cell(1, 6).Value = "Conta";
-            ws.Cell(1, 7).Value = "Origem";
+            ws.Cell(1, 6).Value = "Membro";
+            ws.Cell(1, 7).Value = "Conta";
+            ws.Cell(1, 8).Value = "Origem";
 
             for (int i = 0; i < transactions.Count; i++)
             {
@@ -119,9 +126,10 @@ namespace Api.Services.ExportJobs
                 ws.Cell(row, 2).Value = t.Title;
                 ws.Cell(row, 3).Value = t.Type.ToString();
                 ws.Cell(row, 4).Value = t.Type == TransactionType.Despesa ? -t.Amount : t.Amount;
-                ws.Cell(row, 5).Value = t.Category?.Name ?? "Sem categoria";
-                ws.Cell(row, 6).Value = t.BankAccount?.Name ?? "-";
-                ws.Cell(row, 7).Value = t.Origin.ToString();
+                ws.Cell(row, 5).Value = t.GroupCategory?.Name ?? t.Category?.Name ?? "Sem categoria";
+                ws.Cell(row, 6).Value = t.User?.Fullname ?? "-";
+                ws.Cell(row, 7).Value = t.BankAccount?.Name ?? "-";
+                ws.Cell(row, 8).Value = t.Origin.ToString();
             }
 
             ws.Columns().AdjustToContents();
@@ -201,6 +209,7 @@ namespace Api.Services.ExportJobs
         public string Tipo { get; set; }
         public decimal Valor { get; set; }
         public string Categoria { get; set; }
+        public string? Membro { get; set; }
         public string Conta { get; set; }
         public string Origem { get; set; }
 
@@ -210,7 +219,8 @@ namespace Api.Services.ExportJobs
             Título = t.Title;
             Tipo = t.Type.ToString();
             Valor = t.Type == TransactionType.Despesa ? -t.Amount : t.Amount;
-            Categoria = t.Category?.Name ?? "Sem categoria";
+            Categoria = t.GroupCategory?.Name ?? t.Category?.Name ?? "Sem categoria";
+            Membro = t.User?.Fullname;
             Conta = t.BankAccount?.Name ?? "-";
             Origem = t.Origin.ToString();
         }

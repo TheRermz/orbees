@@ -7,9 +7,9 @@ namespace Api.Services.Interfaces.ExportJobs
     public interface IExportService
     {
         Task<(byte[] file, string contentType, string fileName)?> ExportDirectAsync(
-            Guid userId, ExportFormat format, DateTime? from, DateTime? to);
+           Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null);
         Task<Guid> EnqueueExportAsync(
-            Guid userId, ExportFormat format, DateTime? from, DateTime? to);
+            Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null);
         Task<ExportJobStatusDto> GetJobStatusAsync(Guid userId, Guid jobId);
         Task<ExportJob?> GetJobFileAsync(Guid userId, Guid jobId);
     }

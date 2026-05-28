@@ -7,6 +7,7 @@ namespace Api.Models
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; }
+        public Guid? GroupId { get; set; }
         public ExportFormat Format { get; set; }
         public DateTime? From { get; set; }
         public DateTime? To { get; set; }
@@ -14,5 +15,6 @@ namespace Api.Models
         public string? FilePath { get; set; }
         public string? ErrorMessage { get; set; }
         public User User { get; set; } = null!;
+        public Group? Group { get; set; }
     }
 }
