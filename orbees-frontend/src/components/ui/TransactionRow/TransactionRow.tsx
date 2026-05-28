@@ -22,14 +22,15 @@ export const TransactionRow = ({
   isGroupView = false,
 }: TransactionRowProps) => {
   const isIncome = transaction.type === TransactionType.Receita;
-  const isGroupTransaction = !!transaction.groupId;
   const iconName =
-    isGroupTransaction && transaction.groupCategoryIcon
+    isGroupView && transaction.groupCategoryIcon
       ? transaction.groupCategoryIcon
       : transaction.categoryIcon;
-  const color = isGroupTransaction
-    ? (transaction.groupCategoryColor ?? "#6366f1")
-    : (transaction.categoryColor ?? "#9ca3af");
+
+  const color =
+    isGroupView && transaction.groupCategoryColor
+      ? transaction.groupCategoryColor
+      : (transaction.categoryColor ?? "#9ca3af");
 
   const IconComponent = iconName
     ? (
