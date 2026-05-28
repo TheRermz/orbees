@@ -38,5 +38,29 @@ namespace Api.Controllers.Dashboard
             var transactions = await dashboardService.GetLastTransactionsAsync(GetUserId());
             return Ok(transactions);
         }
+
+        // GET /api/dashboard/group/{groupId}
+        [HttpGet("group/{groupId}")]
+        public async Task<IActionResult> GetGroupDashboard(
+              Guid groupId,
+              [FromQuery] DateTime? from = null,
+              [FromQuery] DateTime? to = null,
+              [FromQuery] Guid? memberId = null)
+        {
+            var now = DateTime.UtcNow;
+            var resolvedFrom = from ?? new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var resolvedTo = to ?? new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month), 23, 59, 59, DateTimeKind.Utc);
+
+            var result = await dashboardService.GetGroupDashboardAsync(GetUserId(), groupId, resolvedFrom, resolvedTo, memberId);
+            return Ok(result);
+        }
+
+        // GET /api/dashboard/group/{groupId}/last-transactions
+        [HttpGet("group/{groupId}/last-transactions")]
+        public async Task<IActionResult> GetGroupLastTransactions(Guid groupId)
+        {
+            var result = await dashboardService.GetGroupLastTransactionsAsync(GetUserId(), groupId);
+            return Ok(result);
+        }
     }
 }

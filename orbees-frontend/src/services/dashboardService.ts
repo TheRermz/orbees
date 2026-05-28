@@ -21,4 +21,23 @@ export const dashboardService = {
     );
     return data;
   },
+
+  getGroupDashboard: async (
+    groupId: string,
+    from?: string,
+    to?: string,
+    memberId?: string
+  ) => {
+    const { data } = await api.get(`/dashboard/group/${groupId}`, {
+      params: { from, to, memberId },
+    });
+    return data;
+  },
+
+  getGroupLastTransactions: async (groupId: string) => {
+    const { data } = await api.get(
+      `/dashboard/group/${groupId}/last-transactions`
+    );
+    return data;
+  },
 };

@@ -1,3 +1,4 @@
+using Api.Models;
 using Api.Dtos.Dashboard;
 using Api.Models.Enums;
 using Api.Repositories.Interfaces;
@@ -200,6 +201,238 @@ namespace Api.Services.Dashboard
             }
 
             return result;
+        }
+
+        public async Task<GroupDashboardResponseDto> GetGroupDashboardAsync(
+                Guid userId, Guid groupId, DateTime from, DateTime to, Guid? memberId = null)
+        {
+            from = DateTime.SpecifyKind(from.Date, DateTimeKind.Utc);
+            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+
+            var allGroupTransactions = (await transactionRepository.GetByGroupIdAsync(groupId, from, to)).ToList();
+
+            var transactions = memberId.HasValue
+                ? allGroupTransactions.Where(t => t.UserId == memberId.Value).ToList()
+                : allGroupTransactions;
+
+            var totalIncome = transactions.Where(t => t.Type == TransactionType.Receita).Sum(t => t.Amount);
+            var totalExpenses = transactions.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount);
+            var balance = totalIncome - totalExpenses;
+
+            var biggestExpense = transactions
+                .Where(t => t.Type == TransactionType.Despesa)
+                .OrderByDescending(t => t.Amount)
+                .FirstOrDefault();
+
+            var insights = BuildGroupInsights(allGroupTransactions, from, to);
+
+
+            var expensesByCategory = transactions
+                .Where(t => t.Type == TransactionType.Despesa)
+                .GroupBy(t => new
+                {
+                    CategoryId = t.GroupCategoryId ?? t.CategoryId,
+                    Name = t.GroupCategory != null ? t.GroupCategory.Name : t.Category?.Name,
+                    Color = t.GroupCategory != null ? t.GroupCategory.Color : t.Category?.Color
+                })
+                .Select(g => new GroupExpensesByCategoryChartDto
+                {
+                    CategoryId = g.Key.CategoryId,
+                    CategoryName = g.Key.Name ?? "Sem categoria",
+                    CategoryColor = g.Key.Color,
+                    Amount = g.Sum(t => t.Amount),
+                    TransactionCount = g.Count(),
+                    Percentage = totalExpenses > 0 ? (int)Math.Round(g.Sum(t => t.Amount) / totalExpenses * 100) : 0
+                })
+                .OrderByDescending(c => c.Amount)
+                .Take(10)
+                .ToList();
+
+            var memberExpensesChart = BuildMemberExpensesChart(allGroupTransactions, from, to);
+
+            var allTransactions = await transactionRepository.GetByGroupIdAsync(groupId);
+            var availableMonths = allTransactions
+                .Select(t => t.TransactionDate.ToString("yyyy-MM"))
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
+
+            var revenueVsExpenses = BuildRevenueVsExpensesChart(transactions, from, to);
+            var revenueVsExpensesChart = revenueVsExpenses.Select(r => new GroupRevenueVsExpensesChartDto
+            {
+                Label = r.Label,
+                Income = r.Income,
+                Expenses = r.Expenses
+            }).ToList();
+
+            return new GroupDashboardResponseDto
+            {
+                Summary = new GroupDashboardSummaryDto
+                {
+                    TotalIncome = totalIncome,
+                    TotalExpenses = totalExpenses,
+                    Balance = balance,
+                    BiggestExpenseTitle = biggestExpense?.Title,
+                    BiggestExpenseAmount = biggestExpense?.Amount ?? 0
+                },
+                Insights = insights,
+                RevenueVsExpensesChart = revenueVsExpensesChart,
+                ExpensesByCategoryChart = expensesByCategory,
+                MemberExpensesChart = memberExpensesChart,
+                AvailableMonths = availableMonths,
+                PeriodStart = from,
+                PeriodEnd = to
+            };
+        }
+
+        public async Task<IEnumerable<GroupLastTransactionDto>> GetGroupLastTransactionsAsync(Guid userId, Guid groupId)
+        {
+            var transactions = await transactionRepository.GetByGroupIdAsync(groupId);
+            return transactions
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(5)
+                .Select(t => new GroupLastTransactionDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    CategoryName = t.Category?.Name,
+                    CategoryColor = t.Category?.Color,
+                    CategoryIcon = t.Category?.Icon,
+                    GroupCategoryName = t.GroupCategory?.Name,
+                    GroupCategoryColor = t.GroupCategory?.Color,
+                    MemberName = t.User?.Fullname ?? "Desconhecido",
+                    TransactionDate = t.TransactionDate,
+                    Amount = t.Type == TransactionType.Despesa ? -t.Amount : t.Amount,
+                    Type = t.Type
+                });
+        }
+
+        private static List<string> BuildGroupInsights(List<Transaction> transactions, DateTime from, DateTime to)
+        {
+            var insights = new List<string>();
+            var culture = new System.Globalization.CultureInfo("pt-BR");
+
+            var totalExpenses = transactions.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount);
+
+            if (totalExpenses > 0)
+            {
+                var byMember = transactions
+                    .Where(t => t.Type == TransactionType.Despesa)
+                    .GroupBy(t => new { t.UserId, t.User?.Fullname })
+                    .Select(g => new { g.Key.Fullname, Amount = g.Sum(t => t.Amount) })
+                    .OrderByDescending(m => m.Amount)
+                    .FirstOrDefault();
+
+                if (byMember != null)
+                {
+                    var pct = (int)Math.Round(byMember.Amount / totalExpenses * 100);
+                    if (pct > 50)
+                        insights.Add($"{byMember.Fullname} concentra {pct}% das despesas do grupo no período.");
+                }
+            }
+
+            if (totalExpenses > 0)
+            {
+                var topCategory = transactions
+                    .Where(t => t.Type == TransactionType.Despesa)
+                    .GroupBy(t => t.GroupCategory?.Name ?? t.Category?.Name ?? "Sem categoria")
+                    .Select(g => new { Name = g.Key, Amount = g.Sum(t => t.Amount) })
+                    .OrderByDescending(c => c.Amount)
+                    .FirstOrDefault();
+
+                if (topCategory != null)
+                {
+                    var pct = (int)Math.Round(topCategory.Amount / totalExpenses * 100);
+                    insights.Add($"Categoria predominante: {topCategory.Name} com {topCategory.Amount.ToString("C", culture)} ({pct}% das despesas).");
+                }
+            }
+
+            var membersWithExpenses = transactions
+                .Where(t => t.Type == TransactionType.Despesa)
+                .Select(t => t.UserId)
+                .Distinct()
+                .ToHashSet();
+
+            var allMembers = transactions
+                .Select(t => new { t.UserId, t.User?.Fullname })
+                .DistinctBy(m => m.UserId)
+                .ToList();
+
+            foreach (var member in allMembers)
+            {
+                if (!membersWithExpenses.Contains(member.UserId))
+                    insights.Add($"{member.Fullname} não registrou despesas no período.");
+            }
+
+            var recurrent = transactions
+                .GroupBy(t => t.Title)
+                .Where(g => g.Count() > 1)
+                .Count();
+
+            if (recurrent > 0)
+                insights.Add($"{recurrent} transação{(recurrent > 1 ? "ões recorrentes identificadas" : " recorrente identificada")} no período.");
+
+            return insights;
+        }
+
+        private static List<MemberExpensesChartDto> BuildMemberExpensesChart(
+            List<Transaction> transactions, DateTime from, DateTime to)
+        {
+            var memberColors = new[] { "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#a855f7", "#14b8a6" };
+            var colorIndex = 0;
+
+            return transactions
+                .Where(t => t.Type == TransactionType.Despesa)
+                .GroupBy(t => new { t.UserId, t.User?.Fullname })
+                .Select(memberGroup =>
+                {
+                    var color = memberColors[colorIndex++ % memberColors.Length];
+                    var isMultiMonth = from.Month != to.Month || from.Year != to.Year;
+
+                    List<MemberMonthlyExpenseDto> monthly;
+
+                    if (isMultiMonth)
+                    {
+                        monthly = memberGroup
+                            .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                            .Select(g => new MemberMonthlyExpenseDto
+                            {
+                                Label = new DateTime(g.Key.Year, g.Key.Month, 1)
+                                    .ToString("MMM yy", new System.Globalization.CultureInfo("pt-BR")),
+                                Amount = g.Sum(t => t.Amount)
+                            }).ToList();
+                    }
+                    else
+                    {
+                        var weekStart = from.Date;
+                        monthly = [];
+                        while (weekStart <= to.Date)
+                        {
+                            var weekEnd = new DateTime(weekStart.Year, weekStart.Month,
+                                Math.Min(weekStart.Day + 6, DateTime.DaysInMonth(weekStart.Year, weekStart.Month)));
+                            weekEnd = DateTime.SpecifyKind(weekEnd, DateTimeKind.Utc);
+
+                            monthly.Add(new MemberMonthlyExpenseDto
+                            {
+                                Label = $"Dias {weekStart.Day}-{weekEnd.Day}",
+                                Amount = memberGroup.Where(t =>
+                                    t.TransactionDate.Date >= weekStart.Date &&
+                                    t.TransactionDate.Date <= weekEnd.Date).Sum(t => t.Amount)
+                            });
+                            weekStart = weekEnd.AddDays(1);
+                        }
+                    }
+
+                    return new MemberExpensesChartDto
+                    {
+                        MemberId = memberGroup.Key.UserId,
+                        MemberName = memberGroup.Key.Fullname ?? "Desconhecido",
+                        MemberColor = color,
+                        MonthlyExpenses = monthly
+                    };
+                })
+                .ToList();
         }
 
         private static string FormatVariation(decimal current, decimal previous)
