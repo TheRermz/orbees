@@ -1,4 +1,3 @@
-// src/pages/Individual/Categories/CategoriesPage.tsx
 import { useState } from "react";
 import * as LucideIcons from "lucide-react";
 import { useCategories } from "../../../hooks/useCategories";
@@ -24,12 +23,13 @@ import {
   FormActions,
   DeleteButton,
 } from "./CategoriesPage.styles";
+import type { CategoriesPageProps } from "./interface";
 
 const DEFAULT_COLOR = "#F5A623";
 const DEFAULT_ICON = "Tag";
 
-export const CategoriesPage = () => {
-  const { categories, create, update, remove, error } = useCategories();
+export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
+  const { categories, create, update, remove, error } = useCategories(groupId);
 
   const [editing, setEditing] = useState<CategoryReadDto | null>(null);
   const [name, setName] = useState("");
@@ -62,7 +62,7 @@ export const CategoriesPage = () => {
     if (isEditing) {
       await update(editing.id, { name, color, icon });
     } else {
-      await create({ name, color, icon });
+      await create({ name, color, icon, groupId });
     }
     setLoading(false);
     resetForm();

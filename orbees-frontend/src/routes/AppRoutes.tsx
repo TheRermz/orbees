@@ -12,6 +12,7 @@ import { TransactionsPage } from "../pages/Individual/Transactions/TransactionsP
 import { CategoriesPage } from "../pages/Individual/CategoriesPage/CategoriesPage";
 import { ImportPage } from "../pages/Individual/Import/ImportPage";
 import { GroupTransactionsPage } from "../pages/Group/Transactions/GroupTransactionsPage";
+import { GroupCategoriesPage } from "../pages/Group/CategoriesPage/GroupCategoriesPage";
 
 // rotas das páginas
 
@@ -130,7 +131,7 @@ export const AppRoutes = () => {
           path="/group/:groupId/categories"
           element={
             <PrivateRoute>
-              <h1>Categorias Grupo</h1>
+              <GroupCategoriesPage />
             </PrivateRoute>
           }
         />
