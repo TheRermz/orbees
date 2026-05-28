@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { useTransactions } from "../../../hooks/useTransaction";
 import { useCategories } from "../../../hooks/useCategories";
 import {
@@ -9,6 +9,8 @@ import {
   TransactionRow,
   PeriodSelector,
   TransactionEditModal,
+  Button,
+  AddTransactionModal,
 } from "../../../components/ui";
 import { ExportFormat } from "../../../interfaces/enums";
 import { dashboardService } from "../../../services/dashboardService";
@@ -39,8 +41,14 @@ const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const TransactionsPage = () => {
-  const { transactions, fetchMyTransactions, exportTransactions, update } =
-    useTransactions();
+  const {
+    transactions,
+    fetchMyTransactions,
+    exportTransactions,
+    update,
+    create,
+    createBulk,
+  } = useTransactions();
   const { categories } = useCategories();
 
   const [editingTransaction, setEditingTransaction] =
@@ -52,6 +60,8 @@ export const TransactionsPage = () => {
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
+
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchData = useCallback(
     (newFrom: string, newTo: string, newPage: number) => {
@@ -112,10 +122,16 @@ export const TransactionsPage = () => {
           <PageTitle>Transações</PageTitle>
           <PageSubtitle>Histórico completo de movimentações</PageSubtitle>
         </HeaderLeft>
-        <ExportButton onClick={handleExport}>
-          <Download size={16} />
-          Exportar
-        </ExportButton>
+        <div style={{ display: "flex", gap: 8 }}>
+          <ExportButton onClick={() => setShowAddModal(true)}>
+            <Plus size={16} />
+            Nova Transação
+          </ExportButton>
+          <ExportButton onClick={handleExport}>
+            <Download size={16} />
+            Exportar
+          </ExportButton>
+        </div>
       </Header>
 
       <PeriodSelector
@@ -159,6 +175,22 @@ export const TransactionsPage = () => {
           ))
         )}
       </ListCard>
+
+      {showAddModal && (
+        <AddTransactionModal
+          onClose={() => setShowAddModal(false)}
+          onCreate={async (dto) => {
+            const success = await create(dto);
+            if (success) fetchData(from, to, page);
+            return success;
+          }}
+          onCreateBulk={async (dtos) => {
+            const success = await createBulk({ transactions: dtos });
+            if (success) fetchData(from, to, page);
+            return success;
+          }}
+        />
+      )}
 
       {editingTransaction && (
         <TransactionEditModal

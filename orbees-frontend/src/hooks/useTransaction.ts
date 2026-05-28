@@ -76,37 +76,39 @@ export const useTransactions = () => {
     []
   );
 
-  const create = async (dto: TransactionCreateDto): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionService.create(dto);
-      setTransactions((prev) => ({ ...prev, items: [data, ...prev.items] }));
-      return true;
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao criar transação."));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const create = useCallback(
+    async (dto: TransactionCreateDto): Promise<boolean> => {
+      try {
+        setLoading(true);
+        setError(null);
+        await transactionService.create(dto);
+        return true;
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Erro ao criar transação."));
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const createBulk = async (
-    dto: TransactionBulkCreateDto
-  ): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionService.createBulk(dto);
-      setTransactions((prev) => ({ ...prev, items: [...data, ...prev.items] }));
-      return true;
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao criar transações."));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createBulk = useCallback(
+    async (dto: TransactionBulkCreateDto): Promise<boolean> => {
+      try {
+        setLoading(true);
+        setError(null);
+        await transactionService.createBulk(dto);
+        return true;
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, "Erro ao criar transações."));
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const previewOFX = async (file: File): Promise<boolean> => {
     try {
