@@ -198,13 +198,13 @@ export const useTransactions = () => {
   const exportTransactions = async (
     format: ExportFormat,
     from?: string,
-    to?: string
+    to?: string,
+    groupId?: string
   ): Promise<{ queued: boolean; jobId?: string }> => {
     try {
       setLoading(true);
       setError(null);
-      const result = await transactionService.export(format, from, to);
-
+      const result = await transactionService.export(format, from, to, groupId);
       if (result instanceof Blob) {
         const extensions = {
           [ExportFormat.CSV]: "csv",
@@ -214,7 +214,6 @@ export const useTransactions = () => {
         downloadBlob(result, `transacoes.${extensions[format]}`);
         return { queued: false };
       }
-
       return { queued: true, jobId: result.jobId };
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao exportar transações."));
@@ -223,7 +222,6 @@ export const useTransactions = () => {
       setLoading(false);
     }
   };
-
   return {
     transactions,
     preview,

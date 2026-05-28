@@ -91,7 +91,7 @@ export const GroupTransactionsPage = () => {
   };
 
   const handleExport = async () => {
-    await exportTransactions(ExportFormat.CSV, from, to);
+    await exportTransactions(ExportFormat.CSV, from, to, groupId);
   };
 
   // filtros locais

@@ -117,20 +117,14 @@ export const transactionService = {
   export: async (
     format: ExportFormat,
     from?: string,
-    to?: string
-  ): Promise<Blob | { jobId: string }> => {
-    const response = await api.get("/transactions/export", {
-      params: { format, from, to },
+    to?: string,
+    groupId?: string
+  ) => {
+    const { data } = await api.get("/transactions/export", {
+      params: { format, from, to, groupId },
       responseType: "blob",
-      validateStatus: (status) => status === 200 || status === 202,
     });
-
-    if (response.status === 202) {
-      const text = await response.data.text();
-      return JSON.parse(text) as { jobId: string };
-    }
-
-    return response.data as Blob;
+    return data;
   },
 
   getExportJobStatus: async (jobId: string) => {
