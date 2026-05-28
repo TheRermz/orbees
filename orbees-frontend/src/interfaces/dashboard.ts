@@ -50,3 +50,58 @@ export interface LastTransactionDto {
   amount: number;
   type: TransactionType;
 }
+
+export interface GroupDashboardResponseDto {
+  summary: GroupDashboardSummaryDto;
+  insights: string[];
+  revenueVsExpensesChart: GroupRevenueVsExpensesChartDto[];
+  expensesByCategoryChart: GroupExpensesByCategoryChartDto[];
+  memberExpensesChart: MemberExpensesChartDto[];
+  availableMonths: string[];
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface GroupDashboardSummaryDto {
+  totalIncome: number;
+  totalExpenses: number;
+  balance: number;
+  biggestExpenseTitle?: string;
+  biggestExpenseAmount: number;
+}
+
+export interface GroupRevenueVsExpensesChartDto {
+  label: string;
+  income: number;
+  expenses: number;
+}
+
+export interface GroupExpensesByCategoryChartDto {
+  categoryId?: string;
+  categoryName: string;
+  categoryColor?: string;
+  amount: number;
+  transactionCount: number;
+  percentage: number;
+}
+
+export interface MemberExpensesChartDto {
+  memberId: string;
+  memberName: string;
+  memberColor: string;
+  monthlyExpenses: { label: string; amount: number }[];
+}
+
+export interface GroupLastTransactionDto {
+  id: string;
+  title: string;
+  categoryName?: string;
+  categoryColor?: string;
+  categoryIcon?: string;
+  groupCategoryName?: string;
+  groupCategoryColor?: string;
+  memberName: string;
+  transactionDate: string;
+  amount: number;
+  type: number;
+}

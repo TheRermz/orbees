@@ -1,6 +1,8 @@
 import { api } from "./api";
 import type {
   DashboardResponseDto,
+  GroupDashboardResponseDto,
+  GroupLastTransactionDto,
   LastTransactionDto,
 } from "../interfaces/dashboard";
 
@@ -27,14 +29,16 @@ export const dashboardService = {
     from?: string,
     to?: string,
     memberId?: string
-  ) => {
+  ): Promise<GroupDashboardResponseDto> => {
     const { data } = await api.get(`/dashboard/group/${groupId}`, {
       params: { from, to, memberId },
     });
     return data;
   },
 
-  getGroupLastTransactions: async (groupId: string) => {
+  getGroupLastTransactions: async (
+    groupId: string
+  ): Promise<GroupLastTransactionDto[]> => {
     const { data } = await api.get(
       `/dashboard/group/${groupId}/last-transactions`
     );
