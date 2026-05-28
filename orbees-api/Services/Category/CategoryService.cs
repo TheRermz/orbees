@@ -11,21 +11,19 @@ namespace Api.Services.Category
     {
         public async Task<IEnumerable<CategoryReadDto>> GetAllForUserAsync(Guid userId, Guid? groupId = null)
         {
-            var systemCategories = await categoryRepository.GetSystemCategoriesAsync();
-            var userCategories = await categoryRepository.GetByUserIdAsync(userId);
-
-            var all = systemCategories.Concat(userCategories);
-
             if (groupId.HasValue)
             {
                 if (!await groupMemberRepository.IsMemberAsync(userId, groupId.Value))
                     throw new UnauthorizedAccessException("Você não faz parte desse grupo.");
 
+                var sysCategories = await categoryRepository.GetSystemCategoriesAsync();
                 var groupCategories = await categoryRepository.GetByGroupIdAsync(groupId.Value);
-                all = all.Concat(groupCategories);
+                return sysCategories.Concat(groupCategories).Select(MapToReadDto);
             }
 
-            return all.Select(MapToReadDto);
+            var systemCategories = await categoryRepository.GetSystemCategoriesAsync();
+            var userCategories = await categoryRepository.GetByUserIdAsync(userId);
+            return systemCategories.Concat(userCategories).Select(MapToReadDto);
         }
 
         public async Task<CategoryReadDto> GetByIdAsync(Guid userId, Guid categoryId)
