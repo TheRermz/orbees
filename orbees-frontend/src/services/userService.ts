@@ -20,6 +20,11 @@ export const userService = {
     await api.put("/user/me/password", dto);
   },
 
+  getByEmail: async (email: string) => {
+    const { data } = await api.get("/user/by-email", { params: { email } });
+    return data as { id: string; fullname: string; email: string };
+  },
+
   updateProfilePicture: async (file: File): Promise<UserReadDto> => {
     const formData = new FormData();
     formData.append("file", file);

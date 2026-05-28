@@ -8,6 +8,7 @@ namespace Api.Services.Interfaces.UserProfile
         Task<UserReadDto> UpdateMeAsync(Guid userId, UserUpdateDto dto);
         Task<UserReadDto> UpdateProfilePictureAsync(Guid userId, IFormFile file);
         Task<UserReadDto> DeleteProfilePictureAsync(Guid userId);
+        Task<UserReadDto?> GetByEmailAsync(string email);
         Task UpdatePasswordAsync(Guid userId, string currentPassword, string newPassword);
         Task DeleteMeAsync(Guid userId);
     }

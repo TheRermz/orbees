@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { groupService } from "../services/groupService";
 import type {
   GroupReadDto,
@@ -14,7 +14,7 @@ export const useGroups = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -25,9 +25,9 @@ export const useGroups = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchMembers = async (groupId: string) => {
+  const fetchMembers = useCallback(async (groupId: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -38,7 +38,7 @@ export const useGroups = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const create = async (dto: GroupCreateDto): Promise<boolean> => {
     try {
@@ -64,6 +64,24 @@ export const useGroups = () => {
       return true;
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao atualizar grupo."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateMemberRole = async (
+    groupId: string,
+    memberId: string,
+    groupRoleId: string
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await groupService.updateMemberRole(groupId, memberId, groupRoleId);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao atualizar papel."));
       return false;
     } finally {
       setLoading(false);
@@ -138,7 +156,7 @@ export const useGroups = () => {
 
   useEffect(() => {
     fetchGroups();
-  }, []);
+  }, [fetchGroups]);
 
   return {
     groups,
@@ -153,5 +171,6 @@ export const useGroups = () => {
     addMember,
     removeMember,
     leave,
+    updateMemberRole,
   };
 };

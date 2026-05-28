@@ -24,6 +24,11 @@ export const groupService = {
     return data;
   },
 
+  getRoles: async (): Promise<{ id: string; name: string }[]> => {
+    const { data } = await api.get("/groups/roles");
+    return data;
+  },
+
   create: async (dto: GroupCreateDto): Promise<GroupReadDto> => {
     const { data } = await api.post<GroupReadDto>("/groups", dto);
     return data;

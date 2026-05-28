@@ -97,6 +97,21 @@ namespace Api.Services.UserProfile
 
         }
 
+        public async Task<UserReadDto?> GetByEmailAsync(string email)
+        {
+            var user = await userRepository.GetByEmailAsync(email);
+            if (user == null) return null;
+
+            return new UserReadDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                Fullname = user.Fullname,
+                ProfilePicturePath = user.ProfilePicturePath
+            };
+        }
+
         public async Task UpdatePasswordAsync(Guid userId, string currentPassword, string newPassword)
         {
             var user = await userRepository.GetByIdAsync(userId)

@@ -27,6 +27,16 @@ namespace Api.Controllers.User
             return Ok(user);
         }
 
+        // GET /api/user/by-email
+        [HttpGet("by-email")]
+        public async Task<IActionResult> GetByEmail([FromQuery] string email)
+        {
+            var user = await userService.GetByEmailAsync(email);
+            if (user == null)
+                return NotFound(new { message = "Usuário não encontrado." });
+            return Ok(user);
+        }
+
         // PUT /api/user/me
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMe([FromBody] UserUpdateDto dto)
