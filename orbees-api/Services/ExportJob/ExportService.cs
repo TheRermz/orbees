@@ -15,7 +15,7 @@ namespace Api.Services.ExportJobs
         ITransactionRepository transactionRepository,
         IExportJobRepository exportJobRepository) : IExportService
     {
-        private const int BackgroundThreshold = 100;
+        private const int BackgroundThreshold = 25;
 
         public async Task<(byte[] file, string contentType, string fileName)?> ExportDirectAsync(
                Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null)
@@ -43,14 +43,14 @@ namespace Api.Services.ExportJobs
         }
 
         public async Task<Guid> EnqueueExportAsync(
-                Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null)
+               Guid userId, ExportFormat format, DateTime? from, DateTime? to, Guid? groupId = null)
         {
             var job = new ExportJob
             {
                 UserId = userId,
                 Format = format,
-                From = from,
-                To = to,
+                From = from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : null,
+                To = to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : null,
                 GroupId = groupId,
                 Status = ExportJobStatus.Pending
             };
@@ -197,6 +197,7 @@ namespace Api.Services.ExportJobs
 
             using var ms = new MemoryStream();
             document.GeneratePdf(ms);
+            ms.Position = 0;
             return (ms.ToArray(), "application/pdf", "transacoes.pdf");
         }
     }

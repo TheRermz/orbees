@@ -97,7 +97,7 @@ export const TransactionsPage = () => {
   };
 
   const handleExport = async () => {
-    await exportTransactions(ExportFormat.CSV, from, to);
+    await exportTransactions(ExportFormat.PDF, from, to);
   };
 
   // filtros locais

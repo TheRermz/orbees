@@ -120,15 +120,29 @@ export const transactionService = {
     to?: string,
     groupId?: string
   ) => {
-    const { data } = await api.get("/transactions/export", {
+    const response = await api.get("/transactions/export", {
       params: { format, from, to, groupId },
       responseType: "blob",
+      validateStatus: (status) => status === 200 || status === 202,
     });
-    return data;
+
+    if (response.status === 202) {
+      const text = await response.data.text();
+      return JSON.parse(text) as { jobId: string };
+    }
+
+    return response.data as Blob;
   },
 
   getExportJobStatus: async (jobId: string) => {
     const { data } = await api.get(`/transactions/export/${jobId}/status`);
+    return data;
+  },
+
+  downloadExportJob: async (jobId: string): Promise<Blob> => {
+    const { data } = await api.get(`/transactions/export/${jobId}/download`, {
+      responseType: "blob",
+    });
     return data;
   },
 };

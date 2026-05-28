@@ -11,6 +11,7 @@ using Api.Extensions.DependencyInjection;
 using Api.Extensions.MiddlewareExtensions;
 using Api.Data.Seeds;
 using Api.Services.ExportJobs;
+using QuestPDF.Infrastructure;
 
 Env.Load();
 
@@ -145,6 +146,8 @@ builder.Services.AddDbContext<ApiDbContext>(options => options.UseNpgsql(connect
 
 // ── BackgroundServices ───────────────────────────────────────────────────────────────────────
 builder.Services.AddHostedService<ExportBackgroundService>();
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 

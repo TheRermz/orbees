@@ -207,6 +207,7 @@ export const useTransactions = () => {
       setLoading(true);
       setError(null);
       const result = await transactionService.export(format, from, to, groupId);
+
       if (result instanceof Blob) {
         const extensions = {
           [ExportFormat.CSV]: "csv",
@@ -216,13 +217,42 @@ export const useTransactions = () => {
         downloadBlob(result, `transacoes.${extensions[format]}`);
         return { queued: false };
       }
-      return { queued: true, jobId: result.jobId };
+
+      const { jobId } = result;
+      await pollExportJob(jobId, format);
+      return { queued: true, jobId };
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Erro ao exportar transações."));
       return { queued: false };
     } finally {
       setLoading(false);
     }
+  };
+
+  const pollExportJob = async (jobId: string, format: ExportFormat) => {
+    const extensions = {
+      [ExportFormat.CSV]: "csv",
+      [ExportFormat.Excel]: "xlsx",
+      [ExportFormat.PDF]: "pdf",
+    };
+
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const status = await transactionService.getExportJobStatus(jobId);
+
+      if (status.status === "Completed" && status.downloadUrl) {
+        const blob = await transactionService.downloadExportJob(jobId);
+        downloadBlob(blob, `transacoes.${extensions[format]}`);
+        return;
+      }
+
+      if (status.status === "Failed") {
+        setError("Erro ao gerar arquivo de exportação.");
+        return;
+      }
+    }
+
+    setError("Tempo esgotado ao aguardar exportação.");
   };
   return {
     transactions,
