@@ -15,6 +15,7 @@ import { GroupTransactionsPage } from "../pages/Group/Transactions/GroupTransact
 import { GroupCategoriesPage } from "../pages/Group/CategoriesPage/GroupCategoriesPage";
 import { GroupMembersPage } from "../pages/Group/Members/GroupMembersPage";
 import { GroupDashboardPage } from "../pages/Group/Dashboard/GroupDashboardPage";
+import { SettingsPage } from "../pages/Settings/SettingsPage";
 
 // rotas das páginas
 
@@ -181,7 +182,7 @@ export const AppRoutes = () => {
           path="/settings"
           element={
             <PrivateRoute>
-              <h1>Configurações</h1>
+              <SettingsPage />
             </PrivateRoute>
           }
         />
