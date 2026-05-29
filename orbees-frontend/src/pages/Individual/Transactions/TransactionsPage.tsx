@@ -48,6 +48,7 @@ export const TransactionsPage = () => {
     update,
     create,
     createBulk,
+    error,
   } = useTransactions();
   const { categories } = useCategories();
 
@@ -186,7 +187,7 @@ export const TransactionsPage = () => {
               showToast("success", "Transação criada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", "Erro ao criar transação.");
+              showToast("error", error ?? "Erro ao criar transação.");
             }
             return success;
           }}
@@ -196,7 +197,7 @@ export const TransactionsPage = () => {
               showToast("success", "Transações criadas.");
               fetchData(from, to, page);
             } else {
-              showToast("error", "Erro ao criar transações.");
+              showToast("error", error ?? "Erro ao criar transações.");
             }
             return success;
           }}
@@ -213,7 +214,7 @@ export const TransactionsPage = () => {
               showToast("success", "Transação atualizada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", "Erro ao atualizar transação.");
+              showToast("error", error ?? "Erro ao atualizar transação.");
             }
             return success;
           }}

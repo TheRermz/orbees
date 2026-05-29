@@ -41,8 +41,13 @@ const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const GroupTransactionsPage = () => {
-  const { transactions, fetchGroupTransactions, exportTransactions, update } =
-    useTransactions();
+  const {
+    transactions,
+    fetchGroupTransactions,
+    exportTransactions,
+    update,
+    error,
+  } = useTransactions();
   const { categories } = useCategories();
   const { groupId } = useParams<{ groupId: string }>();
 
@@ -176,7 +181,7 @@ export const GroupTransactionsPage = () => {
               showToast("success", "Transação atualizada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", "Erro ao atualizar transação.");
+              showToast("error", error ?? "Erro ao atualizar transação.");
             }
             return success;
           }}
