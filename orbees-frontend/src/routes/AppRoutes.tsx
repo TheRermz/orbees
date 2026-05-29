@@ -16,6 +16,7 @@ import { GroupCategoriesPage } from "../pages/Group/CategoriesPage/GroupCategori
 import { GroupMembersPage } from "../pages/Group/Members/GroupMembersPage";
 import { GroupDashboardPage } from "../pages/Group/Dashboard/GroupDashboardPage";
 import { SettingsPage } from "../pages/Settings/SettingsPage";
+import { EducationHomePage } from "../pages/Education/EducationHomePage";
 
 // rotas das páginas
 
@@ -150,7 +151,7 @@ export const AppRoutes = () => {
           path="/education/home"
           element={
             <PrivateRoute>
-              <h1>Educação Financeira</h1>
+              <EducationHomePage />
             </PrivateRoute>
           }
         />
