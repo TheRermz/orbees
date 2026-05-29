@@ -17,6 +17,7 @@ import { GroupMembersPage } from "../pages/Group/Members/GroupMembersPage";
 import { GroupDashboardPage } from "../pages/Group/Dashboard/GroupDashboardPage";
 import { SettingsPage } from "../pages/Settings/SettingsPage";
 import { EducationHomePage } from "../pages/Education/EducationHomePage";
+import { EducationFundamentalsPage } from "../pages/Education/Fundamentals/EducationFundamentalsPage";
 
 // rotas das páginas
 
@@ -159,7 +160,7 @@ export const AppRoutes = () => {
           path="/education/fundamentals"
           element={
             <PrivateRoute>
-              <h1>Fundamentos</h1>
+              <EducationFundamentalsPage />
             </PrivateRoute>
           }
         />
