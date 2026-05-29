@@ -39,6 +39,7 @@ import { getColor, getInitial } from "./interface";
 import { getErrorMessage } from "../../../helpers/error";
 import { groupService } from "../../../services/groupService";
 import { userService } from "../../../services/userService";
+import { useToast } from "../../../contexts/useToast";
 
 export const GroupMembersPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -50,19 +51,18 @@ export const GroupMembersPage = () => {
     fetchMembers,
     updateMemberRole,
     removeMember,
+    loading,
+    error,
   } = useGroups();
 
   const [editing, setEditing] = useState<GroupMemberReadDto | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
-  const [roleLoading, setRoleLoading] = useState(false);
-  const [removeLoading, setRemoveLoading] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
+  const { showToast } = useToast();
 
   const group = groups.find((g) => g.id === groupId);
 
@@ -76,55 +76,50 @@ export const GroupMembersPage = () => {
     if (member.userId === user?.id) return;
     setEditing(member);
     setSelectedRole(member.role);
-    setError(null);
   };
 
   const handleUpdateRole = async () => {
     if (!editing || !groupId) return;
-    setRoleLoading(true);
     const roleId = roles.find((r) => r.name === selectedRole)?.id;
-    if (!roleId) {
-      setRoleLoading(false);
-      return;
-    }
+    if (!roleId) return;
     const success = await updateMemberRole(groupId, editing.id, roleId);
-    setRoleLoading(false);
-    if (success) setEditing(null);
-    else setError("Erro ao atualizar papel.");
+    if (success) {
+      showToast("success", "Papel atualizado.");
+      setEditing(null);
+    } else {
+      showToast("error", error ?? "Erro ao atualizar papel.");
+    }
   };
 
   const handleRemove = async () => {
     if (!editing || !groupId) return;
-    setRemoveLoading(true);
     const success = await removeMember(groupId, editing.id);
-    setRemoveLoading(false);
     if (success) {
+      showToast("success", "Membro removido.");
       setShowRemoveModal(false);
       setEditing(null);
     } else {
-      setError("Erro ao remover membro.");
+      showToast("error", error ?? "Erro ao remover membro.");
     }
   };
 
   const handleInvite = async () => {
     if (!inviteEmail.trim() || !groupId) return;
-    setInviteLoading(true);
-    setInviteError(null);
     try {
       const found = await userService.getByEmail(inviteEmail);
       await groupService.addMember(groupId, found.id);
       await fetchMembers(groupId);
+      showToast("success", "Membro convidado com sucesso.");
       setShowInviteModal(false);
       setInviteEmail("");
     } catch (err: unknown) {
-      setInviteError(
+      showToast(
+        "error",
         getErrorMessage(
           err,
           "Usuário não encontrado ou já pertence a um grupo."
         )
       );
-    } finally {
-      setInviteLoading(false);
     }
   };
 
@@ -207,14 +202,12 @@ export const GroupMembersPage = () => {
               <Button variant="secondary" onClick={() => setEditing(null)}>
                 Cancelar
               </Button>
-              <Button loading={roleLoading} onClick={handleUpdateRole}>
+              <Button loading={loading} onClick={handleUpdateRole}>
                 Salvar
               </Button>
             </>
           }
         >
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-
           <ModalMemberInfo>
             <ModalAvatar
               $color={getColor(members.findIndex((m) => m.id === editing.id))}
@@ -262,7 +255,7 @@ export const GroupMembersPage = () => {
               >
                 Cancelar
               </Button>
-              <Button loading={inviteLoading} onClick={handleInvite}>
+              <Button loading={loading} onClick={handleInvite}>
                 Convidar
               </Button>
             </>
@@ -294,11 +287,7 @@ export const GroupMembersPage = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                variant="danger"
-                loading={removeLoading}
-                onClick={handleRemove}
-              >
+              <Button variant="danger" loading={loading} onClick={handleRemove}>
                 Remover
               </Button>
             </>

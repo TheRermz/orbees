@@ -16,14 +16,15 @@ import {
   Chip,
   FormActions,
 } from "../SettingsPage.styles";
-import type { TabsProps } from "../interface";
 import { useUser } from "../../../hooks/useUser";
+import { useToast } from "../../../contexts/useToast";
 
-export const ProfileTab = ({ onToast }: TabsProps) => {
+export const ProfileTab = () => {
   const { user } = useAuthState();
   const { updateMe, updateProfilePicture, loading, error } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fullname, setFullname] = useState(user?.fullname ?? "");
+  const { showToast } = useToast();
 
   const pfp = user?.profilePicturePath?.replace("-", "");
   const pfpUrl = pfp
@@ -32,16 +33,16 @@ export const ProfileTab = ({ onToast }: TabsProps) => {
 
   const handleSave = async () => {
     const success = await updateMe({ fullname });
-    if (success) onToast("success", "Perfil atualizado com sucesso.");
-    else onToast("error", error ?? "Erro ao atualizar perfil.");
+    if (success) showToast("success", "Perfil atualizado com sucesso.");
+    else showToast("error", error ?? "Erro ao atualizar perfil.");
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const success = await updateProfilePicture(file);
-    if (success) onToast("success", "Foto atualizada com sucesso.");
-    else onToast("error", error ?? "Erro ao atualizar foto.");
+    if (success) showToast("success", "Foto atualizada com sucesso.");
+    else showToast("error", error ?? "Erro ao atualizar foto.");
   };
 
   return (

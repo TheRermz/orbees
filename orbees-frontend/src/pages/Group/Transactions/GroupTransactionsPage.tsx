@@ -32,6 +32,7 @@ import {
 import type { TransactionTypeFilter } from "../../../components/ui/TypeFilter/interface";
 import type { TransactionReadDto } from "../../../interfaces/transaction";
 import { useParams } from "react-router-dom";
+import { useToast } from "../../../contexts/useToast";
 
 const PAGE_SIZE = 10;
 
@@ -54,6 +55,7 @@ export const GroupTransactionsPage = () => {
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
+  const { showToast } = useToast();
 
   const fetchData = useCallback(
     (newFrom: string, newTo: string, newPage: number) => {
@@ -170,7 +172,12 @@ export const GroupTransactionsPage = () => {
           onClose={() => setEditingTransaction(null)}
           onSave={async (id, dto) => {
             const success = await update(id, dto);
-            if (success) fetchData(from, to, page);
+            if (success) {
+              showToast("success", "Transação atualizada.");
+              fetchData(from, to, page);
+            } else {
+              showToast("error", "Erro ao atualizar transação.");
+            }
             return success;
           }}
         />

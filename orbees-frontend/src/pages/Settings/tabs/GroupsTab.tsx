@@ -17,13 +17,14 @@ import {
   PermissionsTitle,
   PermissionItem,
 } from "../SettingsPage.styles";
-import type { TabsProps } from "../interface";
 import { ADMIN_PERMISSIONS, MEMBER_PERMISSIONS } from "../constants";
+import { useToast } from "../../../contexts/useToast";
 
-export const GroupsTab = ({ onToast }: TabsProps) => {
+export const GroupsTab = () => {
   const { user } = useAuthState();
   const { groups, members, fetchGroups, fetchMembers, leave, loading, error } =
     useGroups();
+  const { showToast } = useToast();
 
   const group = groups[0];
   const myMember = members.find((m) => m.userId === user?.id);
@@ -41,10 +42,10 @@ export const GroupsTab = ({ onToast }: TabsProps) => {
     if (!group) return;
     const success = await leave(group.id);
     if (success) {
-      onToast("success", "Você saiu do grupo.");
+      showToast("success", "Você saiu do grupo.");
       fetchGroups();
     } else {
-      onToast("error", error ?? "Erro ao sair do grupo.");
+      showToast("error", error ?? "Erro ao sair do grupo.");
     }
   };
 

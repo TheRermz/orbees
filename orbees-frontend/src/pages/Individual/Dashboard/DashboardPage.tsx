@@ -34,6 +34,7 @@ import {
 } from "./DashboardPage.styles";
 import { CategoryPieChart } from "../../../components/Dashboard/CategoryPieChart";
 import { RevenueExpensesChart } from "../../../components/Dashboard/RevenueExpenseChart";
+import { useToast } from "../../../contexts/useToast";
 
 type Metric = "value" | "qty";
 type ChartType = "bar" | "pie";
@@ -44,8 +45,14 @@ const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
-  const { dashboard, lastTransactions, fetchDashboard, fetchLastTransactions } =
-    useDashboard();
+  const {
+    dashboard,
+    lastTransactions,
+    fetchDashboard,
+    fetchLastTransactions,
+    error,
+  } = useDashboard();
+  const { showToast } = useToast();
 
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
@@ -53,6 +60,10 @@ export const DashboardPage = () => {
   const [chartType, setChartType] = useState<ChartType>("bar");
 
   const initialized = useRef(false);
+
+  useEffect(() => {
+    if (error) showToast("error", error);
+  }, [error, showToast]);
 
   useEffect(() => {
     if (initialized.current) return;

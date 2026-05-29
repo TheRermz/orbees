@@ -12,32 +12,14 @@ import {
   Sidebar,
   TabButton,
   Panel,
-  SuccessToast,
-  ErrorToast,
 } from "./SettingsPage.styles";
 import type { Tab } from "./interface";
 
 export const SettingsPage = () => {
   const [tab, setTab] = useState<Tab>("profile");
-  const [toast, setToast] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-
-  const showToast = (type: "success" | "error", message: string) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 4000);
-  };
 
   return (
     <Container>
-      {toast &&
-        (toast.type === "success" ? (
-          <SuccessToast>{toast.message}</SuccessToast>
-        ) : (
-          <ErrorToast>{toast.message}</ErrorToast>
-        ))}
-
       <Header>
         <PageTitle>Configurações</PageTitle>
         <PageSubtitle>
@@ -68,9 +50,9 @@ export const SettingsPage = () => {
         </Sidebar>
 
         <Panel>
-          {tab === "profile" && <ProfileTab onToast={showToast} />}
-          {tab === "groups" && <GroupsTab onToast={showToast} />}
-          {tab === "security" && <SecurityTab onToast={showToast} />}
+          {tab === "profile" && <ProfileTab />}
+          {tab === "groups" && <GroupsTab />}
+          {tab === "security" && <SecurityTab />}
         </Panel>
       </Content>
     </Container>

@@ -14,11 +14,11 @@ import {
   TipsTitle,
   TipItem,
 } from "../SettingsPage.styles";
-import type { TabsProps } from "../interface";
 import { TIPS } from "../constants";
 import { useUser } from "../../../hooks/useUser";
+import { useToast } from "../../../contexts/useToast";
 
-export const SecurityTab = ({ onToast }: TabsProps) => {
+export const SecurityTab = () => {
   const [current, setCurrent] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -26,6 +26,7 @@ export const SecurityTab = ({ onToast }: TabsProps) => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const { updatePassword, loading, error } = useUser();
+  const { showToast } = useToast();
 
   const validate = (pwd: string): string | null => {
     if (pwd.length < 8) return "Mínimo 8 caracteres.";
@@ -39,11 +40,11 @@ export const SecurityTab = ({ onToast }: TabsProps) => {
   const handleSubmit = async () => {
     const validationErr = validate(newPwd);
     if (validationErr) {
-      onToast("error", validationErr);
+      showToast("error", validationErr);
       return;
     }
     if (newPwd !== confirm) {
-      onToast("error", "As senhas não coincidem.");
+      showToast("error", "As senhas não coincidem.");
       return;
     }
     const success = await updatePassword({
@@ -51,12 +52,12 @@ export const SecurityTab = ({ onToast }: TabsProps) => {
       newPassword: newPwd,
     });
     if (success) {
-      onToast("success", "Senha atualizada com sucesso.");
+      showToast("success", "Senha atualizada com sucesso.");
       setCurrent("");
       setNewPwd("");
       setConfirm("");
     } else {
-      onToast("error", error ?? "Erro ao atualizar senha.");
+      showToast("error", error ?? "Erro ao atualizar senha.");
     }
   };
 

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { theme } from "../../../styles/theme";
 
 export const Container = styled.div`
   display: flex;
@@ -147,4 +148,23 @@ export const MainContent = styled.main`
   background-color: #f5f5f5;
   overflow-x: hidden;
   max-width: calc(100vw - 250px);
+`;
+
+export const ErrorToast = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: ${theme ? "#ef4444" : "#ef4444"};
+  background-color: #ef4444;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  z-index: 9999;
+  max-width: 360px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+`;
+
+export const SuccessToast = styled(ErrorToast)`
+  background-color: #22c55e;
 `;

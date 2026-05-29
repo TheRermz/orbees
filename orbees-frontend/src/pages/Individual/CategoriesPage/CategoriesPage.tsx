@@ -3,7 +3,7 @@ import * as LucideIcons from "lucide-react";
 import { useCategories } from "../../../hooks/useCategories";
 import { ColorPicker } from "../../../components/ui/ColorPicker/ColorPicker";
 import { IconPicker } from "../../../components/ui/IconPicker/IconPicker";
-import { Button, ErrorMessage, Modal } from "../../../components/ui";
+import { Button, Modal } from "../../../components/ui";
 import { Plus, Pencil } from "lucide-react";
 import type { CategoryReadDto } from "../../../interfaces/category";
 import {
@@ -24,12 +24,14 @@ import {
   DeleteButton,
 } from "./CategoriesPage.styles";
 import type { CategoriesPageProps } from "./interface";
+import { useToast } from "../../../contexts/useToast";
 
 const DEFAULT_COLOR = "#F5A623";
 const DEFAULT_ICON = "Tag";
 
 export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
   const { categories, create, update, remove, error } = useCategories(groupId);
+  const { showToast } = useToast();
 
   const [editing, setEditing] = useState<CategoryReadDto | null>(null);
   const [name, setName] = useState("");
@@ -59,22 +61,33 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
   const handleSubmit = async () => {
     if (!name.trim()) return;
     setLoading(true);
-    if (isEditing) {
-      await update(editing.id, { name, color, icon });
-    } else {
-      await create({ name, color, icon, groupId });
-    }
+    const success = isEditing
+      ? await update(editing.id, { name, color, icon })
+      : await create({ name, color, icon, groupId });
     setLoading(false);
-    resetForm();
+    if (success) {
+      showToast(
+        "success",
+        isEditing ? "Categoria atualizada." : "Categoria criada."
+      );
+      resetForm();
+    } else {
+      showToast("error", error ?? "Erro ao salvar categoria.");
+    }
   };
 
   const handleDelete = async () => {
     if (!editing) return;
     setDeleteLoading(true);
-    await remove(editing.id);
+    const success = await remove(editing.id);
     setDeleteLoading(false);
-    setShowDeleteModal(false);
-    resetForm();
+    if (success) {
+      showToast("success", "Categoria removida.");
+      setShowDeleteModal(false);
+      resetForm();
+    } else {
+      showToast("error", error ?? "Erro ao remover categoria.");
+    }
   };
 
   const PreviewIcon = LucideIcons[icon as keyof typeof LucideIcons] as
@@ -83,8 +96,6 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
 
   return (
     <Container>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-
       <Section>
         <SectionTitle>Categorias existentes</SectionTitle>
         <ChipsGrid>

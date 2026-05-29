@@ -32,6 +32,7 @@ import {
 } from "./TransactionsPage.styles";
 import type { TransactionTypeFilter } from "../../../components/ui/TypeFilter/interface";
 import type { TransactionReadDto } from "../../../interfaces/transaction";
+import { useToast } from "../../../contexts/useToast";
 
 const PAGE_SIZE = 10;
 
@@ -59,6 +60,7 @@ export const TransactionsPage = () => {
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
+  const { showToast } = useToast();
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -180,12 +182,22 @@ export const TransactionsPage = () => {
           onClose={() => setShowAddModal(false)}
           onCreate={async (dto) => {
             const success = await create(dto);
-            if (success) fetchData(from, to, page);
+            if (success) {
+              showToast("success", "Transação criada.");
+              fetchData(from, to, page);
+            } else {
+              showToast("error", "Erro ao criar transação.");
+            }
             return success;
           }}
           onCreateBulk={async (dtos) => {
             const success = await createBulk({ transactions: dtos });
-            if (success) fetchData(from, to, page);
+            if (success) {
+              showToast("success", "Transações criadas.");
+              fetchData(from, to, page);
+            } else {
+              showToast("error", "Erro ao criar transações.");
+            }
             return success;
           }}
         />
@@ -197,7 +209,12 @@ export const TransactionsPage = () => {
           onClose={() => setEditingTransaction(null)}
           onSave={async (id, dto) => {
             const success = await update(id, dto);
-            if (success) fetchData(from, to, page);
+            if (success) {
+              showToast("success", "Transação atualizada.");
+              fetchData(from, to, page);
+            } else {
+              showToast("error", "Erro ao atualizar transação.");
+            }
             return success;
           }}
         />

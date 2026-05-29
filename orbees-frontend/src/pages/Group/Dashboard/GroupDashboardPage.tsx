@@ -35,6 +35,7 @@ import {
   TxMeta,
   TxAmount,
 } from "./GroupDashboardPage.styles";
+import { useToast } from "../../../contexts/useToast";
 
 const now = new Date();
 const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
@@ -42,14 +43,25 @@ const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const GroupDashboardPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
-  const { dashboard, lastTransactions, fetchDashboard, fetchLastTransactions } =
-    useGroupDashboard(groupId!);
+  const {
+    dashboard,
+    lastTransactions,
+    fetchDashboard,
+    fetchLastTransactions,
+    error,
+  } = useGroupDashboard(groupId!);
   const { members, fetchMembers } = useGroups();
 
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [memberId, setMemberId] = useState("");
   const availableMonths = dashboard?.availableMonths ?? [];
+
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (error) showToast("error", error);
+  }, [error, showToast]);
 
   useEffect(() => {
     if (!groupId) return;

@@ -341,21 +341,3 @@ export const TipItem = styled.div`
     margin-bottom: 0;
   }
 `;
-
-export const ErrorToast = styled.div`
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: ${theme.colors.error};
-  color: white;
-  padding: 12px 20px;
-  border-radius: ${theme.borderRadius.md};
-  font-size: ${theme.fontSize.sm};
-  z-index: 1000;
-  max-width: 360px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-`;
-
-export const SuccessToast = styled(ErrorToast)`
-  background-color: #22c55e;
-`;
