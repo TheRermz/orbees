@@ -824,9 +824,85 @@ Busca até 5 transações com título similar (via `GetSimilarByDescriptionAsync
 **CSV:**
 - Faz `switch` pelo `BankCode` do banco
 - **Nubank (260)**: funcional
+- **Itaú (341)**: implementado mas não habilitado no switch
 - Bradesco (237), BB (001), Santander (033), Inter (077): lançam `NotImplementedException`
-- Itaú (341) e Caixa (104): comentados no switch
+- Caixa (104): não implementado
 - Banco desconhecido: `InvalidOperationException`
+
+#### Formatos CSV Suportados
+
+**Nubank (BankCode: 260) — IMPLEMENTADO ✓**
+
+- **Delimitador**: `,` (vírgula)
+- **Codificação**: UTF-8 com BOM
+- **Cabeçalho**: `Data,Descrição,Valor`
+- **Formato de data**: `dd/MM/yyyy`
+- **Formato de valor**: Decimal com vírgula (ex: `1.234,56`)
+- **Sinal**: Negativo para despesas, positivo para receitas
+
+**Exemplo:**
+```csv
+Data,Descrição,Valor
+01/05/2026,Supermercado Extra,-125,50
+05/05/2026,Transfer\u00eancia recebida,5000,00
+10/05/2026,IFOOD*PEDIDO,-42,90
+```
+
+**Itaú (BankCode: 341) — IMPLEMENTADO MAS NÃO HABILITADO**
+
+- **Delimitador**: `;` (ponto e vírgula)
+- **Codificação**: UTF-8 ou ISO-8859-1
+- **Cabeçalho**: `Data;Histórico;Crédito(R$);Débito(R$);Saldo(R$)`
+- **Formato de data**: `dd/MM/yyyy`
+- **Formato de valor**: Decimal com vírgula e separador de milhar com ponto (ex: `1.234,56`)
+- **Colunas separadas**: Crédito e Débito em colunas diferentes
+
+**Exemplo:**
+```csv
+Data;Histórico;Crédito(R$);Débito(R$);Saldo(R$)
+01/05/2026;COMPRA DEBITO SUPERMERCADO;;125,50;8.874,50
+05/05/2026;DEPOSITO EM CONTA;5.000,00;;13.874,50
+```
+
+**Bradesco (BankCode: 237) — NÃO IMPLEMENTADO ✗**
+
+Formato esperado (não validado):
+- Delimitador: `;`
+- Colunas: `Data;Histórico;Documento;Valor;Saldo`
+
+**Banco do Brasil (BankCode: 001) — NÃO IMPLEMENTADO ✗**
+
+Formato esperado (não validado):
+- Delimitador: `;`
+- Colunas: `Data;Historico;Numero_do_Documento;Valor;Saldo`
+
+**Santander (BankCode: 033) — NÃO IMPLEMENTADO ✗**
+
+Formato esperado (não validado):
+- Delimitador: `;`
+- Similar ao Itaú
+
+**Inter (BankCode: 077) — NÃO IMPLEMENTADO ✗**
+
+Formato esperado (não validado):
+- Delimitador: `,`
+- Similar ao Nubank
+
+**Caixa (BankCode: 104) — NÃO IMPLEMENTADO ✗**
+
+Formato não documentado.
+
+#### Como Adicionar Suporte a Novo Banco CSV
+
+1. Obter exemplo de CSV real do banco
+2. Identificar delimitador, codificação e formato de colunas
+3. Implementar método `private static async Task<List<TransactionPreviewDto>> Read{Banco}CSVAsync(StreamReader reader)` em `ExtractReaderService.cs`
+4. Adicionar case no switch da linha 42-52:
+```csharp
+"237" => await ReadBradescoCSVAsync(reader),
+```
+5. Usar `CsvHelper` com configuração adequada (`CsvConfiguration`)
+6. Testar com múltiplos arquivos reais
 
 ---
 
@@ -1151,6 +1227,55 @@ builder.Services.AddHostedService<ExportBackgroundService>();
 
 ---
 
+## Background Services
+
+### ExportBackgroundService
+
+**Arquivo**: `Services/ExportBackgroundService.cs`
+
+Serviço background que processa jobs de exportação assíncronos quando há mais de 100 transações.
+
+**Fluxo de execução:**
+
+1. Roda a cada 10 segundos (configurável via `Timer`)
+2. Busca todos os jobs com `Status = Pending` no banco
+3. Para cada job:
+   - Marca `Status = Processing`
+   - Busca as transações do usuário/grupo no período especificado
+   - Gera o arquivo (CSV/Excel/PDF) via `ExportService`
+   - Salva em `exports/{userId}/{jobId}_{filename}.{ext}`
+   - Atualiza `FilePath` e `Status = Completed`
+   - Em caso de erro: `Status = Failed` + `ErrorMessage`
+
+**Implementação do ciclo:**
+
+```csharp
+protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+{
+    while (!stoppingToken.IsCancellationRequested)
+    {
+        await ProcessPendingJobsAsync();
+        await Task.Delay(10000, stoppingToken); // 10 segundos
+    }
+}
+```
+
+**Gerenciamento de escopo:**
+
+Como é um Singleton, o service cria escopos manualmente para acessar serviços Scoped (DbContext, repositórios):
+
+```csharp
+using var scope = serviceScopeFactory.CreateScope();
+var exportJobRepository = scope.ServiceProvider.GetRequiredService<IExportJobRepository>();
+var transactionRepository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
+```
+
+**Diretório de saída:**
+- Desenvolvimento: `orbees-api/exports/`
+- Docker: Volume mapeado em `/app/exports`
+
+---
+
 ## Sistema de Exportação
 
 ### Fluxo Síncrono (≤ 100 transações)
@@ -1319,3 +1444,143 @@ Seeds são **idempotentes**: verificam existência antes de inserir.
 | `MAIL_PASSWORD` | Sim | Senha SMTP |
 | `MAIL_FROM` | Sim | Email remetente |
 | `SEED_DB` | Não | `true` para seed de dados de teste (padrão: `false`) |
+
+---
+
+## Segurança e Boas Práticas
+
+### Proteções Implementadas
+
+#### 1. Autenticação e Autorização
+
+**JWT com assinatura HMACSHA256:**
+- Tokens assinados com chave secreta de mínimo 32 caracteres
+- Validação de emissor (`issuer`), audiência (`audience`) e expiração
+- Claims incluem: `sub` (userId), `email`, `role`
+
+**OAuth 2.0 Google:**
+- Fluxo authorization code
+- Validação de tokens via Google APIs
+- Criação/login automático de usuários OAuth
+
+**Proteção de rotas:**
+- `[Authorize]` em todos os endpoints privados
+- `[Authorize(Roles = "Admin")]` para endpoints administrativos
+- Validação de propriedade de recursos (ex: transação pertence ao usuário)
+
+#### 2. Proteção de Senhas
+
+**BCrypt.Net** com salt automático:
+- Custo de hash: padrão BCrypt (10 rounds)
+- Senhas nunca armazenadas em texto plano
+- Suporte a usuários OAuth sem senha
+
+#### 3. Validação de Entrada
+
+**FluentValidation** em todos os DTOs:
+- Email em formato válido
+- Senhas com mínimo 8 caracteres
+- Títulos e descrições com tamanhos máximos
+- Valores numéricos positivos
+- Datas não futuras para transações
+- Validação de regras de negócio (ex: `GroupCategoryId` obrigatório quando `GroupId` presente)
+
+#### 4. Proteção contra Ataques Comuns
+
+**SQL Injection:**
+- **Proteção**: EF Core usa queries parametrizadas por padrão
+- **Sem concatenação de strings** em queries raw
+- Todas as queries via LINQ ou Fluent API
+
+**XSS (Cross-Site Scripting):**
+- **Backend**: Não renderiza HTML; retorna apenas JSON
+- **Frontend**: React escapa automaticamente valores no JSX
+- **Sem uso de `dangerouslySetInnerHTML`**
+
+**CSRF (Cross-Site Request Forgery):**
+- **Proteção**: Autenticação stateless via JWT (não usa cookies de sessão)
+- CORS configurado com origem específica via `FRONTEND_URL`
+
+**Mass Assignment:**
+- **Proteção**: DTOs específicos para create/update (não aceita modelos de domínio diretamente)
+- FluentValidation limita campos aceitos
+
+#### 5. Controle de Acesso
+
+**Validação de propriedade:**
+- Transações: verificação de `UserId` antes de retornar/atualizar/deletar
+- Categorias: verificação de `UserId` ou `GroupId`
+- Grupos: verificação de membership ativa
+- Contas bancárias: verificação de `UserId`
+
+**Validação de permissões de grupo:**
+- Admin: pode adicionar/remover membros, alterar roles, deletar grupo
+- Member: pode apenas visualizar e criar transações
+- Verificação de role antes de operações administrativas
+- Proteção: não permite remover o último Admin do grupo
+
+#### 6. Rate Limiting
+
+> **Status**: Não implementado
+>
+> **Recomendação para produção:**
+> - Implementar `AspNetCoreRateLimit` ou middleware customizado
+> - Limitar requisições por IP e por usuário autenticado
+> - Ex: 100 req/min por IP, 1000 req/min por usuário autenticado
+
+#### 7. HTTPS e CORS
+
+**HTTPS:**
+- Redireciona HTTP → HTTPS via `app.UseHttpsRedirection()`
+- Em produção: usar certificado SSL válido (Let's Encrypt, etc.)
+
+**CORS:**
+- Policy `Dev` configurada com origem específica via `FRONTEND_URL`
+- Não permite `AllowAnyOrigin()` em produção
+- Headers permitidos: `Authorization`, `Content-Type`
+
+#### 8. Logging e Auditoria
+
+**Serilog:**
+- Logs estruturados em arquivo diário (`logs/orbees{yyyyMMdd}.log`)
+- Não loga dados sensíveis (senhas, tokens)
+- Loga exceções com stack trace
+
+**Auditoria automática:**
+- Timestamps `CreatedAt` e `UpdatedAt` em todas as entidades
+- Soft delete: preserva histórico de dados
+- Campos de auditoria em `GroupMembers`: `JoinedAt`, `LeftAt`, `PromotedAt`
+
+#### 9. Proteção de Arquivos
+
+**Upload de fotos de perfil:**
+- Validação de extensão: apenas `.jpg`, `.jpeg`, `.png`
+- Tamanho máximo: 5MB (configurável)
+- Nomes de arquivo com GUID para evitar path traversal
+- Salvos em diretório dedicado: `uploads/profilePictures/{username}/`
+
+**Arquivos de exportação:**
+- Gerados em diretório temporário: `exports/{userId}/`
+- Acesso restrito: apenas o usuário dono do job pode fazer download
+- Validação de `jobId` e `userId` antes de servir o arquivo
+
+#### 10. Tokens de Email
+
+**Email confirmation e Password reset:**
+- Tokens únicos (GUID) com expiração
+- Validação de expiração antes de aceitar
+- Limpeza após uso (token definido como `null`)
+- Expiração padrão: 24h (confirmação), 1h (reset)
+
+### Recomendações Adicionais para Produção
+
+1. **Implementar HSTS** (HTTP Strict Transport Security)
+2. **Adicionar helmet headers** (X-Frame-Options, X-Content-Type-Options, etc.)
+3. **Implementar rate limiting** por endpoint sensível
+4. **Adicionar 2FA** (Two-Factor Authentication) para usuários
+5. **Rotação de chaves JWT** periodicamente
+6. **Monitoramento de segurança** (ex: Sentry, Application Insights)
+7. **Backup automático do banco de dados**
+8. **Testes de penetração** e análise de vulnerabilidades
+9. **Implementar CAPTCHA** em endpoints de registro e login
+10. **Adicionar IP whitelisting** para endpoints administrativos

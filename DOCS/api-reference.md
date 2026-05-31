@@ -315,6 +315,36 @@ Remove a foto de perfil do usuário.
 
 ---
 
+### GET `/api/user/search`
+
+Busca usuário por email. Útil para adicionar membros a grupos.
+
+**Auth**: Sim
+
+**Query Params**:
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `email` | string | Sim | Email do usuário a buscar |
+
+**Exemplo**: `GET /api/user/search?email=joao@example.com`
+
+**Response 200**:
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "email": "joao@example.com",
+  "username": "joaosilva",
+  "fullname": "João Silva"
+}
+```
+
+**Erros**:
+| Status | Situação |
+|--------|----------|
+| 404 | Usuário não encontrado |
+
+---
+
 ## Bancos — `/api/banks`
 
 ### GET `/api/banks`
@@ -1199,6 +1229,117 @@ Retorna as últimas 5 transações do usuário. Despesas têm `amount` com sinal
 
 ---
 
+### GET `/api/dashboard/group/{groupId}`
+
+Retorna o dashboard completo do grupo para o período informado. Por padrão, usa o mês corrente.
+
+**Auth**: Sim (deve ser membro do grupo)
+
+**Path Params**:
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `groupId` | uuid | Sim | ID do grupo |
+
+**Query Params**:
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `from` | datetime (ISO 8601) | Não | Início do período (padrão: 1º do mês atual) |
+| `to` | datetime (ISO 8601) | Não | Fim do período (padrão: agora) |
+
+**Exemplo**: `GET /api/dashboard/group/g1h2i3j4-.../dashboard?from=2026-05-01&to=2026-05-31`
+
+**Response 200**:
+```json
+{
+  "summary": {
+    "balance": 1200.00,
+    "balanceVariation": "+5%",
+    "totalIncome": 8000.00,
+    "incomeVariation": "+10%",
+    "totalExpenses": 6800.00,
+    "expensesVariation": "-3%",
+    "topCategory": {
+      "name": "Alimentação",
+      "amount": 2400.00,
+      "percentage": 35
+    }
+  },
+  "insights": [
+    "A média diária de gastos do grupo é de R$ 226,67.",
+    "As 3 categorias de maior frequência são: Alimentação, Transporte, Moradia.",
+    "João contribuiu com 45% das despesas do grupo neste período."
+  ],
+  "revenueVsExpensesChart": [
+    { "label": "Semana 1", "income": 8000.00, "expenses": 1800.00 },
+    { "label": "Semana 2", "income": 0.00, "expenses": 2200.00 },
+    { "label": "Semana 3", "income": 0.00, "expenses": 1600.00 },
+    { "label": "Semana 4", "income": 0.00, "expenses": 1200.00 }
+  ],
+  "expensesByCategoryChart": [
+    {
+      "categoryId": "c1d2e3f4-...",
+      "categoryName": "Alimentação",
+      "amount": 2400.00,
+      "transactionCount": 32,
+      "percentage": 35
+    }
+  ],
+  "memberExpensesChart": [
+    {
+      "memberId": "m1n2o3p4-...",
+      "memberName": "João Silva",
+      "totalExpenses": 3060.00,
+      "percentage": 45
+    },
+    {
+      "memberId": "m2n3o4p5-...",
+      "memberName": "Maria Oliveira",
+      "totalExpenses": 2380.00,
+      "percentage": 35
+    }
+  ],
+  "availableMonths": ["2026-03", "2026-04", "2026-05"],
+  "periodStart": "2026-05-01T00:00:00Z",
+  "periodEnd": "2026-05-31T23:59:59Z"
+}
+```
+
+**Erros**:
+| Status | Situação |
+|--------|----------|
+| 404 | Grupo não encontrado ou usuário não é membro |
+
+---
+
+### GET `/api/dashboard/group/{groupId}/last-transactions`
+
+Retorna as últimas 5 transações do grupo. Despesas têm `amount` com sinal negativo.
+
+**Auth**: Sim (deve ser membro do grupo)
+
+**Path Params**:
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `groupId` | uuid | Sim | ID do grupo |
+
+**Response 200**:
+```json
+[
+  {
+    "id": "t1u2v3w4-...",
+    "title": "Supermercado",
+    "categoryName": "Alimentação",
+    "categoryColor": "#FF6B6B",
+    "transactionDate": "2026-05-20T00:00:00Z",
+    "amount": -450.00,
+    "type": "Despesa",
+    "userName": "João Silva"
+  }
+]
+```
+
+---
+
 ## Exportação — `/api/transactions/export`
 
 ### GET `/api/transactions/export`
@@ -1329,5 +1470,84 @@ Faz o download do arquivo gerado pelo job assíncrono. Só funciona quando `stat
     "Title": ["O título deve ter entre 2 e 256 caracteres."],
     "Amount": ["O valor deve ser maior que zero."]
   }
+}
+```
+
+---
+
+## Filtros e Parâmetros Avançados
+
+### Filtros de Período
+
+Vários endpoints aceitam parâmetros de data para filtrar resultados por período:
+
+**Formato**: ISO 8601 (UTC)
+```
+?from=2026-05-01T00:00:00Z&to=2026-05-31T23:59:59Z
+```
+
+**Também aceita formato de data simplificado**:
+```
+?from=2026-05-01&to=2026-05-31
+```
+
+**Endpoints compatíveis:**
+- `GET /api/transactions`
+- `GET /api/transactions/group/{groupId}`
+- `GET /api/dashboard/self`
+- `GET /api/dashboard/group/{groupId}`
+- `GET /api/transactions/export`
+
+### Limites de Operações em Lote
+
+| Endpoint | Tipo | Limite Máximo | Comportamento ao Exceder |
+|----------|------|---------------|--------------------------|
+| `POST /api/transactions/bulk` | Criação em lote | 100 transações | 400 Bad Request |
+| `POST /api/transactions/import` | Importação OFX/CSV | 500 transações | 400 Bad Request |
+| `GET /api/transactions/export` | Exportação síncrona | 100 transações | Job assíncrono (202 Accepted) |
+
+### Formato CSV para Importação
+
+**Nubank (BankCode: 260)**
+
+Formato esperado do CSV:
+```csv
+Data,Descrição,Valor
+01/05/2026,Supermercado Extra,-125.50
+05/05/2026,Salário,5000.00
+```
+
+- Delimitador: `,` (vírgula)
+- Codificação: UTF-8
+- Cabeçalho obrigatório: `Data,Descrição,Valor`
+- Formato de data: `dd/MM/yyyy`
+- Valores negativos indicam despesas
+
+> **Nota**: Outros bancos (Bradesco, BB, Caixa, Santander, Inter) ainda não possuem parser de CSV implementado.
+
+### Limites de Tamanho de Arquivo
+
+| Tipo de Upload | Tamanho Máximo | Content-Type Aceito |
+|----------------|----------------|---------------------|
+| Foto de perfil | 5 MB | `image/jpeg`, `image/png` |
+| Arquivo OFX | 10 MB | `application/x-ofx` |
+| Arquivo CSV | 10 MB | `text/csv` |
+
+### Sugestão Automática de Categoria
+
+Ao fazer preview de OFX (`POST /api/transactions/preview/ofx`), o sistema analisa até 5 transações anteriores do usuário com descrição similar e sugere a categoria mais frequente.
+
+**Algoritmo de similaridade:**
+- Normaliza descrições (remove acentos, pontuação, converte para minúsculas)
+- Busca por substring comum
+- Elege categoria mais usada nas transações similares
+- Retorna `suggestedCategoryId` e `suggestedCategoryName` no preview
+
+**Exemplo de resposta com sugestão:**
+```json
+{
+  "title": "IFOOD*PEDIDO",
+  "suggestedCategoryId": "c1d2e3f4-...",
+  "suggestedCategoryName": "Alimentação"
 }
 ```

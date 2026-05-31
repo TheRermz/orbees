@@ -269,21 +269,54 @@ Usa `BrowserRouter`, `Routes` e `Route` do `react-router-dom`. A rota raiz `/` r
 
 **Mapa de rotas:**
 
-| Rota | Componente | Guard | Status |
-|------|------------|-------|--------|
-| `/login` | `LoginPage` | PublicRoute | Implementada |
-| `/register` | `RegisterPage` | PublicRoute | Implementada |
-| `/auth/confirm-email` | `ConfirmEmailPage` | PublicRoute | Implementada |
-| `/auth/callback` | `GoogleCallbackPage` | Nenhum | Implementada |
-| `/forgot-password` | `<h1>` placeholder | PublicRoute | Placeholder |
-| `/reset-password` | `<h1>` placeholder | PublicRoute | Placeholder |
-| `/dashboard` | `<h1>` placeholder | PrivateRoute | Em desenvolvimento |
-| `/transactions` | `<h1>` placeholder | PrivateRoute | Em desenvolvimento |
-| `/categories` | `<h1>` placeholder | PrivateRoute | Em desenvolvimento |
-| `/groups` | `<h1>` placeholder | PrivateRoute | Em desenvolvimento |
-| `/profile` | `<h1>` placeholder | PrivateRoute | Em desenvolvimento |
-| `/not-found` | `<h1>` placeholder | PublicRoute | Placeholder |
-| `*` | Redirect para `/not-found` | — | — |
+#### Rotas Públicas
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/` | Redirect | Redireciona para `/individual/dashboard` (autenticado) ou `/login` (não autenticado) |
+| `/login` | `LoginPage` | Página de login |
+| `/register` | `RegisterPage` | Página de registro |
+| `/auth/confirm-email` | `ConfirmEmailPage` | Confirmação de email via token |
+| `/auth/callback` | `GoogleCallbackPage` | Callback do OAuth Google |
+| `/forgot-password` | `ForgotPasswordPage` | Solicitação de reset de senha |
+| `/reset-password` | `ResetPasswordPage` | Reset de senha via token |
+| `/not-found` | `NotFoundPage` | Página 404 |
+| `*` | Redirect | Redireciona para `/not-found` |
+
+#### Rotas Privadas — Individual
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/individual/dashboard` | `DashboardPage` | Dashboard pessoal |
+| `/individual/transactions` | `TransactionsPage` | Gerenciar transações pessoais |
+| `/individual/categories` | `CategoriesPage` | Gerenciar categorias pessoais |
+| `/individual/import` | `ImportPage` | Importar extratos (OFX/CSV) |
+
+#### Rotas Privadas — Grupos
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/group` | `GroupRedirect` | Redireciona para dashboard do primeiro grupo |
+| `/group/:groupId` | Redirect | Redireciona para `/group/:groupId/dashboard` |
+| `/group/:groupId/dashboard` | `GroupDashboardPage` | Dashboard do grupo |
+| `/group/:groupId/transactions` | `GroupTransactionsPage` | Transações do grupo |
+| `/group/:groupId/categories` | `GroupCategoriesPage` | Categorias do grupo |
+| `/group/:groupId/members` | `GroupMembersPage` | Membros do grupo |
+
+#### Rotas Privadas — Educação Financeira
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/education/home` | `EducationHomePage` | Homepage com trilha de aprendizado |
+| `/education/fundamentals` | `EducationFundamentalsPage` | Fundamentos de educação financeira |
+| `/education/law` | `EducationLawPage` | Direitos trabalhistas e tributos |
+| `/education/calculators` | `EducationCalculatorsPage` | 7 calculadoras financeiras |
+
+#### Rotas Privadas — Configurações
+
+| Rota | Componente | Descrição |
+|------|------------|-----------|
+| `/settings` | `SettingsPage` | Configurações (perfil, grupos, segurança) |
 
 ### PublicRoute.tsx
 
@@ -731,6 +764,193 @@ Exibe mensagem de sucesso com fundo verde. Recebe `message: string`.
 
 ---
 
+### SearchInput
+
+Campo de busca com ícone de lupa. Props:
+- `value`: valor atual
+- `onChange`: handler de mudança
+- `placeholder`: texto de placeholder
+- Debounce automático de 300ms para otimizar performance
+
+---
+
+### TypeFilter
+
+Filtro de seleção de tipo de transação. Props:
+- `value`: tipo selecionado (`"Receita" | "Despesa" | "Todas"`)
+- `onChange`: handler de seleção
+- Estilizado com cores: verde (Receita), vermelho (Despesa), cinza (Todas)
+
+---
+
+### Pagination
+
+Controles de paginação com botões anterior/próximo e informação de página. Props:
+- `currentPage`: página atual (1-indexed)
+- `totalPages`: total de páginas
+- `onPageChange`: handler de mudança de página
+- `itemsPerPage`: itens por página
+- `totalItems`: total de itens
+
+---
+
+### PeriodSelector
+
+Seletor de período com opções pré-definidas e personalizado. Props:
+- `from`: data inicial (Date ou ISO string)
+- `to`: data final (Date ou ISO string)
+- `onChange`: handler recebe `{ from, to }`
+- **Opções pré-definidas**:
+  - Mês atual
+  - Mês anterior
+  - Últimos 3 meses
+  - Últimos 6 meses
+  - Ano atual
+  - Personalizado (date pickers)
+
+---
+
+### SummaryCard
+
+Card de resumo financeiro com título, valor e variação percentual. Props:
+- `title`: título do card (ex: "Saldo Total")
+- `value`: valor principal (formatado como moeda)
+- `variation`: variação percentual (ex: "+12%")
+- `icon`: ícone opcional (Lucide React)
+- Cor da variação: verde (+), vermelha (-)
+
+---
+
+### InsightItem
+
+Item de insight/dica financeira. Props:
+- `icon`: ícone (Lucide React)
+- `text`: texto do insight
+- Estilizado com fundo claro e bordas arredondadas
+
+---
+
+### CategoryChip
+
+Chip visual de categoria com cor e ícone. Props:
+- `name`: nome da categoria
+- `color`: cor em hex (ex: "#FF6B6B")
+- `icon`: emoji ou código de ícone
+- `onClick`: handler opcional para clique
+- Usado em listas e seletores de categoria
+
+---
+
+### ColorPicker
+
+Seletor de cor usando `react-colorful`. Props:
+- `color`: cor atual em hex
+- `onChange`: handler recebe nova cor em hex
+- Exibe preview da cor selecionada
+- Paleta de cores pré-definidas para seleção rápida
+
+---
+
+### IconPicker
+
+Seletor de ícone emoji. Props:
+- `icon`: emoji atual
+- `onChange`: handler recebe novo emoji
+- Grid de emojis categorizados:
+  - Financeiro: 💰 💵 💳 💸
+  - Alimentação: 🍕 🍔 🍟 🍜
+  - Transporte: 🚗 🚕 🚌 🚇
+  - Lazer: 🎬 🎮 🎨 🎵
+  - Saúde: 💊 🏥 🩺
+  - Outros: 🏠 📱 👕 ⚡
+
+---
+
+### TopBar
+
+Barra superior de navegação (MainLayout). Componentes:
+- Logo da Orbees (clicável, redireciona para dashboard)
+- Menu de navegação principal
+- Avatar do usuário com dropdown
+- Notificações (badge de contador)
+
+**Menu principal:**
+- Dashboard
+- Transações
+- Grupos
+- Educação Financeira
+
+**Dropdown do usuário:**
+- Perfil
+- Configurações
+- Sair
+
+---
+
+### AddTransactionModal
+
+Modal para adicionar nova transação manual. Campos:
+- Título (obrigatório)
+- Descrição (opcional)
+- Valor (obrigatório, number)
+- Data (obrigatório, date picker)
+- Tipo (Receita/Despesa, radio buttons)
+- Categoria (dropdown)
+- Conta bancária (dropdown, opcional)
+- Grupo (dropdown, opcional)
+- Categoria do grupo (dropdown, obrigatório se grupo selecionado)
+
+Usa `react-hook-form` para validação e `transactionService` para criar.
+
+---
+
+### TransactionEditModal
+
+Modal para editar transação existente. Permite editar:
+- Título
+- Descrição
+- Categoria pessoal
+- Grupo (apenas se atualmente `null`)
+- Categoria do grupo (apenas se `groupLinkActive === true`)
+
+**Campos não editáveis:**
+- Valor (`amount`)
+- Data (`transactionDate`)
+- Tipo (`type`)
+- Origem (`origin`)
+
+---
+
+### TransactionRow
+
+Linha da tabela de transações. Exibe:
+- Data (formatada dd/MM/yyyy)
+- Título
+- Categoria (chip com cor e ícone)
+- Tipo (badge colorido)
+- Valor (formatado como moeda, verde para receita, vermelho para despesa)
+- Ações (botões editar e deletar)
+
+Props:
+- `transaction`: objeto `TransactionReadDto`
+- `onEdit`: handler de edição
+- `onDelete`: handler de deleção
+
+---
+
+### TransactionItem
+
+Item de transação para lista compacta (usada no dashboard). Exibe:
+- Ícone da categoria
+- Título e data
+- Valor colorido
+
+Props:
+- `transaction`: objeto simplificado
+- `onClick`: handler opcional para clique
+
+---
+
 ## Layouts
 
 **Diretório**: `src/components/Layouts/`
@@ -810,6 +1030,249 @@ Compartilhado pelas páginas de autenticação (Login, Registro, Confirmação d
 - Salva o token via `tokenStorage.set(token)`
 - Redireciona para `/dashboard`
 - Exibe loading enquanto processa
+
+---
+
+### DashboardPage (`/individual/dashboard`)
+
+**Arquivo**: `pages/Individual/Dashboard/DashboardPage.tsx`
+
+- Dashboard pessoal do usuário com dados financeiros do período
+- Usa `useDashboard` hook para buscar dados da API
+- **Componentes principais**:
+  - `SummaryCard`: Cards de resumo (Saldo, Receitas, Despesas, Top Categoria)
+  - `CategoryPieChart`: Gráfico de pizza de despesas por categoria (Recharts)
+  - `RevenueExpenseChart`: Gráfico de linha/barra de receitas vs despesas ao longo do tempo
+  - `PeriodSelector`: Seletor de período (mês atual, mês anterior, personalizado)
+  - `TransactionItem`: Lista das últimas transações
+- **Estados**:
+  - `loading`: carregando dados
+  - `error`: erro ao buscar dados
+  - `period`: período selecionado (`from`, `to`)
+- **Insights**: Lista de insights automáticos gerados pelo backend
+
+---
+
+### TransactionsPage (`/individual/transactions`)
+
+**Arquivo**: `pages/Individual/Transactions/TransactionsPage.tsx`
+
+- Lista todas as transações do usuário com filtros
+- **Funcionalidades**:
+  - Filtro por período (date range)
+  - Filtro por tipo (Receita/Despesa/Todas)
+  - Busca por título/descrição
+  - Paginação
+  - Adicionar nova transação (modal)
+  - Editar transação (modal)
+  - Deletar transação
+  - Importar de OFX/CSV
+  - Exportar para CSV/Excel/PDF
+- **Componentes**:
+  - `AddTransactionModal`: Modal para criar transação manual
+  - `TransactionEditModal`: Modal para editar transação existente
+  - `TransactionRow`: Linha da tabela de transações
+  - `SearchInput`: Campo de busca
+  - `TypeFilter`: Filtro de tipo (Receita/Despesa/Todas)
+  - `Pagination`: Controles de paginação
+
+---
+
+### CategoriesPage (`/individual/categories`)
+
+**Arquivo**: `pages/Individual/Categories/CategoriesPage.tsx`
+
+- Gerenciamento de categorias pessoais
+- **Funcionalidades**:
+  - Listar categorias (pessoais + sistema)
+  - Criar nova categoria (modal)
+  - Editar categoria (modal)
+  - Deletar categoria (com confirmação)
+  - Color picker para escolher cor
+  - Icon picker para escolher ícone (emoji)
+- **Componentes**:
+  - `CategoryChip`: Chip visual da categoria com cor e ícone
+  - `ColorPicker`: Seletor de cor (react-colorful)
+  - `IconPicker`: Seletor de ícone emoji
+
+---
+
+### ImportPage (`/individual/import`)
+
+**Arquivo**: `pages/Individual/Import/ImportPage.tsx`
+
+- Importação de extratos bancários (OFX/CSV)
+- **Fluxo**:
+  1. Selecionar banco (para CSV)
+  2. Upload do arquivo
+  3. Preview das transações com sugestão de categoria
+  4. Ajustar categorias individualmente
+  5. Confirmar importação
+- **Componentes**:
+  - `FileUploadArea`: Área de drag-and-drop para upload
+  - `TransactionPreviewTable`: Tabela de preview com edição de categorias
+  - `CategorySelector`: Dropdown para selecionar/alterar categoria
+
+---
+
+### GroupDashboardPage (`/group/:groupId/dashboard`)
+
+**Arquivo**: `pages/Group/Dashboard/GroupDashboardPage.tsx`
+
+- Dashboard do grupo com dados consolidados
+- Similar ao dashboard pessoal, mas com dados do grupo
+- **Componentes adicionais**:
+  - `MemberExpensesBarChart`: Gráfico de barras de despesas por membro
+  - `MemberExpensesLineChart`: Gráfico de linha de evolução de despesas por membro
+- **Insights específicos de grupo**:
+  - Membro que mais contribuiu
+  - Média de gasto por membro
+  - Categorias mais frequentes do grupo
+
+---
+
+### GroupTransactionsPage (`/group/:groupId/transactions`)
+
+**Arquivo**: `pages/Group/Transactions/GroupTransactionsPage.tsx`
+
+- Lista transações do grupo
+- Similar a `TransactionsPage`, mas filtra por `groupId`
+- Exibe nome do membro que criou cada transação
+
+---
+
+### GroupCategoriesPage (`/group/:groupId/categories`)
+
+**Arquivo**: `pages/Group/Categories/GroupCategoriesPage.tsx`
+
+- Gerenciamento de categorias compartilhadas do grupo
+- Apenas Admins do grupo podem criar/editar/deletar
+
+---
+
+### GroupMembersPage (`/group/:groupId/members`)
+
+**Arquivo**: `pages/Group/Members/GroupMembersPage.tsx`
+
+- Lista membros do grupo
+- **Funcionalidades** (apenas Admin):
+  - Adicionar novo membro (buscar por email)
+  - Promover/rebaixar membro (Admin ↔ Member)
+  - Remover membro (com confirmação)
+- **Funcionalidades** (todos):
+  - Sair do grupo (com confirmação)
+- **Componentes**:
+  - `MemberCard`: Card de cada membro com avatar, nome, role e ações
+  - `AddMemberModal`: Modal para buscar e adicionar usuário por email
+
+---
+
+### SettingsPage (`/settings`)
+
+**Arquivo**: `pages/Settings/SettingsPage.tsx`
+
+- Configurações do usuário em abas
+- **Abas**:
+  1. **Perfil**: Editar nome, username, foto de perfil
+  2. **Grupos**: Listar grupos, criar novo grupo
+  3. **Segurança**: Alterar senha, deletar conta
+- **Componentes**:
+  - `ProfileTab`: Upload de foto, edição de dados pessoais
+  - `GroupsTab`: Lista de grupos com link para dashboard de cada um
+  - `SecurityTab`: Formulário de alteração de senha, botão de deletar conta
+
+---
+
+### EducationHomePage (`/education/home`)
+
+**Arquivo**: `pages/Education/Home/EducationHomePage.tsx`
+
+- Página inicial do módulo de Educação Financeira
+- **Conteúdo**:
+  - Hero banner com chamada para ação
+  - Stat cards com estatísticas motivacionais
+  - Trail de aprendizado (4 etapas):
+    1. Fundamentos
+    2. Direitos e Tributos
+    3. Calculadoras
+    4. (Futuro) Investimentos
+  - "Por que aprender?" com 4 cards de benefícios
+- **Componentes**:
+  - `EducationHeroBanner`: Banner principal
+  - `EducationStatCard`: Cards de estatísticas
+  - `EducationTrailStep`: Steps da trilha de aprendizado
+  - `EducationWhyCard`: Cards de benefícios
+
+---
+
+### EducationFundamentalsPage (`/education/fundamentals`)
+
+**Arquivo**: `pages/Education/Fundamentals/FundamentalsPage.tsx`
+
+- Ensina fundamentos de educação financeira
+- **Conteúdo**:
+  - 4 Pilares da Educação Financeira (cards)
+  - Regra 50-30-20 (ilustração interativa)
+  - Juros Simples vs Compostos (com calculadora interativa)
+  - Orçamento Pessoal (accordion com dicas)
+- **Componentes**:
+  - `PillarCard`: Card de cada pilar
+  - `Rule502030`: Visualização da regra 50-30-20
+  - `CompoundInterestCalculator`: Calculadora de juros compostos
+  - `FundamentalsAccordion`: Accordion com conteúdo expandível
+
+---
+
+### EducationLawPage (`/education/law`)
+
+**Arquivo**: `pages/Education/Law/LawPage.tsx`
+
+- Educação sobre direitos trabalhistas e tributários
+- **Conteúdo**:
+  - CLT (Consolidação das Leis do Trabalho)
+  - IRPF (Imposto de Renda Pessoa Física) com tabelas atualizadas
+  - Como ler o holerite
+- **Componentes**:
+  - `CltContent`: Conteúdo sobre CLT
+  - `IrpfContent`: Tabelas e explicações sobre IRPF
+  - `HoleriteContent`: Explicação de cada campo do holerite
+  - `LawCalloutBox`: Caixas de destaque com dicas
+  - `LawAccordionContent`: Accordion para cada tópico
+
+---
+
+### EducationCalculatorsPage (`/education/calculators`)
+
+**Arquivo**: `pages/Education/Calculators/CalculatorsPage.tsx`
+
+- Hub de 7 calculadoras financeiras interativas
+- **Calculadoras disponíveis**:
+  1. **Juros Simples**: Calcula juros simples dados capital, taxa e período
+  2. **Juros Compostos**: Calcula montante com juros compostos e mostra evolução
+  3. **Férias CLT**: Calcula valor de férias com 1/3 constitucional
+  4. **Custo de Parcelamento**: Compara custo de parcelar vs pagar à vista
+  5. **Metas de Poupança**: Calcula quanto poupar por mês para atingir meta
+  6. **Quitação de Dívidas**: Calcula estratégias de pagamento (bola de neve vs avalanche)
+  7. **Simulador de IRPF**: Simula imposto de renda com base na renda mensal
+- Cada calculadora é um componente separado com formulário e resultado visual
+- **Componentes**:
+  - `JurosSimplesCalculator`
+  - `JurosCompostosCalculator`
+  - `FeriasCltCalculator`
+  - `CustoParcelamentoCalculator`
+  - `MetasPoupancaCalculator`
+  - `QuitacaoDividasCalculator`
+  - `SimuladorIrpfCalculator`
+
+---
+
+### NotFoundPage (`*`)
+
+**Arquivo**: `pages/NotFound/NotFoundPage.tsx`
+
+- Página 404 personalizada
+- Exibe mensagem amigável e link para voltar ao dashboard
+- Usa ilustração ou ícone de "página não encontrada"
 
 ---
 

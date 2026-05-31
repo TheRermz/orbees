@@ -337,3 +337,291 @@ docker compose -f docker-compose.development.yml exec api dotnet ef database upd
 lsof -i :5210
 lsof -i :5173
 ```
+
+---
+
+## Configurar OAuth Google (Opcional)
+
+Se você deseja habilitar login com Google, siga estes passos:
+
+### 1. Criar Projeto no Google Cloud Console
+
+1. Acesse https://console.cloud.google.com/
+2. Crie um novo projeto ou selecione um existente
+3. Nomeie o projeto (ex: "Orbees Dev")
+
+### 2. Habilitar Google+ API
+
+1. No menu lateral, vá em **APIs e Serviços** → **Biblioteca**
+2. Busque por "Google+ API"
+3. Clique em **Ativar**
+
+### 3. Configurar Tela de Consentimento OAuth
+
+1. Vá em **APIs e Serviços** → **Tela de consentimento OAuth**
+2. Selecione **Externo** (para testes) ou **Interno** (se tiver Google Workspace)
+3. Preencha:
+   - **Nome do app**: Orbees
+   - **Email de suporte do usuário**: seu email
+   - **Domínio autorizado**: `localhost` (dev) ou seu domínio (produção)
+   - **Email do desenvolvedor**: seu email
+4. Clique em **Salvar e continuar**
+5. Em **Escopos**, adicione:
+   - `email`
+   - `profile`
+   - `openid`
+6. Conclua o assistente
+
+### 4. Criar Credenciais OAuth 2.0
+
+1. Vá em **APIs e Serviços** → **Credenciais**
+2. Clique em **Criar credenciais** → **ID do cliente OAuth 2.0**
+3. Selecione **Aplicativo da Web**
+4. Configure:
+   - **Nome**: Orbees Backend
+   - **URIs de redirecionamento autorizados**:
+     - Desenvolvimento: `http://localhost:5210/api/auth/google/callback`
+     - Produção: `https://seu-dominio.com/api/auth/google/callback`
+   - **Origens JavaScript autorizadas**:
+     - Desenvolvimento: `http://localhost:5210`
+     - Produção: `https://seu-dominio.com`
+5. Clique em **Criar**
+
+### 5. Copiar Credenciais
+
+Após criar, você verá:
+- **ID do cliente**: `123456789-abcdefg.apps.googleusercontent.com`
+- **Chave secreta do cliente**: `GOCSPX-xyz123abc456`
+
+Copie esses valores.
+
+### 6. Configurar no `.env`
+
+No arquivo `orbees-api/.env`:
+
+```bash
+GOOGLE_CLIENT_ID=123456789-abcdefg.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xyz123abc456
+```
+
+### 7. Reiniciar a API
+
+```bash
+# Docker
+docker compose -f docker-compose.development.yml restart api
+
+# Local
+# Pare o servidor (Ctrl+C) e rode novamente
+dotnet run
+```
+
+### 8. Testar Login com Google
+
+1. Acesse http://localhost:5173/login
+2. Clique no botão "Entrar com Google"
+3. Você será redirecionado para tela de consentimento do Google
+4. Após autorizar, será redirecionado de volta para o Orbees logado
+
+---
+
+## Deploy em Produção
+
+### Opção 1: Deploy com Docker Compose (VPS/Servidor)
+
+#### Pré-requisitos
+
+- Servidor Linux (Ubuntu 22.04 LTS recomendado)
+- Docker e Docker Compose instalados
+- Domínio configurado apontando para o IP do servidor
+- Certificado SSL (Let's Encrypt recomendado)
+
+#### Passos
+
+**1. Clonar repositório no servidor:**
+
+```bash
+ssh user@seu-servidor.com
+git clone https://github.com/TheRermz/orbees.git
+cd orbees
+```
+
+**2. Configurar variáveis de ambiente:**
+
+Edite `orbees-api/.env` com valores de produção:
+
+```bash
+DB_HOST=db
+DB_PORT=5432
+DB_USER=postgres_prod
+DB_PASSWORD=SenhaForte123!
+DB_NAME=orbees_prod
+
+POSTGRES_USER=postgres_prod
+POSTGRES_PASSWORD=SenhaForte123!
+POSTGRES_DB=orbees_prod
+
+API_PORT=5210
+FRONTEND_URL=https://seu-dominio.com
+
+JWT_SECRET_KEY=chave-super-secreta-minimo-32-caracteres-aleatoria
+JWT_ISSUER=orbees-api
+JWT_AUDIENCE=orbees-frontend
+
+GOOGLE_CLIENT_ID=seu-client-id-google
+GOOGLE_CLIENT_SECRET=seu-client-secret-google
+
+# SMTP de produção (ex: SendGrid, AWS SES, Gmail SMTP)
+MAIL_HOST=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USER=apikey
+MAIL_PASSWORD=SG.xxx
+MAIL_FROM=noreply@seu-dominio.com
+
+SEED_DB=false
+```
+
+Edite `orbees-frontend/.env`:
+
+```bash
+VITE_API_BASE_URL=https://api.seu-dominio.com/api
+```
+
+**3. Configurar Nginx como Reverse Proxy:**
+
+Instale Nginx:
+
+```bash
+sudo apt update
+sudo apt install nginx certbot python3-certbot-nginx
+```
+
+Crie configuração Nginx (`/etc/nginx/sites-available/orbees`):
+
+```nginx
+# Frontend
+server {
+    listen 80;
+    server_name seu-dominio.com;
+
+    location / {
+        proxy_pass http://localhost:5173;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# API
+server {
+    listen 80;
+    server_name api.seu-dominio.com;
+
+    location / {
+        proxy_pass http://localhost:5210;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Ativar configuração:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/orbees /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+**4. Obter certificado SSL:**
+
+```bash
+sudo certbot --nginx -d seu-dominio.com -d api.seu-dominio.com
+```
+
+**5. Subir aplicação:**
+
+```bash
+docker compose -f docker-compose.production.yml up -d
+```
+
+**6. Verificar status:**
+
+```bash
+docker compose -f docker-compose.production.yml ps
+docker compose -f docker-compose.production.yml logs -f
+```
+
+**7. Configurar backup automático do banco:**
+
+Crie script `/opt/orbees-backup.sh`:
+
+```bash
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backups/orbees"
+mkdir -p $BACKUP_DIR
+
+docker exec orbees-db pg_dump -U postgres_prod orbees_prod > $BACKUP_DIR/orbees_$DATE.sql
+gzip $BACKUP_DIR/orbees_$DATE.sql
+
+# Manter apenas últimos 30 dias
+find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
+```
+
+Adicionar ao crontab:
+
+```bash
+chmod +x /opt/orbees-backup.sh
+crontab -e
+```
+
+Adicione linha:
+
+```
+0 2 * * * /opt/orbees-backup.sh
+```
+
+### Opção 2: Deploy em Cloud (AWS/Azure/GCP)
+
+**AWS (exemplo com Elastic Beanstalk + RDS):**
+
+1. Criar RDS PostgreSQL
+2. Criar Elastic Beanstalk com Docker
+3. Configurar variáveis de ambiente
+4. Deploy via CLI ou console
+
+**Azure (exemplo com App Service):**
+
+1. Criar Azure Database for PostgreSQL
+2. Criar App Service com Docker
+3. Configurar variáveis de ambiente
+4. Deploy via GitHub Actions ou CLI
+
+**GCP (exemplo com Cloud Run):**
+
+1. Criar Cloud SQL PostgreSQL
+2. Criar Cloud Run service
+3. Configurar variáveis de ambiente
+4. Deploy via gcloud CLI
+
+### Checklist de Produção
+
+- [ ] Variáveis de ambiente configuradas corretamente
+- [ ] `JWT_SECRET_KEY` forte e aleatória (mínimo 64 caracteres)
+- [ ] `SEED_DB=false` (não popular dados de teste em produção)
+- [ ] Banco de dados em servidor separado ou serviço gerenciado
+- [ ] SMTP configurado com serviço confiável (não Mailpit)
+- [ ] HTTPS habilitado com certificado válido
+- [ ] CORS configurado com domínio específico (não `*`)
+- [ ] Backup automático do banco configurado
+- [ ] Monitoramento e logs configurados
+- [ ] Firewall configurado (apenas portas 80, 443, 22)
+- [ ] Senhas fortes em todas as contas
+- [ ] OAuth Google configurado com domínio de produção
+- [ ] Rate limiting habilitado
+- [ ] Testes de carga realizados

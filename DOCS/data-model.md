@@ -28,6 +28,160 @@ Banco de dados relacional **PostgreSQL 14**, gerenciado via **Entity Framework C
 
 ## Diagrama ERD
 
+### Versão Visual (Mermaid)
+
+```mermaid
+erDiagram
+    users ||--o{ user_roles : has
+    users ||--o{ bank_accounts : owns
+    users ||--o{ categories : creates
+    users ||--o{ group_members : joins
+    users ||--o{ transactions : makes
+    users ||--o{ export_jobs : requests
+
+    roles ||--o{ user_roles : defines
+
+    banks ||--o{ bank_accounts : provides
+
+    groups ||--o{ group_members : contains
+    groups ||--o{ categories : shares
+    groups ||--o{ transactions : tracks
+
+    group_roles ||--o{ group_members : assigns
+
+    categories ||--o{ transactions : classifies_personal
+    categories ||--o{ transactions : classifies_group
+
+    bank_accounts ||--o{ transactions : records
+
+    users {
+        uuid id PK
+        varchar email UK
+        varchar username UK
+        varchar fullname
+        varchar password nullable
+        boolean email_confirmed
+        text email_confirmation_token
+        timestamptz email_confirmation_expires_at
+        text pwd_reset_token
+        timestamptz pwd_reset_expires_at
+        text oauth_provider
+        text oauth_provider_id
+        boolean is_active
+        text profile_picture_path
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    roles {
+        int id PK
+        varchar name
+    }
+
+    user_roles {
+        uuid id PK
+        uuid user_id FK
+        int role_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    banks {
+        int id PK
+        varchar bank_name
+        varchar bank_code
+        varchar ispb
+        text csv_header_signature
+        boolean is_active
+    }
+
+    bank_accounts {
+        uuid id PK
+        varchar name
+        varchar agency
+        varchar account_number
+        uuid user_id FK
+        int bank_id FK
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    categories {
+        uuid id PK
+        varchar name
+        varchar icon
+        varchar color
+        uuid user_id FK_nullable
+        uuid group_id FK_nullable
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    groups {
+        uuid id PK
+        varchar name
+        text description
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    group_roles {
+        int id PK
+        varchar name
+    }
+
+    group_members {
+        uuid id PK
+        uuid group_id FK
+        uuid user_id FK
+        int group_role_id FK
+        boolean is_active
+        timestamptz left_at
+        timestamptz promoted_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    transactions {
+        uuid id PK
+        varchar title
+        varchar original_description
+        varchar description
+        decimal amount
+        timestamptz transaction_date
+        varchar type
+        varchar origin
+        varchar merchant_document
+        boolean is_active
+        boolean group_link_active
+        uuid user_id FK
+        uuid bank_account_id FK_nullable
+        uuid category_id FK_nullable
+        uuid group_category_id FK_nullable
+        uuid group_id FK_nullable
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    export_jobs {
+        uuid id PK
+        uuid user_id FK
+        varchar format
+        timestamptz from
+        timestamptz to
+        varchar status
+        text file_path
+        text error_message
+        timestamptz created_at
+        timestamptz updated_at
+    }
+```
+
+### Versão ASCII (original)
+
 ```
 ┌─────────────┐       ┌──────────────┐
 │    roles    │       │  group_roles │
@@ -477,3 +631,176 @@ Exceções (sem auditoria): `roles`, `group_roles`, `banks` (tabelas de lookup i
 ### Fuso Horário
 
 Todas as colunas de data/hora usam `timestamptz` (timestamp with time zone). Valores armazenados e retornados em **UTC**.
+
+---
+
+## Queries SQL Úteis
+
+### Consultas Analíticas
+
+**Total de receitas e despesas por mês de um usuário:**
+
+```sql
+SELECT
+    DATE_TRUNC('month', transaction_date) AS month,
+    type,
+    SUM(amount) AS total,
+    COUNT(*) AS count
+FROM transactions
+WHERE user_id = 'user-uuid-here'
+  AND is_active = true
+  AND transaction_date >= '2026-01-01'
+GROUP BY month, type
+ORDER BY month, type;
+```
+
+**Top 10 categorias de despesa de um usuário:**
+
+```sql
+SELECT
+    c.name,
+    c.color,
+    c.icon,
+    COUNT(t.id) AS transaction_count,
+    SUM(t.amount) AS total_amount
+FROM transactions t
+LEFT JOIN categories c ON t.category_id = c.id
+WHERE t.user_id = 'user-uuid-here'
+  AND t.type = 'Despesa'
+  AND t.is_active = true
+  AND t.transaction_date >= '2026-05-01'
+  AND t.transaction_date < '2026-06-01'
+GROUP BY c.id, c.name, c.color, c.icon
+ORDER BY total_amount DESC
+LIMIT 10;
+```
+
+**Despesas por membro de um grupo:**
+
+```sql
+SELECT
+    u.fullname,
+    u.username,
+    COUNT(t.id) AS transaction_count,
+    SUM(t.amount) AS total_expenses
+FROM transactions t
+INNER JOIN users u ON t.user_id = u.id
+WHERE t.group_id = 'group-uuid-here'
+  AND t.type = 'Despesa'
+  AND t.is_active = true
+GROUP BY u.id, u.fullname, u.username
+ORDER BY total_expenses DESC;
+```
+
+**Evolução do saldo mensal de um usuário:**
+
+```sql
+WITH monthly_totals AS (
+    SELECT
+        DATE_TRUNC('month', transaction_date) AS month,
+        SUM(CASE WHEN type = 'Receita' THEN amount ELSE 0 END) AS income,
+        SUM(CASE WHEN type = 'Despesa' THEN amount ELSE 0 END) AS expenses
+    FROM transactions
+    WHERE user_id = 'user-uuid-here'
+      AND is_active = true
+    GROUP BY month
+)
+SELECT
+    month,
+    income,
+    expenses,
+    (income - expenses) AS balance
+FROM monthly_totals
+ORDER BY month;
+```
+
+### Consultas de Manutenção
+
+**Contar transações por origem:**
+
+```sql
+SELECT origin, COUNT(*)
+FROM transactions
+WHERE is_active = true
+GROUP BY origin;
+```
+
+**Listar usuários sem transações:**
+
+```sql
+SELECT u.id, u.email, u.fullname
+FROM users u
+LEFT JOIN transactions t ON u.id = t.user_id
+WHERE u.is_active = true
+  AND t.id IS NULL;
+```
+
+**Listar categorias não utilizadas:**
+
+```sql
+SELECT c.id, c.name
+FROM categories c
+LEFT JOIN transactions t ON c.id = t.category_id
+WHERE c.is_active = true
+  AND c.user_id IS NOT NULL  -- apenas pessoais
+  AND t.id IS NULL;
+```
+
+**Limpar tokens expirados de email:**
+
+```sql
+UPDATE users
+SET email_confirmation_token = NULL,
+    email_confirmation_expires_at = NULL
+WHERE email_confirmation_expires_at < NOW()
+  AND email_confirmed = false;
+```
+
+**Limpar tokens expirados de reset de senha:**
+
+```sql
+UPDATE users
+SET pwd_reset_token = NULL,
+    pwd_reset_expires_at = NULL
+WHERE pwd_reset_expires_at < NOW();
+```
+
+### Consultas de Performance
+
+**Índices utilizados em transactions:**
+
+```sql
+SELECT
+    schemaname,
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes
+WHERE tablename = 'transactions';
+```
+
+**Tamanho das tabelas:**
+
+```sql
+SELECT
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+```
+
+**Análise de vacuum:**
+
+```sql
+SELECT
+    schemaname,
+    relname,
+    n_live_tup,
+    n_dead_tup,
+    last_vacuum,
+    last_autovacuum
+FROM pg_stat_user_tables
+ORDER BY n_dead_tup DESC;
+```
