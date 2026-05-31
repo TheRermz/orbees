@@ -20,6 +20,7 @@ import { EducationHomePage } from "../pages/Education/EducationHomePage";
 import { EducationFundamentalsPage } from "../pages/Education/Fundamentals/EducationFundamentalsPage";
 import { EducationLawPage } from "../pages/Education/Law/EducationLawPage";
 import { EducationCalculatorsPage } from "../pages/Education/Calculators/EducationCalculatorsPage";
+import { NotFoundPage } from "../pages/NotFound/NotFoundPage";
 
 // rotas das páginas
 
@@ -191,7 +192,7 @@ export const AppRoutes = () => {
           }
         />
         {/* not-found */}
-        <Route path="*" element={<Navigate to="/not-found" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
