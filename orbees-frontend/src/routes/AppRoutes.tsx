@@ -18,6 +18,7 @@ import { GroupDashboardPage } from "../pages/Group/Dashboard/GroupDashboardPage"
 import { SettingsPage } from "../pages/Settings/SettingsPage";
 import { EducationHomePage } from "../pages/Education/EducationHomePage";
 import { EducationFundamentalsPage } from "../pages/Education/Fundamentals/EducationFundamentalsPage";
+import { EducationLawPage } from "../pages/Education/Law/EducationLawPage";
 
 // rotas das páginas
 
@@ -168,7 +169,7 @@ export const AppRoutes = () => {
           path="/education/law"
           element={
             <PrivateRoute>
-              <h1>Direito e Tributos</h1>
+              <EducationLawPage />
             </PrivateRoute>
           }
         />
