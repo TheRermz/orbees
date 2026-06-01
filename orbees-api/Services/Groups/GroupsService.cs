@@ -232,21 +232,26 @@ namespace Api.Services.Groups
         public async Task LeaveGroupAsync(Guid userId, Guid groupId)
         {
             var member = await groupMemberRepository.GetByUserAndGroupAsync(userId, groupId)
-              ?? throw new KeyNotFoundException("Você não faz parte deste grupo.");
+      ?? throw new KeyNotFoundException("Você não faz parte deste grupo.");
+
+            var members = await groupMemberRepository.GetByGroupIdAsync(groupId);
+            var activeMembers = members.Where(m => m.IsActive).ToList();
+
+            if (activeMembers.Count == 1)
+            {
+                var group = await groupRepository.GetByIdAsync(groupId)
+                    ?? throw new KeyNotFoundException("Grupo não encontrado.");
+                await groupMemberRepository.DeleteAsync(member);
+                await groupRepository.DeleteAsync(group);
+                await groupRepository.SaveChangesAsync();
+                return;
+            }
 
             if (await groupMemberRepository.IsAdminAsync(userId, groupId))
             {
-                var members = await groupMemberRepository.GetByGroupIdAsync(groupId);
-                var adminCount = members.Count(m => m.IsActive && m.GroupRole.Name == "Administrador");
+                var adminCount = activeMembers.Count(m => m.GroupRole.Name == "Administrador");
                 if (adminCount == 1)
                     throw new InvalidOperationException("Você é o único administrador. Transfira a administração para outro membro antes de sair.");
-
-                if (members.Count(m => m.IsActive) == 1)
-                {
-                    var group = await groupRepository.GetByIdAsync(groupId)
-                        ?? throw new KeyNotFoundException("Grupo não encontrado.");
-                    await groupRepository.DeleteAsync(group);
-                }
             }
 
             await groupMemberRepository.DeleteAsync(member);

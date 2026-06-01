@@ -22,6 +22,7 @@ import { EducationLawPage } from "../pages/Education/Law/EducationLawPage";
 import { EducationCalculatorsPage } from "../pages/Education/Calculators/EducationCalculatorsPage";
 import { NotFoundPage } from "../pages/NotFound/NotFoundPage";
 import { NoGroupPage } from "../pages/NoGroup/NoGroupPage";
+import { GroupCreatePage } from "../pages/Group/GroupCreate/GroupCreatePage";
 
 // rotas das páginas
 
@@ -201,6 +202,16 @@ export const AppRoutes = () => {
           element={
             <PrivateRoute>
               <NoGroupPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Create Group */}
+        <Route
+          path="/group-create"
+          element={
+            <PrivateRoute>
+              <GroupCreatePage />
             </PrivateRoute>
           }
         />
