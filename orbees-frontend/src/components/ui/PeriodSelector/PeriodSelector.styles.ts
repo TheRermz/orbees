@@ -4,9 +4,8 @@ import { theme } from "../../../styles/theme";
 export const Container = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 16px 32px;
+  gap: 0;
+  padding: 12px 32px;
   background-color: ${theme.colors.background};
   border-bottom: 1px solid ${theme.colors.border};
 `;
@@ -17,7 +16,29 @@ export const PeriodLabel = styled.span`
   color: ${theme.colors.textMuted};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-right: 4px;
+  margin-right: 12px;
+  flex-shrink: 0;
+`;
+
+export const MonthsScroll = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 2px;
+  cursor: grab;
+  scrollbar-width: none;
+  margin-right: 0.75rem;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const MonthButton = styled.button<{ $active: boolean }>`
@@ -33,6 +54,8 @@ export const MonthButton = styled.button<{ $active: boolean }>`
     $active ? theme.fontWeight.bold : theme.fontWeight.normal};
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     background-color: ${({ $active }) =>

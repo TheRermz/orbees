@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   getFirstDayOfMonth,
   getLastDayOfMonth,
@@ -13,6 +13,7 @@ import {
   DateLabel,
   DateInput,
   ApplyButton,
+  MonthsScroll,
 } from "./PeriodSelector.styles";
 import type { PeriodSelectorProps } from "./interface";
 
@@ -54,25 +55,56 @@ export const PeriodSelector = ({
     onApply(localFrom, localTo);
   };
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    startX.current = e.pageX - (scrollRef.current?.offsetLeft ?? 0);
+    scrollLeft.current = scrollRef.current?.scrollLeft ?? 0;
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    const x = e.pageX - (scrollRef.current?.offsetLeft ?? 0);
+    const walk = x - startX.current;
+    if (scrollRef.current)
+      scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const stopDragging = () => {
+    isDragging.current = false;
+  };
+
   return (
     <Container>
       <PeriodLabel>Período</PeriodLabel>
+      <MonthsScroll
+        ref={scrollRef}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={stopDragging}
+        onMouseLeave={stopDragging}
+      >
+        {availableMonths.map((m) => (
+          <MonthButton
+            key={m}
+            $active={activeMonth === m}
+            onClick={() => handleMonthClick(m)}
+          >
+            {formatYearMonth(m)}
+          </MonthButton>
+        ))}
 
-      {availableMonths.map((m) => (
-        <MonthButton
-          key={m}
-          $active={activeMonth === m}
-          onClick={() => handleMonthClick(m)}
-        >
-          {formatYearMonth(m)}
-        </MonthButton>
-      ))}
-
-      {availableMonths.length > 1 && (
-        <MonthButton $active={activeMonth === "all"} onClick={handleAllClick}>
-          Todos
-        </MonthButton>
-      )}
+        {availableMonths.length > 1 && (
+          <MonthButton $active={activeMonth === "all"} onClick={handleAllClick}>
+            Todos
+          </MonthButton>
+        )}
+      </MonthsScroll>
 
       <DateInputGroup>
         <DateLabel>De</DateLabel>

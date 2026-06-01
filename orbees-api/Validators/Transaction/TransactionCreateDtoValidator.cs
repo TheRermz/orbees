@@ -1,5 +1,4 @@
 using Api.Dtos.Transaction;
-using Api.Models.Enums;
 using FluentValidation;
 
 namespace Api.Validators.Transaction
@@ -11,7 +10,11 @@ namespace Api.Validators.Transaction
             RuleFor(x => x.Title)
               .NotEmpty().WithMessage("O título é obrigatório.")
               .MinimumLength(2).WithMessage("O título deve conter no mínimo 2 caracteres.")
-              .MaximumLength(256).WithMessage("O título deve conter no máximo 256 caracteres.");
+              .MaximumLength(256).WithMessage("O título deve conter no máximo 256 caracteres.")
+              .Must(title => !System.Text.RegularExpressions.Regex.Matches(title, @"[^a-zA-Z0-9\s]")
+                .GroupBy(m => m.Value)
+                .Any(g => g.Count() > 5))
+              .WithMessage("Nenhum caractere especial pode se repetir mais de 5 vezes.");
 
             RuleFor(x => x.Description)
               .MaximumLength(512).WithMessage("A descrição deve conter no máximo 512 caracteres.")
@@ -19,10 +22,12 @@ namespace Api.Validators.Transaction
 
             RuleFor(x => x.Amount)
               .NotEqual(0).WithMessage("O valor não pode ser zero.")
-              .GreaterThan(0).WithMessage("O valor deve ser maior que zero.");
+              .GreaterThan(0).WithMessage("O valor deve ser maior que zero.")
+              .LessThanOrEqualTo(99999999.99m).WithMessage("O valor não pode ser maior que R$ 999.999.999,99.");
 
             RuleFor(x => x.TransactionDate)
               .NotEmpty().WithMessage("A data da transação é obrigatória.")
+              .GreaterThanOrEqualTo(new DateTime(1901, 1, 1)).WithMessage("A data da transação não pode ser anterior a 01/01/1901.")
               .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("A data de transação não pode ser no futuro.");
 
             RuleFor(x => x.Type)

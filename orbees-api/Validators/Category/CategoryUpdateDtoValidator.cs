@@ -11,6 +11,10 @@ namespace Api.Validators.Category
               .NotEmpty().WithMessage("O nome da categoria é obrigatório.")
               .MinimumLength(2).WithMessage("O nome da categoria deve conter no mínimo 2 caracteres.")
               .MaximumLength(128).WithMessage("O nome da categoria deve conter no máximo 128 caracteres.")
+              .Must(title => !System.Text.RegularExpressions.Regex.Matches(title, @"[^a-zA-Z0-9\s]")
+                .GroupBy(m => m.Value)
+                .Any(g => g.Count() > 5))
+              .WithMessage("Nenhum caractere especial pode se repetir mais de 5 vezes.")
               .When(x => x.Name != null);
 
             RuleFor(x => x.Icon)

@@ -57,9 +57,15 @@ export const AddTransactionModal = ({
   };
 
   const handleSubmit = async () => {
-    const invalid = forms.find((f) => !f.title.trim() || f.amount <= 0);
+    const invalid = forms.find(
+      (f) =>
+        !f.title.trim() ||
+        f.amount <= 0 ||
+        f.amount > 999999999.99 ||
+        !f.transactionDate
+    );
     if (invalid) {
-      setError("Preencha título e valor em todas as transações.");
+      setError("Preencha título e valor válidos (máx. R$ 999.999.999,99).");
       return;
     }
 
@@ -128,7 +134,10 @@ export const AddTransactionModal = ({
                 <Label>Data *</Label>
                 <StyledInput
                   type="date"
-                  value={form.transactionDate as unknown as string}
+                  value={
+                    form.transactionDate ||
+                    new Date().toISOString().split("T")[0]
+                  }
                   onChange={(e) =>
                     updateForm(i, "transactionDate", e.target.value)
                   }
@@ -142,6 +151,7 @@ export const AddTransactionModal = ({
                 <StyledInput
                   type="number"
                   min="0"
+                  max="999999999.99"
                   step="0.01"
                   value={form.amount || ""}
                   onChange={(e) => updateForm(i, "amount", e.target.value)}
@@ -231,7 +241,7 @@ export const AddTransactionModal = ({
                     )
                   }
                 >
-                  <option value="">Sem categoria</option>
+                  <option value="">Sem categoria *</option>
                   {groupCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}

@@ -12,9 +12,9 @@ export const parseYearMonth = (
 };
 
 export const formatYearMonth = (yearMonth: string): string => {
-  const { year, month } = parseYearMonth(yearMonth);
-  return new Date(year, month - 1, 1).toLocaleDateString("pt-BR", {
-    month: "short",
-    year: "2-digit",
-  });
+  const { year, month } = parseYearMonth(yearMonth)
+  return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', {
+    month: 'short',
+    year: year < 2001 ? 'numeric' : '2-digit',
+  })
 };
