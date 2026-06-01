@@ -21,6 +21,7 @@ import { EducationFundamentalsPage } from "../pages/Education/Fundamentals/Educa
 import { EducationLawPage } from "../pages/Education/Law/EducationLawPage";
 import { EducationCalculatorsPage } from "../pages/Education/Calculators/EducationCalculatorsPage";
 import { NotFoundPage } from "../pages/NotFound/NotFoundPage";
+import { NoGroupPage } from "../pages/NoGroup/NoGroupPage";
 
 // rotas das páginas
 
@@ -193,6 +194,16 @@ export const AppRoutes = () => {
         />
         {/* not-found */}
         <Route path="*" element={<NotFoundPage />} />
+
+        {/* No Groups */}
+        <Route
+          path="/no-group"
+          element={
+            <PrivateRoute>
+              <NoGroupPage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

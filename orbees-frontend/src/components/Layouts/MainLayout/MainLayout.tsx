@@ -37,6 +37,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const { logout } = useAuthActions();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [groupLoaded, setGroupLoaded] = useState(false);
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
@@ -54,6 +55,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   useEffect(() => {
     groupService.getMyGroups().then((groups) => {
       if (groups.length > 0) setGroupId(groups[0].id);
+      setGroupLoaded(true);
     });
   }, []);
 
@@ -64,6 +66,14 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       path: groupId ? sub.path.replace(":groupId", groupId) : sub.path,
     })),
   }));
+
+  const handleSubMenuClick = (basePath: string, path: string) => {
+    if (basePath === "/group" && !groupId && groupLoaded) {
+      navigate("/no-group");
+      return;
+    }
+    navigate(path);
+  };
 
   const showToast = useCallback(
     (type: "success" | "error", message: string) => {
@@ -118,7 +128,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                         <SubMenuItem
                           key={sub.path}
                           $active={location.pathname === sub.path}
-                          onClick={() => navigate(sub.path)}
+                          onClick={() =>
+                            handleSubMenuClick(group.basePath, sub.path)
+                          }
                         >
                           {sub.icon}
                           {sub.label}
