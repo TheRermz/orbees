@@ -12,6 +12,7 @@ import type {
 import { ExportFormat } from "../interfaces/enums";
 import { downloadBlob } from "../helpers/download";
 import { getErrorMessage } from "../helpers/error";
+import { useNotifications } from "../contexts/useNotifications";
 
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState<
@@ -26,6 +27,7 @@ export const useTransactions = () => {
   const [preview, setPreview] = useState<TransactionPreviewDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { addNotification } = useNotifications();
 
   const fetchMyTransactions = useCallback(
     async (page: number, pageSize: number, from?: string, to?: string) => {
@@ -242,18 +244,37 @@ export const useTransactions = () => {
 
       if (status.status === "Completed" && status.downloadUrl) {
         const blob = await transactionService.downloadExportJob(jobId);
-        downloadBlob(blob, `transacoes.${extensions[format]}`);
+        const url = URL.createObjectURL(blob);
+        const filename = `transacoes.${extensions[format]}`;
+
+        addNotification({
+          type: "download",
+          message: "Sua exportação está pronta para download.",
+          downloadUrl: url,
+          downloadLabel: filename,
+        });
+
+        downloadBlob(blob, filename);
         return;
       }
 
       if (status.status === "Failed") {
         setError("Erro ao gerar arquivo de exportação.");
+        addNotification({
+          type: "warning",
+          message: "Falha ao gerar o arquivo de exportação. Tente novamente.",
+        });
         return;
       }
     }
 
     setError("Tempo esgotado ao aguardar exportação.");
+    addNotification({
+      type: "warning",
+      message: "Tempo esgotado ao aguardar a exportação.",
+    });
   };
+
   return {
     transactions,
     preview,
