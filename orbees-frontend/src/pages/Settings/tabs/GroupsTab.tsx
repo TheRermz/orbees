@@ -19,12 +19,15 @@ import {
 } from "../SettingsPage.styles";
 import { ADMIN_PERMISSIONS, MEMBER_PERMISSIONS } from "../constants";
 import { useToast } from "../../../contexts/useToast";
+import { Button } from "../../../components/ui";
+import { useNavigate } from "react-router-dom";
 
 export const GroupsTab = () => {
   const { user } = useAuthState();
   const { groups, members, fetchGroups, fetchMembers, leave, loading, error } =
     useGroups();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const group = groups[0];
   const myMember = members.find((m) => m.userId === user?.id);
@@ -98,7 +101,12 @@ export const GroupsTab = () => {
             </PermissionsCard>
           </>
         ) : (
-          <InfoBox>Você não pertence a nenhum grupo no momento.</InfoBox>
+          <>
+            <InfoBox>Você não pertence a nenhum grupo no momento.</InfoBox>
+            <Button variant="primary" onClick={() => navigate("/group-create")}>
+              Criar um grupo
+            </Button>
+          </>
         )}
       </Section>
     </>
