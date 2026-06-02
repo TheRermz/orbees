@@ -20,3 +20,4 @@ export { TransactionEditModal } from "./TransactionEditModal/TransactionEditModa
 export { ColorPicker } from "./ColorPicker/ColorPicker";
 export { IconPicker } from "./IconPicker/IconPicker";
 export { AddTransactionModal } from "./AddTransactionModal/AddTransactionModal";
+export { ExportModal } from "./ExportModal/ExportModal";

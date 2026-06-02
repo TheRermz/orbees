@@ -10,6 +10,7 @@ import {
   PeriodSelector,
   TransactionEditModal,
   AddTransactionModal,
+  ExportModal,
 } from "../../../components/ui";
 import { ExportFormat } from "../../../interfaces/enums";
 import { dashboardService } from "../../../services/dashboardService";
@@ -65,6 +66,7 @@ export const TransactionsPage = () => {
   const { showToast } = useToast();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const fetchData = useCallback(
     (newFrom: string, newTo: string, newPage: number) => {
@@ -100,8 +102,9 @@ export const TransactionsPage = () => {
     fetchData(newFrom, newTo, 1);
   };
 
-  const handleExport = async () => {
-    await exportTransactions(ExportFormat.PDF, from, to);
+  const handleExport = async (format: ExportFormat) => {
+    await exportTransactions(format, from, to);
+    setShowExportModal(false);
   };
 
   // filtros locais
@@ -130,7 +133,7 @@ export const TransactionsPage = () => {
             <Plus size={16} />
             Nova Transação
           </ExportButton>
-          <ExportButton onClick={handleExport} disabled={loading}>
+          <ExportButton onClick={() => setShowExportModal(true)} disabled={loading}>
             <Download size={16} />
             {loading ? "Exportando..." : "Exportar"}
           </ExportButton>
@@ -236,6 +239,14 @@ export const TransactionsPage = () => {
             setPage(newPage);
             fetchData(from, to, newPage);
           }}
+        />
+      )}
+
+      {showExportModal && (
+        <ExportModal
+          loading={loading}
+          onClose={() => setShowExportModal(false)}
+          onExport={handleExport}
         />
       )}
     </Container>

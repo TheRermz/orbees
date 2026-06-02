@@ -9,6 +9,7 @@ import {
   TransactionRow,
   PeriodSelector,
   TransactionEditModal,
+  ExportModal,
 } from "../../../components/ui";
 import { ExportFormat } from "../../../interfaces/enums";
 import { dashboardService } from "../../../services/dashboardService";
@@ -54,6 +55,7 @@ export const GroupTransactionsPage = () => {
 
   const [editingTransaction, setEditingTransaction] =
     useState<TransactionReadDto | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [page, setPage] = useState(1);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
@@ -98,8 +100,9 @@ export const GroupTransactionsPage = () => {
     fetchData(newFrom, newTo, 1);
   };
 
-  const handleExport = async () => {
-    await exportTransactions(ExportFormat.CSV, from, to, groupId);
+  const handleExport = async (format: ExportFormat) => {
+    await exportTransactions(format, from, to, groupId);
+    setShowExportModal(false);
   };
 
   // filtros locais
@@ -123,7 +126,7 @@ export const GroupTransactionsPage = () => {
           <PageTitle>Transações</PageTitle>
           <PageSubtitle>Histórico completo de movimentações</PageSubtitle>
         </HeaderLeft>
-        <ExportButton onClick={handleExport} disabled={loading}>
+        <ExportButton onClick={() => setShowExportModal(true)} disabled={loading}>
           <Download size={16} />
           {loading ? "Exportando..." : "Exportar"}
         </ExportButton>
@@ -203,6 +206,14 @@ export const GroupTransactionsPage = () => {
             setPage(newPage);
             fetchData(from, to, newPage);
           }}
+        />
+      )}
+
+      {showExportModal && (
+        <ExportModal
+          loading={loading}
+          onClose={() => setShowExportModal(false)}
+          onExport={handleExport}
         />
       )}
     </Container>
