@@ -4,12 +4,13 @@ using Api.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController(IAuthService authService, IMemoryCache cache) : ControllerBase
     {
         // POST /api/auth/register
         [HttpPost("register")]
@@ -86,8 +87,23 @@ namespace Api.Controllers.Auth
 
             var token = await authService.HandleGoogleCallbackAsync(email, name, providerId);
 
-            // Redireciona para o frontend com o token na query string
-            return Redirect($"{Environment.GetEnvironmentVariable("FRONTEND_URL")}/auth/callback?token={token}");
+            var code = Guid.NewGuid().ToString("N");
+            cache.Set(code, token, TimeSpan.FromMinutes(2));
+
+            var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+            return Redirect($"{frontendUrl}/auth/callback?code={code}");
+        }
+
+        //POST /api/auth/exchange
+        [HttpPost("exchange")]
+        [AllowAnonymous]
+        public IActionResult Exchange([FromBody] AuthExchangeDto dto)
+        {
+            if (!cache.TryGetValue(dto.Code, out string? token) || token is null)
+                return BadRequest(new { message = "Código inválido ou expirado." });
+
+            cache.Remove(dto.Code);
+            return Ok(new { token });
         }
     }
 }

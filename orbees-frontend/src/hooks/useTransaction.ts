@@ -238,11 +238,25 @@ export const useTransactions = () => {
       [ExportFormat.PDF]: "pdf",
     };
 
+    addNotification({
+      type: "info",
+      message: "Exportação em andamento. Você será notificado ao concluir.",
+    });
+
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, 2000));
       const status = await transactionService.getExportJobStatus(jobId);
 
-      if (status.status === "Completed" && status.downloadUrl) {
+      if (status.status === "Completed") {
+        if (!status.downloadUrl) {
+          setError("Exportação concluída mas URL de download indisponível.");
+          addNotification({
+            type: "warning",
+            message: "Arquivo gerado mas download falhou. Tente novamente.",
+          });
+          return;
+        }
+
         const blob = await transactionService.downloadExportJob(jobId);
         const url = URL.createObjectURL(blob);
         const filename = `transacoes.${extensions[format]}`;

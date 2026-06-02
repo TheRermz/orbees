@@ -31,6 +31,7 @@ import {
   ChartToggleGroup,
   ToggleButton,
   TransactionList,
+  LoadingWrapper,
 } from "./DashboardPage.styles";
 import { CategoryPieChart } from "../../../components/Dashboard/CategoryPieChart";
 import { RevenueExpensesChart } from "../../../components/Dashboard/RevenueExpenseChart";
@@ -48,6 +49,7 @@ export const DashboardPage = () => {
   const {
     dashboard,
     lastTransactions,
+    loading,
     fetchDashboard,
     fetchLastTransactions,
     error,
@@ -87,6 +89,10 @@ export const DashboardPage = () => {
       metric === "value" ? c.amount : c.transactionCount
     ) ?? [1])
   );
+
+  if (loading && !dashboard) {
+    return <Container><LoadingWrapper>Carregando...</LoadingWrapper></Container>;
+  }
 
   return (
     <Container>

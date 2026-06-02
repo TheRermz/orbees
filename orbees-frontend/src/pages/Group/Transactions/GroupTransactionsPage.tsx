@@ -43,6 +43,7 @@ const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 export const GroupTransactionsPage = () => {
   const {
     transactions,
+    loading,
     fetchGroupTransactions,
     exportTransactions,
     update,
@@ -122,9 +123,9 @@ export const GroupTransactionsPage = () => {
           <PageTitle>Transações</PageTitle>
           <PageSubtitle>Histórico completo de movimentações</PageSubtitle>
         </HeaderLeft>
-        <ExportButton onClick={handleExport}>
+        <ExportButton onClick={handleExport} disabled={loading}>
           <Download size={16} />
-          Exportar
+          {loading ? "Exportando..." : "Exportar"}
         </ExportButton>
       </Header>
 

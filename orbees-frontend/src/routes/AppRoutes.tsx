@@ -23,6 +23,7 @@ import { EducationCalculatorsPage } from "../pages/Education/Calculators/Educati
 import { NotFoundPage } from "../pages/NotFound/NotFoundPage";
 import { NoGroupPage } from "../pages/NoGroup/NoGroupPage";
 import { GroupCreatePage } from "../pages/Group/GroupCreate/GroupCreatePage";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 // rotas das páginas
 
@@ -31,6 +32,7 @@ export const AppRoutes = () => {
 
   return (
     <BrowserRouter>
+      <ErrorBoundary>
       <Routes>
         {/* raiz */}
         <Route
@@ -216,6 +218,7 @@ export const AppRoutes = () => {
           }
         />
       </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 };

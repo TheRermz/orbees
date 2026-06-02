@@ -36,6 +36,7 @@ builder.Host.UseSerilog();
 
 // ── Controllers ────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 
 // ── Swagger ────────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();

@@ -4,6 +4,7 @@ import { useTransactions } from "../../../hooks/useTransaction";
 import { useCategories } from "../../../hooks/useCategories";
 import { useGroups } from "../../../hooks/useGroups";
 import { bankService } from "../../../services/bankService";
+import { useToast } from "../../../contexts/useToast";
 import {
   getStepStatus,
   STEPS,
@@ -29,11 +30,18 @@ import { Preview } from "./steps/Preview";
 import { Categorize } from "./steps/Categorize";
 import { Success } from "./steps/Success";
 
+const ALLOWED_MIME: Record<string, string[]> = {
+  ofx: ["application/x-ofx", "application/ofx", "text/plain", ""],
+  csv: ["text/csv", "text/plain", "application/vnd.ms-excel", ""],
+};
+
 export const ImportPage = () => {
   const { preview, previewOFX, previewCSV, importTransactions } =
     useTransactions();
   const { categories } = useCategories();
   const { groups } = useGroups();
+
+  const { showToast } = useToast();
 
   const [step, setStep] = useState<Step>(1);
   const [file, setFile] = useState<File | null>(null);
@@ -47,13 +55,21 @@ export const ImportPage = () => {
 
   const handleFile = useCallback(
     async (f: File) => {
+      const ext = f.name.split(".").pop()?.toLowerCase();
+      if (ext !== "ofx" && ext !== "csv") {
+        showToast("error", "Formato inválido. Use arquivos .OFX ou .CSV.");
+        return;
+      }
+      if (!ALLOWED_MIME[ext].includes(f.type)) {
+        showToast("error", "Tipo de arquivo inválido. Verifique se é um OFX ou CSV legítimo.");
+        return;
+      }
       setFile(f);
       setLoading(true);
-      const ext = f.name.split(".").pop()?.toLowerCase();
       if (ext === "ofx") {
         await previewOFX(f);
         setStep(2);
-      } else if (ext === "csv") {
+      } else {
         const bankList = await bankService.getAll();
         setBanks(bankList);
         setSelectedBank(bankList[0]?.id ?? null);
@@ -61,7 +77,7 @@ export const ImportPage = () => {
       }
       setLoading(false);
     },
-    [previewOFX]
+    [previewOFX, showToast]
   );
 
   const handleCSVPreview = async () => {
@@ -87,6 +103,13 @@ export const ImportPage = () => {
   };
 
   const handleImport = async () => {
+    const hasInvalidGroup = Object.values(categorizeState).some(
+      (s) => s.shareWithGroup && !s.groupId
+    );
+    if (hasInvalidGroup) {
+      showToast("error", "Selecione um grupo válido para as transações compartilhadas.");
+      return;
+    }
     setLoading(true);
     const transactions = preview.map((p) => {
       const key = p.originalDescription ?? p.title;

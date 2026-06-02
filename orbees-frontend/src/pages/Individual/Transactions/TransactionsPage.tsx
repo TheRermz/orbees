@@ -43,6 +43,7 @@ const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 export const TransactionsPage = () => {
   const {
     transactions,
+    loading,
     fetchMyTransactions,
     exportTransactions,
     update,
@@ -129,9 +130,9 @@ export const TransactionsPage = () => {
             <Plus size={16} />
             Nova Transação
           </ExportButton>
-          <ExportButton onClick={handleExport}>
+          <ExportButton onClick={handleExport} disabled={loading}>
             <Download size={16} />
-            Exportar
+            {loading ? "Exportando..." : "Exportar"}
           </ExportButton>
         </div>
       </Header>

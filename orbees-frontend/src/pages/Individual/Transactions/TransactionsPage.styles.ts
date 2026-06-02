@@ -53,9 +53,14 @@ export const ExportButton = styled.button`
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: ${theme.colors.primary};
     color: ${theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 

@@ -154,3 +154,12 @@ export const TransactionList = styled.div`
 `;
 
 export const getCategoryColor = (color?: string): string => color ?? "#9ca3af";
+
+export const LoadingWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: ${theme.colors.textMuted};
+  font-size: ${theme.fontSize.md};
+`;

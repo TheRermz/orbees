@@ -23,6 +23,11 @@ export const authService = {
     await api.post("/auth/reset-password", { token, newPassword });
   },
 
+  exchangeCode: async (code: string): Promise<AuthResponse> => {
+    const { data } = await api.post<AuthResponse>("/auth/exchange", { code });
+    return data;
+  },
+
   logout: (): void => {
     localStorage.removeItem("token");
     window.location.href = "/login";
