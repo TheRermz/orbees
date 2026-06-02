@@ -32,7 +32,7 @@ import { Categorize } from "./steps/Categorize";
 import { Success } from "./steps/Success";
 
 export const ImportPage = () => {
-  const { preview, previewOFX, previewCSV, importTransactions } =
+  const { preview, previewOFX, previewCSV, previewXLS, importTransactions } =
     useTransactions();
   const { categories } = useCategories();
   const { groups } = useGroups();
@@ -52,12 +52,12 @@ export const ImportPage = () => {
   const handleFile = useCallback(
     async (f: File) => {
       const ext = f.name.split(".").pop()?.toLowerCase();
-      if (ext !== "ofx" && ext !== "csv") {
-        showToast("error", "Formato inválido. Use arquivos .OFX ou .CSV.");
+      if (ext !== "ofx" && ext !== "csv" && ext !== "xls") {
+        showToast("error", "Formato inválido. Use arquivos .OFX, .CSV ou .XLS.");
         return;
       }
       if (!ALLOWED_MIME[ext].includes(f.type)) {
-        showToast("error", "Tipo de arquivo inválido. Verifique se é um OFX ou CSV legítimo.");
+        showToast("error", "Tipo de arquivo inválido. Verifique se o arquivo é legítimo.");
         return;
       }
       setFile(f);
@@ -76,10 +76,15 @@ export const ImportPage = () => {
     [previewOFX, showToast]
   );
 
-  const handleCSVPreview = async () => {
+  const handleFilePreview = async () => {
     if (!file || !selectedBank) return;
+    const ext = file.name.split(".").pop()?.toLowerCase();
     setLoading(true);
-    await previewCSV(file, selectedBank);
+    if (ext === "xls") {
+      await previewXLS(file, selectedBank);
+    } else {
+      await previewCSV(file, selectedBank);
+    }
     setLoading(false);
   };
 
@@ -166,7 +171,7 @@ export const ImportPage = () => {
       <Header>
         <PageTitle>Importar Extrato</PageTitle>
         <PageSubtitle>
-          Faça upload do seu extrato bancário nos formatos OFX ou CSV
+          Faça upload do seu extrato bancário nos formatos OFX, CSV ou XLS
         </PageSubtitle>
       </Header>
 
@@ -199,9 +204,11 @@ export const ImportPage = () => {
             banks={banks}
             selectedBank={selectedBank}
             loading={loading}
-            isCSV={file?.name.endsWith(".csv") ?? false}
+            needsBankSelector={
+              (file?.name.endsWith(".csv") || file?.name.endsWith(".xls")) ?? false
+            }
             onBankChange={setSelectedBank}
-            onProcessCSV={handleCSVPreview}
+            onProcessFile={handleFilePreview}
             onBack={() => setStep(1)}
             onContinue={goToCategorize}
           />

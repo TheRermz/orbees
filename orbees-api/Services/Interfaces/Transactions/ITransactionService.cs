@@ -14,6 +14,7 @@ namespace Api.Services.Interfaces.Transactions
         Task<IEnumerable<TransactionReadDto>> CreateBulkAsync(Guid userId, TransactionBulkCreateDto dto);
         Task<IEnumerable<TransactionPreviewDto>> PreviewFromOFXAsync(Guid userId, IFormFile file);
         Task<IEnumerable<TransactionPreviewDto>> PreviewFromCSVAsync(Guid userId, IFormFile file, int bankId);
+        Task<IEnumerable<TransactionPreviewDto>> PreviewFromXLSAsync(Guid userId, IFormFile file, int bankId);
         Task<IEnumerable<TransactionReadDto>> ImportAsync(Guid userId, TransactionImportDto dto);
         Task<TransactionReadDto> UpdateAsync(Guid userId, Guid transactionId, TransactionUpdateDto dto);
         Task DeleteAsync(Guid userId, Guid transactionId);

@@ -84,9 +84,21 @@ export const transactionService = {
     const { data } = await api.post<TransactionPreviewDto[]>(
       `/transactions/preview/csv/${bankId}`,
       formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return data;
+  },
+
+  previewXLS: async (
+    file: File,
+    bankId: number
+  ): Promise<TransactionPreviewDto[]> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const { data } = await api.post<TransactionPreviewDto[]>(
+      `/transactions/preview/xls/${bankId}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
     return data;
   },

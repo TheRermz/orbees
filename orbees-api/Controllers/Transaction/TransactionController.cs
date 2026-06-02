@@ -82,6 +82,14 @@ namespace Api.Controllers.Transaction
             return Ok(preview);
         }
 
+        // POST /api/transactions/preview/xls/{bankId}
+        [HttpPost("preview/xls/{bankId}")]
+        public async Task<IActionResult> PreviewXLS(IFormFile file, int bankId)
+        {
+            var preview = await transactionService.PreviewFromXLSAsync(GetUserId(), file, bankId);
+            return Ok(preview);
+        }
+
         // POST /api/transactions/import
         [HttpPost("import")]
         public async Task<IActionResult> Import([FromBody] TransactionImportDto dto)

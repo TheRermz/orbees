@@ -145,6 +145,12 @@ namespace Api.Services.Transactions
             return await SuggestCategoriesAsync(userId, preview);
         }
 
+        public async Task<IEnumerable<TransactionPreviewDto>> PreviewFromXLSAsync(Guid userId, IFormFile file, int bankId)
+        {
+            var preview = await extractReaderService.ReadXLSAsync(file, bankId);
+            return await SuggestCategoriesAsync(userId, preview);
+        }
+
         public async Task<IEnumerable<TransactionReadDto>> ImportAsync(Guid userId, TransactionImportDto dto)
         {
             if (dto.BankAccountId.HasValue &&

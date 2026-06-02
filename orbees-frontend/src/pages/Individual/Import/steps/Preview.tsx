@@ -22,9 +22,9 @@ export const Preview = ({
   banks,
   selectedBank,
   loading,
-  isCSV,
+  needsBankSelector,
   onBankChange,
-  onProcessCSV,
+  onProcessFile,
   onBack,
   onContinue,
 }: PreviewProps) => {
@@ -34,7 +34,7 @@ export const Preview = ({
 
   return (
     <>
-      {isCSV && !preview.length && (
+      {needsBankSelector && !preview.length && (
         <div
           style={{
             marginBottom: 16,
@@ -59,8 +59,8 @@ export const Preview = ({
               </option>
             ))}
           </select>
-          <Button loading={loading} onClick={onProcessCSV}>
-            Processar CSV
+          <Button loading={loading} onClick={onProcessFile}>
+            Processar Arquivo
           </Button>
         </div>
       )}

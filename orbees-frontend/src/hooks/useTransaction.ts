@@ -143,6 +143,21 @@ export const useTransactions = () => {
     }
   };
 
+  const previewXLS = async (file: File, bankId: number): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await transactionService.previewXLS(file, bankId);
+      setPreview(data);
+      return true;
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erro ao processar arquivo XLS."));
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const importTransactions = async (
     dto: TransactionImportDto
   ): Promise<boolean> => {
@@ -290,6 +305,7 @@ export const useTransactions = () => {
     createBulk,
     previewOFX,
     previewCSV,
+    previewXLS,
     importTransactions,
     update,
     remove,

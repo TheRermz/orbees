@@ -18,6 +18,8 @@ using QuestPDF.Infrastructure;
 
 Env.Load();
 
+System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
 
 // ── ConnString ────────────────────────────────────────────────────────────────
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +

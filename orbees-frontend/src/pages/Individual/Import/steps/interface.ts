@@ -16,9 +16,9 @@ export interface PreviewProps {
   banks: BankDto[];
   selectedBank: number | null;
   loading: boolean;
-  isCSV: boolean;
+  needsBankSelector: boolean;
   onBankChange: (id: number) => void;
-  onProcessCSV: () => void;
+  onProcessFile: () => void;
   onBack: () => void;
   onContinue: () => void;
 }

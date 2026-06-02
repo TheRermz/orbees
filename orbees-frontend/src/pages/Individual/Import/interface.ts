@@ -3,6 +3,7 @@ export type Step = 1 | 2 | 3 | 4;
 export const ALLOWED_MIME: Record<string, string[]> = {
   ofx: ["application/x-ofx", "application/ofx", "text/plain", ""],
   csv: ["text/csv", "text/plain", "application/vnd.ms-excel", ""],
+  xls: ["application/vnd.ms-excel", "application/msexcel", ""],
 };
 
 export interface CategorizeState {

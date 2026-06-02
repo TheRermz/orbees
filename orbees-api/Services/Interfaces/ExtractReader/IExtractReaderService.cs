@@ -6,5 +6,6 @@ namespace Api.Services.Interfaces.ExtractReader
     {
         Task<IEnumerable<TransactionPreviewDto>> ReadOFXAsync(IFormFile file);
         Task<IEnumerable<TransactionPreviewDto>> ReadCSVAsync(IFormFile file, int bankId);
+        Task<IEnumerable<TransactionPreviewDto>> ReadXLSAsync(IFormFile file, int bankId);
     }
 }
