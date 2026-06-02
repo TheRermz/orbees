@@ -23,11 +23,8 @@ import {
   FormActions,
   DeleteButton,
 } from "./CategoriesPage.styles";
-import type { CategoriesPageProps } from "./interface";
+import { type CategoriesPageProps, DEFAULT_COLOR, DEFAULT_ICON } from "./interface";
 import { useToast } from "../../../contexts/useToast";
-
-const DEFAULT_COLOR = "#F5A623";
-const DEFAULT_ICON = "Tag";
 
 export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
   const { categories, create, update, remove, error } = useCategories(groupId);

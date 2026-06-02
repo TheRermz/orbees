@@ -9,11 +9,11 @@ export const Wrapper = styled.div`
 `;
 
 export const Label = styled.label`
-  color: ${theme.colors.textLight};
   font-size: ${theme.fontSize.xs};
   font-weight: ${theme.fontWeight.semibold};
-  letter-spacing: 0.05em;
+  color: ${theme.colors.textMuted};
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 `;
 
 export const StyledInput = styled.input<{ $hasError?: boolean }>`

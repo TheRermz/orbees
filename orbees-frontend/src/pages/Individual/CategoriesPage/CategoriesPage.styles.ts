@@ -1,13 +1,7 @@
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  background-color: #f5f5f5;
-`;
+export { PageInnerContainer as Container, SectionTitle } from "../../../styles/pageLayout";
 
 export const Section = styled.div`
   background-color: ${theme.colors.background};
@@ -19,12 +13,6 @@ export const Section = styled.div`
   gap: 16px;
 `;
 
-export const SectionTitle = styled.h3`
-  font-size: ${theme.fontSize.md};
-  font-weight: ${theme.fontWeight.bold};
-  color: ${theme.colors.text};
-  margin: 0;
-`;
 
 export const ChipsGrid = styled.div`
   display: flex;
@@ -75,13 +63,7 @@ export const FormColumn = styled.div`
   gap: 8px;
 `;
 
-export const Label = styled.label`
-  font-size: ${theme.fontSize.xs};
-  font-weight: ${theme.fontWeight.semibold};
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
+export { Label } from "../../../components/ui/Input/Input.styles";
 
 export const NameInput = styled.input`
   padding: 10px 14px;

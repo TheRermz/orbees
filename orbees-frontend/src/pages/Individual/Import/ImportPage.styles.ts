@@ -1,29 +1,10 @@
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  background-color: #f5f5f5;
-`;
+export { PageInnerContainer as Container, PageTitle, PageSubtitleSpaced as PageSubtitle } from "../../../styles/pageLayout";
 
 export const Header = styled.div`
   padding: 24px 32px 0;
-`;
-
-export const PageTitle = styled.h2`
-  font-size: 1.4rem;
-  font-weight: ${theme.fontWeight.bold};
-  color: ${theme.colors.text};
-  margin: 0;
-`;
-
-export const PageSubtitle = styled.p`
-  font-size: ${theme.fontSize.sm};
-  color: ${theme.colors.textMuted};
-  margin: 4px 0 0;
 `;
 
 export const StepperCard = styled.div`

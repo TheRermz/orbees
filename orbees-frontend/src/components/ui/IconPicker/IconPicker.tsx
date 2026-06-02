@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import * as LucideIcons from "lucide-react";
 import { Wrapper, SearchInput, Grid, IconButton } from "./IconPicker.styles";
-import { ICON_LIST, type IconPickerProps } from "./interface";
+import { type IconPickerProps } from "./interface";
+import { ICON_LIST } from "./data";
 
 export const IconPicker = ({ value, color, onChange }: IconPickerProps) => {
   const [search, setSearch] = useState("");

@@ -8,6 +8,7 @@ import { useToast } from "../../../contexts/useToast";
 import {
   getStepStatus,
   STEPS,
+  ALLOWED_MIME,
   type CategorizeState,
   type ImportResult,
   type Step,
@@ -29,11 +30,6 @@ import { Upload } from "./steps/Upload";
 import { Preview } from "./steps/Preview";
 import { Categorize } from "./steps/Categorize";
 import { Success } from "./steps/Success";
-
-const ALLOWED_MIME: Record<string, string[]> = {
-  ofx: ["application/x-ofx", "application/ofx", "text/plain", ""],
-  csv: ["text/csv", "text/plain", "application/vnd.ms-excel", ""],
-};
 
 export const ImportPage = () => {
   const { preview, previewOFX, previewCSV, importTransactions } =

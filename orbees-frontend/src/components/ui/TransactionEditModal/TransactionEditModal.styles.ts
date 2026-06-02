@@ -1,4 +1,3 @@
-// src/components/ui/TransactionEditModal/TransactionEditModal.styles.ts
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
@@ -14,13 +13,7 @@ export const FieldRow = styled.div`
   justify-content: space-between;
 `;
 
-export const Label = styled.label`
-  font-size: ${theme.fontSize.xs};
-  font-weight: ${theme.fontWeight.semibold};
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
+export { Label } from "../Input/Input.styles";
 
 export const SelectWrapper = styled.div`
   position: relative;

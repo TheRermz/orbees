@@ -8,7 +8,8 @@ import {
   HexInput,
   ColorPreview,
 } from "./ColorPicker.styles";
-import { SWATCHES, type ColorPickerProps } from "./interface";
+import { type ColorPickerProps } from "./interface";
+import { SWATCHES } from "./data";
 import { HexColorPicker } from "react-colorful";
 
 export const ColorPicker = ({ value, onChange }: ColorPickerProps) => {

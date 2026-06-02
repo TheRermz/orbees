@@ -22,7 +22,7 @@ import {
   calcularIR,
   DEDUCAO_DEPENDENTE,
   LIMITE_PREVIDENCIA,
-} from "./interface";
+} from "./data";
 
 export const SimuladorIrpf = () => {
   const [salario, setSalario] = useState("");

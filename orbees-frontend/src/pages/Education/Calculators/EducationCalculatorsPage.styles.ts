@@ -16,18 +16,7 @@ export const Header = styled.div`
   flex-shrink: 0;
 `;
 
-export const PageTitle = styled.h1`
-  font-size: ${theme.fontSize.xl};
-  font-weight: ${theme.fontWeight.bold};
-  color: ${theme.colors.text};
-  margin: 0 0 4px;
-`;
-
-export const PageSubtitle = styled.p`
-  font-size: ${theme.fontSize.sm};
-  color: ${theme.colors.textMuted};
-  margin: 0;
-`;
+export { PageTitleLarge as PageTitle, PageSubtitle } from "../../../styles/pageLayout";
 
 export const Body = styled.div`
   display: flex;
@@ -148,13 +137,7 @@ export const FieldGroup = styled.div`
   gap: 6px;
 `;
 
-export const FieldLabel = styled.label`
-  font-size: ${theme.fontSize.xs};
-  font-weight: ${theme.fontWeight.semibold};
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
+export { Label as FieldLabel } from "../../../components/ui/Input/Input.styles";
 
 export const FieldInput = styled.input`
   padding: 9px 12px;

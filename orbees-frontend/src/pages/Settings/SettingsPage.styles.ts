@@ -1,30 +1,12 @@
 import styled from "styled-components";
 import { theme } from "../../styles/theme";
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  background-color: #f5f5f5;
-`;
+export { PageInnerContainer as Container, PageTitle, PageSubtitleSpaced as PageSubtitle } from "../../styles/pageLayout";
 
 export const Header = styled.div`
   padding: 24px 32px 0;
 `;
 
-export const PageTitle = styled.h2`
-  font-size: 1.4rem;
-  font-weight: ${theme.fontWeight.bold};
-  color: ${theme.colors.text};
-  margin: 0;
-`;
-
-export const PageSubtitle = styled.p`
-  font-size: ${theme.fontSize.sm};
-  color: ${theme.colors.textMuted};
-  margin: 4px 0 0;
-`;
 
 export const Content = styled.div`
   display: flex;
@@ -142,13 +124,7 @@ export const Field = styled.div`
   gap: 6px;
 `;
 
-export const FieldLabel = styled.label`
-  font-size: ${theme.fontSize.xs};
-  font-weight: ${theme.fontWeight.semibold};
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
+export { Label as FieldLabel } from "../../components/ui/Input/Input.styles";
 
 export const StyledInput = styled.input`
   padding: 10px 14px;

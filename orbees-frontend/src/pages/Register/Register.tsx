@@ -14,7 +14,7 @@ import { useAuthActions } from "../../contexts/useAuthContext";
 import {
   TERMS_TEXT,
   type RegisterForm,
-} from "../Individual/Dashboard/interface";
+} from "./interface";
 
 export const RegisterPage = () => {
   const { register: registerUser } = useAuthActions();

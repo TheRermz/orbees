@@ -41,13 +41,7 @@ export const FormField = styled.div`
   gap: 4px;
 `;
 
-export const Label = styled.label`
-  font-size: ${theme.fontSize.xs};
-  font-weight: ${theme.fontWeight.semibold};
-  color: ${theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
+export { Label } from "../Input/Input.styles";
 
 export const StyledInput = styled.input`
   padding: 8px 10px;

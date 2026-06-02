@@ -1,13 +1,7 @@
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: #f5f5f5;
-  overflow-y: auto;
-  height: calc(100vh - 64px);
-`;
+export { PageInnerContainer as Container, SectionTitle, SectionHeader } from "../../../styles/pageLayout";
 
 export const SummaryGrid = styled.div`
   display: grid;
@@ -21,18 +15,6 @@ export const Section = styled.div`
   gap: 12px;
 `;
 
-export const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-export const SectionTitle = styled.h3`
-  font-size: ${theme.fontSize.md};
-  font-weight: ${theme.fontWeight.bold};
-  color: ${theme.colors.text};
-  margin: 0;
-`;
 
 export const SectionLink = styled.button`
   background: none;

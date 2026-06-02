@@ -35,7 +35,7 @@ import {
   MemberEmail as ModalEmail,
   RemoveLink,
 } from "./GroupMembers.styles";
-import { getColor, getInitial } from "./interface";
+import { getColor, getInitial } from "./helpers";
 import { getErrorMessage } from "../../../helpers/error";
 import { groupService } from "../../../services/groupService";
 import { userService } from "../../../services/userService";
