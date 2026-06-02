@@ -101,7 +101,7 @@ export const TRAIL_STEPS: TrailStep[] = [
   {
     number: 3,
     title: "Calculadoras",
-    description: "Simule juros, metas, férias, parcelamento e IRPF",
+    description: "Simule juros, metas, férias e parcelamento",
     path: "/education/calculators",
     color: "#1a1a1a",
   },

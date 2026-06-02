@@ -55,12 +55,4 @@ export const CALCULATORS: Calculator[] = [
       "Compare os métodos Avalanche (menor custo total) e Bola de Neve (maior motivação) para sair das dívidas.",
     badge: "Avalanche",
   },
-  {
-    id: "irpf",
-    name: "Simulador IRPF",
-    formula: "Base − Deduções → IR",
-    subtitle:
-      "Estime seu imposto anual e veja qual tipo de declaração é mais vantajosa. Valores baseados na tabela progressiva 2024.",
-    badge: "Base de Cálculo − Deduções",
-  },
 ];
