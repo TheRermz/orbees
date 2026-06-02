@@ -4,6 +4,7 @@ using Api.Services.Interfaces.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Api.Controllers.Auth
@@ -15,6 +16,7 @@ namespace Api.Controllers.Auth
         // POST /api/auth/register
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register([FromBody] UserCreateDto dto)
         {
             var user = await authService.RegisterAsync(dto);
@@ -24,6 +26,7 @@ namespace Api.Controllers.Auth
         //POST /api/auth/login
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var token = await authService.LoginAsync(dto.Email, dto.Password);

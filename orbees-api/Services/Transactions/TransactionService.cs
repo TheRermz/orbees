@@ -1,3 +1,4 @@
+using Api.Data;
 using Api.Dtos.Transaction;
 using Api.Models;
 using Api.Models.Enums;
@@ -13,7 +14,8 @@ namespace Api.Services.Transactions
           ICategoryRepository categoryRepository,
           IGroupMemberRepository groupMemberRepository,
           IBankAccountRepository bankAccountRepository,
-          IExtractReaderService extractReaderService) : ITransactionService
+          IExtractReaderService extractReaderService,
+          ApiDbContext context) : ITransactionService
     {
 
         public async Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
@@ -113,8 +115,18 @@ namespace Api.Services.Transactions
                 });
             }
 
-            await transactionRepository.AddRangeAsync(transactions);
-            await transactionRepository.SaveChangesAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                await transactionRepository.AddRangeAsync(transactions);
+                await transactionRepository.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             var ids = transactions.Select(t => t.Id).ToList();
             var created = await transactionRepository.GetByUserIdAsync(userId);
@@ -135,6 +147,10 @@ namespace Api.Services.Transactions
 
         public async Task<IEnumerable<TransactionReadDto>> ImportAsync(Guid userId, TransactionImportDto dto)
         {
+            if (dto.BankAccountId.HasValue &&
+                !await bankAccountRepository.UserHasAccountAsync(userId, dto.BankAccountId.Value))
+                throw new KeyNotFoundException("Conta bancária não encontrada.");
+
             var transactions = new List<Transaction>();
 
             foreach (var item in dto.Transactions)
@@ -158,8 +174,18 @@ namespace Api.Services.Transactions
                 });
             }
 
-            await transactionRepository.AddRangeAsync(transactions);
-            await transactionRepository.SaveChangesAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                await transactionRepository.AddRangeAsync(transactions);
+                await transactionRepository.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             var ids = transactions.Select(t => t.Id).ToList();
             var created = await transactionRepository.GetByUserIdAsync(userId);

@@ -1,11 +1,14 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Api.Data;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Events;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Api.Extensions.DependencyInjection;
 using Api.Extensions.MiddlewareExtensions;
@@ -26,6 +29,10 @@ var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" 
 
 // ── Logger ────────────────────────────────────────────────────────────────
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
     .WriteTo.Console()
     .WriteTo.File("logs/orbees.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
@@ -37,6 +44,19 @@ builder.Host.UseSerilog();
 // ── Controllers ────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
+
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // ── Swagger ────────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -80,6 +100,12 @@ builder.Services.AddSwaggerGen(options =>
 // ── JWT ────────────────────────────────────────────────────────────────────────
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
     ?? throw new InvalidOperationException("JWT_SECRET_KEY não definido no .env");
+
+if (jwtSecret.Length < 32)
+    throw new InvalidOperationException("JWT_SECRET_KEY deve ter ao menos 32 caracteres (requisito HS256).");
+
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL")
+    ?? throw new InvalidOperationException("FRONTEND_URL não definida no .env");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -135,9 +161,7 @@ builder.Services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Dev", policy =>
-        policy.WithOrigins(
-                Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:5173"
-            )
+        policy.WithOrigins(frontendUrl)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -173,6 +197,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 app.UseGlobalExceptionHandler();
+app.UseRateLimiter();
 app.UseCors("Dev");
 app.UseHttpsRedirection();
 app.UseAuthentication();

@@ -89,7 +89,7 @@ namespace Api.Services.ExportJobs
             using var writer = new StreamWriter(ms);
             using var csv = new CsvWriter(writer, new CsvConfiguration(new CultureInfo("pt-BR"))
             {
-                Delimiter = ";"
+                Delimiter = ExportServiceConstants.CsvDelimiter
             });
 
             csv.WriteHeader<TransactionExportRow>();
