@@ -13,9 +13,21 @@ namespace Api.Services.Email
         private readonly string _password;
         private readonly string _from;
         private readonly string _frontendUrl;
-        private static readonly string LogoBase64 = File.ReadAllText(
-          Path.Combine(AppContext.BaseDirectory, "Images", "orbees-branco-b64")
-        ).Trim();
+        private static readonly string LogoBase64 = LoadLogoBase64();
+
+        private static string LoadLogoBase64()
+        {
+            try
+            {
+                return File.ReadAllText(
+                    Path.Combine(AppContext.BaseDirectory, "Images", "orbees-branco-b64")
+                ).Trim();
+            }
+            catch (IOException)
+            {
+                return string.Empty;
+            }
+        }
 
         public EmailService()
         {

@@ -13,6 +13,7 @@ import { ExportFormat } from "../interfaces/enums";
 import { downloadBlob } from "../helpers/download";
 import { getErrorMessage } from "../helpers/error";
 import { useNotifications } from "../contexts/useNotifications";
+import { EXPORT_EXTENSIONS } from "./useTransaction.constants";
 
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState<
@@ -211,12 +212,7 @@ export const useTransactions = () => {
       const result = await transactionService.export(format, from, to, groupId);
 
       if (result instanceof Blob) {
-        const extensions = {
-          [ExportFormat.CSV]: "csv",
-          [ExportFormat.Excel]: "xlsx",
-          [ExportFormat.PDF]: "pdf",
-        };
-        downloadBlob(result, `transacoes.${extensions[format]}`);
+        downloadBlob(result, `transacoes.${EXPORT_EXTENSIONS[format]}`);
         return { queued: false };
       }
 
@@ -232,12 +228,6 @@ export const useTransactions = () => {
   };
 
   const pollExportJob = async (jobId: string, format: ExportFormat) => {
-    const extensions = {
-      [ExportFormat.CSV]: "csv",
-      [ExportFormat.Excel]: "xlsx",
-      [ExportFormat.PDF]: "pdf",
-    };
-
     addNotification({
       type: "info",
       message: "Exportação em andamento. Você será notificado ao concluir.",
@@ -259,7 +249,7 @@ export const useTransactions = () => {
 
         const blob = await transactionService.downloadExportJob(jobId);
         const url = URL.createObjectURL(blob);
-        const filename = `transacoes.${extensions[format]}`;
+        const filename = `transacoes.${EXPORT_EXTENSIONS[format]}`;
 
         addNotification({
           type: "download",

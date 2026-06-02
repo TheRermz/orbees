@@ -6,6 +6,9 @@ namespace Api.Services.FileService
     {
         private readonly string _uploadPath;
 
+        private static readonly string[] AllowedExtensions = [".jpeg", ".jpg", ".png"];
+        private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/jpg", "image/png"];
+
         public FileService()
         {
             _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "profilePictures");
@@ -14,10 +17,15 @@ namespace Api.Services.FileService
 
         public async Task<string> SaveProfilePictureAsync(IFormFile file, Guid userId, string username)
         {
-            var allowedExtensions = new[] { ".jpeg", ".jpg", ".png" };
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("Arquivo inválido ou vazio.");
+
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(extension))
+            if (!AllowedExtensions.Contains(extension))
                 throw new InvalidOperationException("Formato de imagem inválido. Escolha entre '.png', '.jpg' ou '.jpeg'.");
+
+            if (!AllowedContentTypes.Contains(file.ContentType.ToLowerInvariant()))
+                throw new InvalidOperationException("Tipo de conteúdo inválido. Envie uma imagem JPEG ou PNG.");
 
             if (file.Length > 10 * 1024 * 1024)
                 throw new InvalidOperationException("O tamanho da imagem deve ser de até 10MB.");
@@ -34,11 +42,18 @@ namespace Api.Services.FileService
             return $"/uploads/profile-pictures/{username}/{fileName}";
         }
 
-        public async void DeleteProfilePictureAsync(string path)
+        public Task DeleteProfilePictureAsync(string path)
         {
-            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), path.TrimStart('/'));
-            if (System.IO.File.Exists(fullPath))
-                System.IO.File.Delete(fullPath);
+            var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "uploads"));
+            var fullPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), path.TrimStart('/')));
+
+            if (!fullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                return Task.CompletedTask;
+
+            if (File.Exists(fullPath))
+                File.Delete(fullPath);
+
+            return Task.CompletedTask;
         }
     }
 }

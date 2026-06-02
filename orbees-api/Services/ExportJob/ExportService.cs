@@ -180,7 +180,7 @@ namespace Api.Services.ExportJobs
                             table.Cell().Text(t.Type.ToString());
                             var amount = t.Type == TransactionType.Despesa ? -t.Amount : t.Amount;
                             table.Cell().Text(amount.ToString("C", new CultureInfo("pt-BR")));
-                            table.Cell().Text(t.Category?.Name ?? "Sem categoria");
+                            table.Cell().Text(t.GroupCategory?.Name ?? t.Category?.Name ?? "Sem categoria");
                         }
                     });
 

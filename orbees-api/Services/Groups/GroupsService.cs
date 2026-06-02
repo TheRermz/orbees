@@ -1,3 +1,4 @@
+using Api.Data;
 using Api.Dtos.Group;
 using Api.Dtos.GroupMember;
 using Api.Dtos.GroupRole;
@@ -10,7 +11,8 @@ namespace Api.Services.Groups
     public class GroupService(
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
-        IGroupRoleRepository groupRoleRepository
+        IGroupRoleRepository groupRoleRepository,
+        ApiDbContext context
         ) : IGroupService
     {
 
@@ -75,18 +77,29 @@ namespace Api.Services.Groups
                 Description = dto.Description
             };
 
-            await groupRepository.AddAsync(group);
-            await groupRepository.SaveChangesAsync();
-
-            var member = new GroupMember
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                GroupId = group.Id,
-                UserId = userId,
-                GroupRoleId = adminRole.Id
-            };
+                await groupRepository.AddAsync(group);
+                await groupRepository.SaveChangesAsync();
 
-            await groupMemberRepository.AddAsync(member);
-            await groupMemberRepository.SaveChangesAsync();
+                var member = new GroupMember
+                {
+                    GroupId = group.Id,
+                    UserId = userId,
+                    GroupRoleId = adminRole.Id
+                };
+
+                await groupMemberRepository.AddAsync(member);
+                await groupMemberRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return new GroupReadDto
             {

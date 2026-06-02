@@ -12,7 +12,7 @@ namespace Api.Services.Dashboard
         public async Task<DashboardResponseDto> GetSelfDashboardAsync(Guid userId, DateTime from, DateTime to)
         {
             from = DateTime.SpecifyKind(from.Date, DateTimeKind.Utc);
-            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
             var transactions = (await transactionRepository.GetByUserIdAsync(userId, from, to)).ToList();
 
@@ -207,7 +207,7 @@ namespace Api.Services.Dashboard
                 Guid userId, Guid groupId, DateTime from, DateTime to, Guid? memberId = null)
         {
             from = DateTime.SpecifyKind(from.Date, DateTimeKind.Utc);
-            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
             var allGroupTransactions = (await transactionRepository.GetByGroupIdAsync(groupId, from, to)).ToList();
 

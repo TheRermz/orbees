@@ -22,7 +22,7 @@ export const userService = {
 
   getByEmail: async (email: string) => {
     const { data } = await api.get("/user/by-email", { params: { email } });
-    return data as { id: string; fullname: string; email: string };
+    return data as { id: string; username: string };
   },
 
   updateProfilePicture: async (file: File): Promise<UserReadDto> => {

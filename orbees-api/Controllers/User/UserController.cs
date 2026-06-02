@@ -34,7 +34,7 @@ namespace Api.Controllers.User
             var user = await userService.GetByEmailAsync(email);
             if (user == null)
                 return NotFound(new { message = "Usuário não encontrado." });
-            return Ok(user);
+            return Ok(new { user.Id, user.Username });
         }
 
         // PUT /api/user/me

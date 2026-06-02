@@ -55,7 +55,7 @@ namespace Api.Services.UserProfile
               ?? throw new KeyNotFoundException("Usuário não encontrado");
 
             if (user.ProfilePicturePath != null)
-                fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
+                await fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
 
             user.ProfilePicturePath = await fileService.SaveProfilePictureAsync(file, userId, user.Username);
 
@@ -80,7 +80,7 @@ namespace Api.Services.UserProfile
             if (user.ProfilePicturePath == null)
                 throw new InvalidOperationException("Usuário não possui foto de perfil");
 
-            fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
+            await fileService.DeleteProfilePictureAsync(user.ProfilePicturePath);
             user.ProfilePicturePath = null;
 
             await userRepository.UpdateAsync(user);

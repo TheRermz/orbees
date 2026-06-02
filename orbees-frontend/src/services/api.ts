@@ -15,11 +15,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRedirecting = false;
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isAuthRoute = error.config?.url?.includes("/auth/");
-    if (error.response?.status === 401 && !isAuthRoute) {
+    if (error.response?.status === 401 && !isAuthRoute && !isRedirecting) {
+      isRedirecting = true;
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
