@@ -36,8 +36,8 @@ export const FeriasClt = () => {
     const diasRestantes = 30 - dias;
     const valorDiario = S / 30;
     const ferias = valorDiario * diasRestantes;
-    const terco = ferias / 3;
     const abono = valorDiario * dias;
+    const terco = (ferias + abono) / 3;
     resultado = { ferias, terco, abono, total: ferias + terco + abono };
   }
 
