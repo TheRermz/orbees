@@ -33,25 +33,11 @@ export const FILTER_PILLS: FilterPill[] = [
     accordionIds: ["holerite", "clt"],
   },
   {
-    id: "irpf",
-    label: "IRPF",
-    icon: "BarChart2",
-    color: "#3b82f6",
-    accordionIds: ["irpf"],
-  },
-  {
     id: "credit",
     label: "Crédito & Score",
     icon: "AlertTriangle",
     color: "#f59e0b",
     accordionIds: ["credit"],
-  },
-  {
-    id: "autonomous",
-    label: "Autônomos",
-    icon: "UserCircle",
-    color: "#a855f7",
-    accordionIds: ["carne-leao"],
   },
   {
     id: "lgpd",
@@ -70,8 +56,6 @@ export interface LawAccordion {
 export const LAW_ACCORDIONS: LawAccordion[] = [
   { id: "holerite", title: "Como ler seu Holerite (Contracheque)" },
   { id: "clt", title: "Direitos trabalhistas CLT: Férias, 13º, FGTS" },
-  { id: "irpf", title: "IRPF — Imposto de Renda Pessoa Física" },
-  { id: "carne-leao", title: "Carnê-Leão — Para Autônomos e Freelancers" },
   { id: "credit", title: "Crédito, Score e como evitar armadilhas" },
   { id: "lgpd", title: "LGPD e Open Finance — seus dados financeiros" },
 ];
@@ -152,20 +136,6 @@ export const CLT_CARDS: CltCard[] = [
     source: "CLT, Art. 477–481",
     bold: "40%",
   },
-];
-
-export interface IrpfRow {
-  range: string;
-  rate: string;
-  color: string;
-}
-
-export const IRPF_TABLE: IrpfRow[] = [
-  { range: "Até R$2.259,20/mês", rate: "Isento", color: "#22c55e" },
-  { range: "R$2.259,21 – R$2.826,65", rate: "7,5%", color: "#84cc16" },
-  { range: "R$2.826,66 – R$3.751,05", rate: "15%", color: "#f59e0b" },
-  { range: "R$3.751,06 – R$4.664,68", rate: "22,5%", color: "#f97316" },
-  { range: "Acima de R$4.664,68", rate: "27,5%", color: "#ef4444" },
 ];
 
 export interface Reference {

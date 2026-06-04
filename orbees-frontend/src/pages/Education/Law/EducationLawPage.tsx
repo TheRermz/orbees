@@ -24,9 +24,7 @@ import {
 } from "./EducationLawPage.styles";
 import { CltContent } from "../../../components/Education/CltContent/CltContent";
 import { HoleriteContent } from "../../../components/Education/HoleriteContent/HoleriteContent";
-import { IrpfContent } from "../../../components/Education/IrpfContent/IrpfContent";
 import {
-  CarneLeaoContent,
   CreditContent,
   LgpdContent,
 } from "../../../components/Education/LawAccordionContent/LawAccordionContent";
@@ -35,8 +33,6 @@ import { LawCalloutBox } from "../../../components/Education/LawCalloutBox/LawCa
 const ACCORDION_CONTENT: Record<string, React.ReactNode> = {
   holerite: <HoleriteContent />,
   clt: <CltContent />,
-  irpf: <IrpfContent />,
-  "carne-leao": <CarneLeaoContent />,
   credit: <CreditContent />,
   lgpd: <LgpdContent />,
 };

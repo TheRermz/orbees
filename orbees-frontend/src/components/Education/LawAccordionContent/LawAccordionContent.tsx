@@ -1,49 +1,10 @@
-import { Lightbulb } from "lucide-react";
 import {
   BodyText,
   BulletList,
   BulletItem,
   TwoColGrid,
-  TipBox,
   InlineSource,
 } from "../../../pages/Education/Law/EducationLawPage.styles";
-
-export const CarneLeaoContent = () => (
-  <>
-    <BodyText>
-      O Carnê-Leão é o recolhimento <strong>mensal obrigatório</strong> do IR
-      para quem recebe de pessoa física ou do exterior sem retenção na fonte.{" "}
-      <InlineSource>Receita Federal — Carnê-Leão</InlineSource>
-    </BodyText>
-    <BulletList>
-      <BulletItem>
-        Aplica-se a: freelancers, autônomos, profissionais liberais, aluguéis
-        recebidos de pessoa física
-      </BulletItem>
-      <BulletItem>
-        Prazo: até o último dia útil do mês seguinte ao recebimento
-      </BulletItem>
-      <BulletItem>
-        Isento: valores até <strong>R$2.259,20/mês</strong>{" "}
-        <InlineSource>Tabela 2024</InlineSource>
-      </BulletItem>
-      <BulletItem>
-        Como pagar: programa Carnê-Leão (Receita Federal) → gera DARF
-      </BulletItem>
-      <BulletItem>
-        Não recolher: multa de <strong>0,33% ao dia</strong> + juros SELIC{" "}
-        <InlineSource>RFB</InlineSource>
-      </BulletItem>
-    </BulletList>
-    <TipBox>
-      <Lightbulb size={14} style={{ flexShrink: 0, marginTop: 2 }} />
-      <span>
-        Guarde todos os recibos de serviço prestado. São necessários para a
-        declaração anual.
-      </span>
-    </TipBox>
-  </>
-);
 
 export const CreditContent = () => (
   <TwoColGrid>
