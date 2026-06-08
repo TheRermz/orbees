@@ -45,26 +45,9 @@ export const ModalActions = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  max-height: 400px;
-  overflow-y: auto;
   color: ${theme.colors.textLight};
   font-size: ${theme.fontSize.sm};
   line-height: 1.7;
-  padding-right: 8px;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: ${theme.colors.border};
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${theme.colors.primary};
-    border-radius: 4px;
-  }
 
   h4 {
     color: ${theme.colors.text};

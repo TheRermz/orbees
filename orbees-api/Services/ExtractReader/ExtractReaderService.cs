@@ -36,7 +36,14 @@ namespace Api.Services.ExtractReader
                 ?? throw new KeyNotFoundException("Banco não encontrado.");
 
             using var stream = file.OpenReadStream();
-            using var reader = new StreamReader(stream);
+
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            var encoding = bank.BankCode == "001"
+                ? System.Text.Encoding.GetEncoding("iso-8859-1")
+                : System.Text.Encoding.UTF8;
+
+            using var reader = new StreamReader(stream, encoding);
 
             return bank.BankCode switch
             {
@@ -182,10 +189,110 @@ namespace Api.Services.ExtractReader
         private static Task<List<TransactionPreviewDto>> ReadBradescoCSVAsync(StreamReader reader) =>
             throw new NotImplementedException("Formato Bradesco CSV a implementar.");
 
-        private static Task<List<TransactionPreviewDto>> ReadBBCSVAsync(StreamReader reader) =>
-            throw new NotImplementedException("Formato Banco do Brasil CSV a implementar.");
+        // ── Banco do Brasil CSV ───────────────────────────────────────────────────
+        // Encoding: ISO-8859-1 | Delimiter: "," | Quoted fields
+        // Colunas: Data | Lançamento | Detalhes | Nº documento | Valor | Tipo Lançamento
+        // Pular linhas sem valor ou com Tipo vazio (saldo anterior / saldo final)
+        private static async Task<List<TransactionPreviewDto>> ReadBBCSVAsync(StreamReader reader)
+        {
+            var config = new CsvConfiguration(new CultureInfo("pt-BR"))
+            {
+                HasHeaderRecord = true,
+                Delimiter = ",",
+                BadDataFound = null,
+                MissingFieldFound = null,
+            };
 
-        private static Task<List<TransactionPreviewDto>> ReadInterCSVAsync(StreamReader reader) =>
-            throw new NotImplementedException("Formato Inter CSV a implementar.");
+            using var csv = new CsvReader(reader, config);
+            var transactions = new List<TransactionPreviewDto>();
+
+            await csv.ReadAsync();
+            csv.ReadHeader();
+
+            while (await csv.ReadAsync())
+            {
+                var tipo = csv.GetField(5)?.Trim() ?? "";
+                if (string.IsNullOrEmpty(tipo)) continue;
+
+                var dateStr = csv.GetField(0)?.Trim().Trim('"') ?? "";
+                if (!DateTime.TryParseExact(dateStr, "dd/MM/yyyy",
+                    new CultureInfo("pt-BR"), DateTimeStyles.None, out var date))
+                    continue;
+
+                var amountStr = csv.GetField(4)?.Trim().Trim('"') ?? "";
+                if (!TryParseBrazilianDecimal(amountStr, out var amount) || amount == 0)
+                    continue;
+
+                var descricao = csv.GetField(1)?.Trim().Trim('"') ?? "Transação";
+                var detalhes = csv.GetField(2)?.Trim().Trim('"') ?? "";
+                var title = string.IsNullOrWhiteSpace(detalhes) ? descricao : detalhes;
+                var type = tipo.Equals("Entrada", StringComparison.OrdinalIgnoreCase)
+                    ? TransactionType.Receita
+                    : TransactionType.Despesa;
+
+                transactions.Add(new TransactionPreviewDto
+                {
+                    Title = title,
+                    OriginalDescription = title,
+                    Amount = Math.Abs(amount),
+                    TransactionDate = date,
+                    Type = type
+                });
+            }
+
+            return transactions;
+        }
+
+        // ── Banco Inter CSV ───────────────────────────────────────────────────────
+        // 5 linhas de metadados antes do cabeçalho real
+        // Colunas (índice): 0=Data | 1=Histórico | 2=Descrição | 3=Valor | 4=Saldo
+        // Valor negativo = Despesa, positivo = Receita
+        private static async Task<List<TransactionPreviewDto>> ReadInterCSVAsync(StreamReader reader)
+        {
+            for (int i = 0; i < 5; i++)
+                await reader.ReadLineAsync();
+
+            var config = new CsvConfiguration(new CultureInfo("pt-BR"))
+            {
+                HasHeaderRecord = true,
+                Delimiter = ",",
+                BadDataFound = null,
+                MissingFieldFound = null,
+            };
+
+            using var csv = new CsvReader(reader, config);
+            var transactions = new List<TransactionPreviewDto>();
+
+            await csv.ReadAsync();
+            csv.ReadHeader();
+
+            while (await csv.ReadAsync())
+            {
+                var dateStr = csv.GetField(0)?.Trim() ?? "";
+                if (!DateTime.TryParseExact(dateStr, "dd/MM/yyyy",
+                    new CultureInfo("pt-BR"), DateTimeStyles.None, out var date))
+                    continue;
+
+                var amountStr = csv.GetField(3)?.Trim().Trim('"') ?? "";
+                if (!TryParseBrazilianDecimal(amountStr, out var amount))
+                    continue;
+
+                var historico = csv.GetField(1)?.Trim() ?? "Transação";
+                var descricao = csv.GetField(2)?.Trim() ?? "";
+                var title = string.IsNullOrWhiteSpace(descricao) ? historico : descricao;
+                var type = amount < 0 ? TransactionType.Despesa : TransactionType.Receita;
+
+                transactions.Add(new TransactionPreviewDto
+                {
+                    Title = title,
+                    OriginalDescription = title,
+                    Amount = Math.Abs(amount),
+                    TransactionDate = date,
+                    Type = type
+                });
+            }
+
+            return transactions;
+        }
     }
 }

@@ -121,7 +121,7 @@ namespace Api.Services.UserProfile
                 throw new InvalidOperationException("Esta conta usa um login social (google). Defina uma senha primeiro.");
 
             if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
-                throw new UnauthorizedAccessException("Senha atual incorreta.");
+                throw new InvalidOperationException("Senha atual incorreta.");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
 

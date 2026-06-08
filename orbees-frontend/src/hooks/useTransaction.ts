@@ -80,15 +80,16 @@ export const useTransactions = () => {
   );
 
   const create = useCallback(
-    async (dto: TransactionCreateDto): Promise<boolean> => {
+    async (dto: TransactionCreateDto): Promise<string | null> => {
       try {
         setLoading(true);
         setError(null);
         await transactionService.create(dto);
-        return true;
+        return null;
       } catch (err: unknown) {
-        setError(getErrorMessage(err, "Erro ao criar transação."));
-        return false;
+        const msg = getErrorMessage(err, "Erro ao criar transação.");
+        setError(msg);
+        return msg;
       } finally {
         setLoading(false);
       }
@@ -97,15 +98,16 @@ export const useTransactions = () => {
   );
 
   const createBulk = useCallback(
-    async (dto: TransactionBulkCreateDto): Promise<boolean> => {
+    async (dto: TransactionBulkCreateDto): Promise<string | null> => {
       try {
         setLoading(true);
         setError(null);
         await transactionService.createBulk(dto);
-        return true;
+        return null;
       } catch (err: unknown) {
-        setError(getErrorMessage(err, "Erro ao criar transações."));
-        return false;
+        const msg = getErrorMessage(err, "Erro ao criar transações.");
+        setError(msg);
+        return msg;
       } finally {
         setLoading(false);
       }
@@ -179,7 +181,7 @@ export const useTransactions = () => {
   const update = async (
     id: string,
     dto: TransactionUpdateDto
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -188,16 +190,17 @@ export const useTransactions = () => {
         ...prev,
         items: prev.items.map((t) => (t.id === id ? data : t)),
       }));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar transação."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar transação.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const remove = async (id: string): Promise<boolean> => {
+  const remove = async (id: string): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -206,10 +209,11 @@ export const useTransactions = () => {
         ...prev,
         items: prev.items.filter((t) => t.id !== id),
       }));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao deletar transação."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao deletar transação.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }

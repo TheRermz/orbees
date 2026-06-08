@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 
 export const GroupsTab = () => {
   const { user } = useAuthState();
-  const { groups, members, fetchGroups, fetchMembers, leave, loading, error } =
+  const { groups, members, fetchGroups, fetchMembers, leave, loading } =
     useGroups();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -43,12 +43,12 @@ export const GroupsTab = () => {
 
   const handleLeave = async () => {
     if (!group) return;
-    const success = await leave(group.id);
-    if (success) {
+    const errorMsg = await leave(group.id);
+    if (!errorMsg) {
       showToast("success", "Você saiu do grupo.");
       fetchGroups();
     } else {
-      showToast("error", error ?? "Erro ao sair do grupo.");
+      showToast("error", errorMsg);
     }
   };
 

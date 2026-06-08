@@ -3,8 +3,8 @@ import type { TransactionCreateDto } from "../../../interfaces/transaction";
 
 export interface AddTransactionModalProps {
   onClose: () => void;
-  onCreate: (dto: TransactionCreateDto) => Promise<boolean>;
-  onCreateBulk: (transactions: TransactionCreateDto[]) => Promise<boolean>;
+  onCreate: (dto: TransactionCreateDto) => Promise<string | null>;
+  onCreateBulk: (transactions: TransactionCreateDto[]) => Promise<string | null>;
 }
 
 export const emptyForm = (): TransactionFormState => ({

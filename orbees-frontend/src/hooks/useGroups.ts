@@ -40,31 +40,33 @@ export const useGroups = () => {
     }
   }, []);
 
-  const create = async (dto: GroupCreateDto): Promise<boolean> => {
+  const create = async (dto: GroupCreateDto): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await groupService.create(dto);
       setGroups((prev) => [...prev, data]);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao criar grupo."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao criar grupo.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const update = async (id: string, dto: GroupUpdateDto): Promise<boolean> => {
+  const update = async (id: string, dto: GroupUpdateDto): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await groupService.update(id, dto);
       setGroups((prev) => prev.map((g) => (g.id === id ? data : g)));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar grupo."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar grupo.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
@@ -74,30 +76,32 @@ export const useGroups = () => {
     groupId: string,
     memberId: string,
     groupRoleId: string
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await groupService.updateMemberRole(groupId, memberId, groupRoleId);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar papel."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar papel.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const remove = async (id: string): Promise<boolean> => {
+  const remove = async (id: string): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await groupService.delete(id);
       setGroups((prev) => prev.filter((g) => g.id !== id));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao deletar grupo."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao deletar grupo.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
@@ -106,16 +110,17 @@ export const useGroups = () => {
   const addMember = async (
     groupId: string,
     userId: string
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await groupService.addMember(groupId, userId);
       setMembers((prev) => [...prev, data]);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao adicionar membro."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao adicionar membro.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
@@ -124,31 +129,33 @@ export const useGroups = () => {
   const removeMember = async (
     groupId: string,
     memberId: string
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await groupService.removeMember(groupId, memberId);
       setMembers((prev) => prev.filter((m) => m.id !== memberId));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao remover membro."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao remover membro.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const leave = async (groupId: string): Promise<boolean> => {
+  const leave = async (groupId: string): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await groupService.leave(groupId);
       setGroups((prev) => prev.filter((g) => g.id !== groupId));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao sair do grupo."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao sair do grupo.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }

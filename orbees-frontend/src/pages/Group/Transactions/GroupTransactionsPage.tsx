@@ -48,7 +48,6 @@ export const GroupTransactionsPage = () => {
     fetchGroupTransactions,
     exportTransactions,
     update,
-    error,
   } = useTransactions();
   const { categories } = useCategories();
   const { groupId } = useParams<{ groupId: string }>();
@@ -180,14 +179,14 @@ export const GroupTransactionsPage = () => {
           transaction={editingTransaction}
           onClose={() => setEditingTransaction(null)}
           onSave={async (id, dto) => {
-            const success = await update(id, dto);
-            if (success) {
+            const errorMsg = await update(id, dto);
+            if (!errorMsg) {
               showToast("success", "Transação atualizada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", error ?? "Erro ao atualizar transação.");
+              showToast("error", errorMsg);
             }
-            return success;
+            return !errorMsg;
           }}
         />
       )}

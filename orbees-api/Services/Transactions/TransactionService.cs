@@ -63,13 +63,16 @@ namespace Api.Services.Transactions
         {
             await ValidateTransactionDependenciesAsync(userId, dto.BankAccountId, dto.GroupId, dto.CategoryId, dto.GroupCategoryId);
 
+            var now = DateTime.UtcNow;
+            var d = dto.TransactionDate;
+
             var transaction = new Transaction
             {
                 Title = dto.Title,
                 OriginalDescription = dto.Title,
                 Description = dto.Description,
                 Amount = dto.Amount,
-                TransactionDate = DateTime.SpecifyKind(dto.TransactionDate, DateTimeKind.Utc),
+                TransactionDate = new DateTime(d.Year, d.Month, d.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc),
                 Type = dto.Type,
                 Origin = TransactionOrigin.Manual,
                 MerchantDocument = dto.MerchantDocument,
@@ -92,18 +95,20 @@ namespace Api.Services.Transactions
         public async Task<IEnumerable<TransactionReadDto>> CreateBulkAsync(Guid userId, TransactionBulkCreateDto dto)
         {
             var transactions = new List<Transaction>();
+            var now = DateTime.UtcNow;
 
             foreach (var item in dto.Transactions)
             {
                 await ValidateTransactionDependenciesAsync(userId, item.BankAccountId, item.GroupId, item.CategoryId, item.GroupCategoryId);
 
+                var d = item.TransactionDate;
                 transactions.Add(new Transaction
                 {
                     Title = item.Title,
                     OriginalDescription = item.Title,
                     Description = item.Description,
                     Amount = item.Amount,
-                    TransactionDate = DateTime.SpecifyKind(item.TransactionDate, DateTimeKind.Utc),
+                    TransactionDate = new DateTime(d.Year, d.Month, d.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc),
                     Type = item.Type,
                     Origin = TransactionOrigin.Manual,
                     MerchantDocument = item.MerchantDocument,

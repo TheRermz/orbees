@@ -25,7 +25,7 @@ export const SecurityTab = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { updatePassword, loading, error } = useUser();
+  const { updatePassword, loading } = useUser();
   const { showToast } = useToast();
 
   const validate = (pwd: string): string | null => {
@@ -47,17 +47,17 @@ export const SecurityTab = () => {
       showToast("error", "As senhas não coincidem.");
       return;
     }
-    const success = await updatePassword({
+    const errorMsg = await updatePassword({
       currentPassword: current,
       newPassword: newPwd,
     });
-    if (success) {
+    if (!errorMsg) {
       showToast("success", "Senha atualizada com sucesso.");
       setCurrent("");
       setNewPwd("");
       setConfirm("");
     } else {
-      showToast("error", error ?? "Erro ao atualizar senha.");
+      showToast("error", errorMsg);
     }
   };
 

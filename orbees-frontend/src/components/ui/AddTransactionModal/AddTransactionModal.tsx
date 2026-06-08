@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Modal, Button, ErrorMessage } from "../index";
 import { useCategories } from "../../../hooks/useCategories";
+import { useToast } from "../../../contexts/useToast";
 import type { TransactionCreateDto } from "../../../interfaces/transaction";
 import { TransactionType } from "../../../interfaces/enums";
 import {
@@ -30,6 +31,7 @@ export const AddTransactionModal = ({
   onCreateBulk,
 }: AddTransactionModalProps) => {
   const { categories } = useCategories();
+  const { showToast } = useToast();
   const [forms, setForms] = useState<TransactionFormState[]>([emptyForm()]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,9 @@ export const AddTransactionModal = ({
         !f.transactionDate
     );
     if (invalid) {
-      setError("Preencha título e valor válidos (máx. R$ 999.999.999,99).");
+      const msg = "Preencha título e valor válidos (máx. R$ 999.999.999,99).";
+      setError(msg);
+      showToast("error", msg);
       return;
     }
 
@@ -83,12 +87,12 @@ export const AddTransactionModal = ({
       groupCategoryId: f.groupCategoryId || undefined,
     }));
 
-    const success =
+    const errorMsg =
       forms.length === 1 ? await onCreate(dtos[0]) : await onCreateBulk(dtos);
 
     setLoading(false);
-    if (success) onClose();
-    else setError("Erro ao salvar transações.");
+    if (!errorMsg) onClose();
+    else setError(errorMsg);
   };
 
   return (

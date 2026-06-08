@@ -21,7 +21,7 @@ import { useToast } from "../../../contexts/useToast";
 
 export const ProfileTab = () => {
   const { user } = useAuthState();
-  const { updateMe, updateProfilePicture, loading, error } = useUser();
+  const { updateMe, updateProfilePicture, loading } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fullname, setFullname] = useState(user?.fullname ?? "");
   const { showToast } = useToast();
@@ -32,17 +32,17 @@ export const ProfileTab = () => {
     : null;
 
   const handleSave = async () => {
-    const success = await updateMe({ fullname });
-    if (success) showToast("success", "Perfil atualizado com sucesso.");
-    else showToast("error", error ?? "Erro ao atualizar perfil.");
+    const errorMsg = await updateMe({ fullname });
+    if (!errorMsg) showToast("success", "Perfil atualizado com sucesso.");
+    else showToast("error", errorMsg);
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const success = await updateProfilePicture(file);
-    if (success) showToast("success", "Foto atualizada com sucesso.");
-    else showToast("error", error ?? "Erro ao atualizar foto.");
+    const errorMsg = await updateProfilePicture(file);
+    if (!errorMsg) showToast("success", "Foto atualizada com sucesso.");
+    else showToast("error", errorMsg);
   };
 
   return (

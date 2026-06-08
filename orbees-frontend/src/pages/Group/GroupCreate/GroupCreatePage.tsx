@@ -20,7 +20,7 @@ import { Button, Input } from "../../../components/ui";
 
 export const GroupCreatePage = () => {
   const navigate = useNavigate();
-  const { create, loading, error } = useGroups();
+  const { create, loading } = useGroups();
   const { showToast } = useToast();
 
   const [name, setName] = useState("");
@@ -32,16 +32,16 @@ export const GroupCreatePage = () => {
       return;
     }
 
-    const result = await create({
+    const errorMsg = await create({
       name: name.trim(),
       description: description.trim() || undefined,
     });
 
-    if (result) {
+    if (!errorMsg) {
       showToast("success", "Grupo criado com sucesso!");
       navigate("/individual/dashboard");
     } else {
-      showToast("error", error ?? "Erro ao criar grupo.");
+      showToast("error", errorMsg);
     }
   };
 

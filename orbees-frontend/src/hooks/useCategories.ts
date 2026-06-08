@@ -25,16 +25,17 @@ export const useCategories = (groupId?: string) => {
     }
   }, [groupId]);
 
-  const create = async (dto: CategoryCreateDto): Promise<boolean> => {
+  const create = async (dto: CategoryCreateDto): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await categoryService.create(dto);
       setCategories((prev) => [...prev, data]);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao criar categoria."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao criar categoria.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
@@ -43,31 +44,33 @@ export const useCategories = (groupId?: string) => {
   const update = async (
     id: string,
     dto: CategoryUpdateDto
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await categoryService.update(id, dto);
       setCategories((prev) => prev.map((c) => (c.id === id ? data : c)));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar categoria."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar categoria.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const remove = async (id: string): Promise<boolean> => {
+  const remove = async (id: string): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await categoryService.delete(id);
       setCategories((prev) => prev.filter((c) => c.id !== id));
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao deletar categoria."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao deletar categoria.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }

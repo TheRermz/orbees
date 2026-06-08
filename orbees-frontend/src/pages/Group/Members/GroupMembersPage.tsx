@@ -52,7 +52,6 @@ export const GroupMembersPage = () => {
     updateMemberRole,
     removeMember,
     loading,
-    error,
   } = useGroups();
 
   const [editing, setEditing] = useState<GroupMemberReadDto | null>(null);
@@ -82,24 +81,24 @@ export const GroupMembersPage = () => {
     if (!editing || !groupId) return;
     const roleId = roles.find((r) => r.name === selectedRole)?.id;
     if (!roleId) return;
-    const success = await updateMemberRole(groupId, editing.id, roleId);
-    if (success) {
+    const errorMsg = await updateMemberRole(groupId, editing.id, roleId);
+    if (!errorMsg) {
       showToast("success", "Papel atualizado.");
       setEditing(null);
     } else {
-      showToast("error", error ?? "Erro ao atualizar papel.");
+      showToast("error", errorMsg);
     }
   };
 
   const handleRemove = async () => {
     if (!editing || !groupId) return;
-    const success = await removeMember(groupId, editing.id);
-    if (success) {
+    const errorMsg = await removeMember(groupId, editing.id);
+    if (!errorMsg) {
       showToast("success", "Membro removido.");
       setShowRemoveModal(false);
       setEditing(null);
     } else {
-      showToast("error", error ?? "Erro ao remover membro.");
+      showToast("error", errorMsg);
     }
   };
 

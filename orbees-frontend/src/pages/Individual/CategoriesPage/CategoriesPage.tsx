@@ -27,7 +27,7 @@ import { type CategoriesPageProps, DEFAULT_COLOR, DEFAULT_ICON } from "./interfa
 import { useToast } from "../../../contexts/useToast";
 
 export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
-  const { categories, create, update, remove, error } = useCategories(groupId);
+  const { categories, create, update, remove } = useCategories(groupId);
   const { showToast } = useToast();
 
   const [editing, setEditing] = useState<CategoryReadDto | null>(null);
@@ -58,32 +58,29 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
   const handleSubmit = async () => {
     if (!name.trim()) return;
     setLoading(true);
-    const success = isEditing
+    const errorMsg = isEditing
       ? await update(editing.id, { name, color, icon })
       : await create({ name, color, icon, groupId });
     setLoading(false);
-    if (success) {
-      showToast(
-        "success",
-        isEditing ? "Categoria atualizada." : "Categoria criada."
-      );
+    if (!errorMsg) {
+      showToast("success", isEditing ? "Categoria atualizada." : "Categoria criada.");
       resetForm();
     } else {
-      showToast("error", error ?? "Erro ao salvar categoria.");
+      showToast("error", errorMsg);
     }
   };
 
   const handleDelete = async () => {
     if (!editing) return;
     setDeleteLoading(true);
-    const success = await remove(editing.id);
+    const errorMsg = await remove(editing.id);
     setDeleteLoading(false);
-    if (success) {
+    if (!errorMsg) {
       showToast("success", "Categoria removida.");
       setShowDeleteModal(false);
       resetForm();
     } else {
-      showToast("error", error ?? "Erro ao remover categoria.");
+      showToast("error", errorMsg);
     }
   };
 

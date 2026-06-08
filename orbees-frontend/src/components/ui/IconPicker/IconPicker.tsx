@@ -2,18 +2,23 @@ import { useState, useMemo } from "react";
 import * as LucideIcons from "lucide-react";
 import { Wrapper, SearchInput, Grid, IconButton } from "./IconPicker.styles";
 import { type IconPickerProps } from "./interface";
-import { ICON_LIST } from "./data";
+import { ICON_LIST, ICON_PT_MAP } from "./data";
 
 export const IconPicker = ({ value, color, onChange }: IconPickerProps) => {
   const [search, setSearch] = useState("");
 
-  const filtered = useMemo(
-    () =>
-      ICON_LIST.filter((name) =>
-        name.toLowerCase().includes(search.toLowerCase())
-      ),
-    [search]
-  );
+  const filtered = useMemo(() => {
+    if (!search) return ICON_LIST;
+    const term = search.toLowerCase().trim();
+    const ptMatches = new Set(
+      Object.entries(ICON_PT_MAP)
+        .filter(([pt]) => pt.includes(term))
+        .map(([, icon]) => icon)
+    );
+    return ICON_LIST.filter(
+      (name) => name.toLowerCase().includes(term) || ptMatches.has(name)
+    );
+  }, [search]);
 
   return (
     <Wrapper>

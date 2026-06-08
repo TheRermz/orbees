@@ -25,51 +25,54 @@ export const useUser = () => {
     }
   };
 
-  const updateMe = async (dto: UserUpdateDto): Promise<boolean> => {
+  const updateMe = async (dto: UserUpdateDto): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await userService.updateMe(dto);
       setUser(data);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar usuário."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar usuário.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const updatePassword = async (dto: UpdatePasswordDto): Promise<boolean> => {
+  const updatePassword = async (dto: UpdatePasswordDto): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       await userService.updatePassword(dto);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar senha."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar senha.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const updateProfilePicture = async (file: File): Promise<boolean> => {
+  const updateProfilePicture = async (file: File): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       const data = await userService.updateProfilePicture(file);
       setUser(data);
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao atualizar foto."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao atualizar foto.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteProfilePicture = async (): Promise<boolean> => {
+  const deleteProfilePicture = async (): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -77,10 +80,11 @@ export const useUser = () => {
       setUser((prev) =>
         prev ? { ...prev, profilePicturePath: undefined } : null
       );
-      return true;
+      return null;
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Erro ao remover foto."));
-      return false;
+      const msg = getErrorMessage(err, "Erro ao remover foto.");
+      setError(msg);
+      return msg;
     } finally {
       setLoading(false);
     }

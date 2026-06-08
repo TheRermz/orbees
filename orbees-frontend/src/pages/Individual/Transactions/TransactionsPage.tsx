@@ -50,7 +50,6 @@ export const TransactionsPage = () => {
     update,
     create,
     createBulk,
-    error,
   } = useTransactions();
   const { categories } = useCategories();
 
@@ -186,24 +185,24 @@ export const TransactionsPage = () => {
         <AddTransactionModal
           onClose={() => setShowAddModal(false)}
           onCreate={async (dto) => {
-            const success = await create(dto);
-            if (success) {
+            const errorMsg = await create(dto);
+            if (!errorMsg) {
               showToast("success", "Transação criada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", error ?? "Erro ao criar transação.");
+              showToast("error", errorMsg);
             }
-            return success;
+            return errorMsg;
           }}
           onCreateBulk={async (dtos) => {
-            const success = await createBulk({ transactions: dtos });
-            if (success) {
+            const errorMsg = await createBulk({ transactions: dtos });
+            if (!errorMsg) {
               showToast("success", "Transações criadas.");
               fetchData(from, to, page);
             } else {
-              showToast("error", error ?? "Erro ao criar transações.");
+              showToast("error", errorMsg);
             }
-            return success;
+            return errorMsg;
           }}
         />
       )}
@@ -213,14 +212,14 @@ export const TransactionsPage = () => {
           transaction={editingTransaction}
           onClose={() => setEditingTransaction(null)}
           onSave={async (id, dto) => {
-            const success = await update(id, dto);
-            if (success) {
+            const errorMsg = await update(id, dto);
+            if (!errorMsg) {
               showToast("success", "Transação atualizada.");
               fetchData(from, to, page);
             } else {
-              showToast("error", error ?? "Erro ao atualizar transação.");
+              showToast("error", errorMsg);
             }
-            return success;
+            return !errorMsg;
           }}
         />
       )}
