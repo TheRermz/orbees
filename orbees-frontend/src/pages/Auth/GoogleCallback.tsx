@@ -6,10 +6,9 @@ import { authService } from "../../services/authService";
 export const GoogleCallbackPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const code = searchParams.get("code");
 
   useEffect(() => {
-    const code = searchParams.get("code");
-
     if (!code) {
       navigate("/login?error=google_auth_failed", { replace: true });
       return;
@@ -24,7 +23,7 @@ export const GoogleCallbackPage = () => {
       .catch(() => {
         navigate("/login?error=google_auth_failed", { replace: true });
       });
-  }, [searchParams, navigate]);
+  }, [code, navigate]);
 
   return null;
 };

@@ -235,6 +235,22 @@ export const TxAmount = styled.span<{ $positive: boolean }>`
   color: ${({ $positive }) => ($positive ? "#22c55e" : theme.colors.error)};
 `;
 
+export const TitleInput = styled.input`
+  padding: 6px 10px;
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.borderRadius.md};
+  font-size: ${theme.fontSize.sm};
+  color: ${theme.colors.text};
+  background-color: transparent;
+  outline: none;
+  width: 100%;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    background-color: ${theme.colors.background};
+  }
+`;
+
 export const CategorySelect = styled.select<{ $uncategorized: boolean }>`
   padding: 8px 12px;
   border: 2px solid

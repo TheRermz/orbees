@@ -7,6 +7,7 @@ export const ALLOWED_MIME: Record<string, string[]> = {
 };
 
 export interface CategorizeState {
+  title: string;
   categoryId: string;
   shareWithGroup: boolean;
   groupId: string;

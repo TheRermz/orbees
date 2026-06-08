@@ -26,6 +26,7 @@ import {
   Content,
 } from "./ImportPage.styles";
 import type { BankDto } from "../../../interfaces/bank";
+import { TransactionType } from "../../../interfaces/enums";
 import { Upload } from "./steps/Upload";
 import { Preview } from "./steps/Preview";
 import { Categorize } from "./steps/Categorize";
@@ -44,6 +45,7 @@ export const ImportPage = () => {
   const [banks, setBanks] = useState<BankDto[]>([]);
   const [selectedBank, setSelectedBank] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [titleOverrides, setTitleOverrides] = useState<Record<string, string>>({});
   const [categorizeState, setCategorizeState] = useState<
     Record<string, CategorizeState>
   >({});
@@ -88,11 +90,16 @@ export const ImportPage = () => {
     setLoading(false);
   };
 
+  const handleTitleChange = (key: string, title: string) => {
+    setTitleOverrides((prev) => ({ ...prev, [key]: title }));
+  };
+
   const goToCategorize = () => {
     const initial: Record<string, CategorizeState> = {};
     preview.forEach((p) => {
       const key = p.originalDescription ?? p.title;
       initial[key] = {
+        title: titleOverrides[key] ?? p.title,
         categoryId: p.suggestedCategoryId ?? "",
         shareWithGroup: false,
         groupId: groups[0]?.id ?? "",
@@ -117,7 +124,7 @@ export const ImportPage = () => {
       const state = categorizeState[key];
       return {
         originalDescription: p.originalDescription ?? p.title,
-        title: p.title,
+        title: state?.title || p.title,
         amount: p.amount,
         transactionDate: p.transactionDate,
         type: p.type,
@@ -131,8 +138,8 @@ export const ImportPage = () => {
 
     const success = await importTransactions({ transactions });
     if (success) {
-      const income = preview.filter((p) => p.amount > 0).length;
-      const expenses = preview.filter((p) => p.amount <= 0).length;
+      const income = preview.filter((p) => p.type === TransactionType.Receita).length;
+      const expenses = preview.filter((p) => p.type === TransactionType.Despesa).length;
       const shared = Object.values(categorizeState).filter(
         (s) => s.shareWithGroup
       ).length;
@@ -158,6 +165,7 @@ export const ImportPage = () => {
   const resetAll = () => {
     setStep(1);
     setFile(null);
+    setTitleOverrides({});
     setCategorizeState({});
     setImportResult(null);
   };
@@ -207,8 +215,10 @@ export const ImportPage = () => {
             needsBankSelector={
               (file?.name.endsWith(".csv") || file?.name.endsWith(".xls")) ?? false
             }
+            titleOverrides={titleOverrides}
             onBankChange={setSelectedBank}
             onProcessFile={handleFilePreview}
+            onTitleChange={handleTitleChange}
             onBack={() => setStep(1)}
             onContinue={goToCategorize}
           />

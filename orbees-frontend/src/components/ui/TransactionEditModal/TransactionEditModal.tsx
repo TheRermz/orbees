@@ -13,6 +13,8 @@ import {
   FieldRow,
 } from "./TransactionEditModal.styles";
 import type { TransactionEditModalProps } from "./interface";
+import { Trash } from "lucide-react";
+import { useTransactions } from "../../../hooks/useTransaction";
 
 export const TransactionEditModal = ({
   transaction,
@@ -22,6 +24,7 @@ export const TransactionEditModal = ({
   const navigate = useNavigate();
   const { categories: personalCategories } = useCategories();
   const { groups } = useGroups();
+  const { remove } = useTransactions();
 
   const [selectedGroupId, setSelectedGroupId] = useState<string>(
     transaction.groupId ?? ""
@@ -39,6 +42,8 @@ export const TransactionEditModal = ({
   });
 
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
@@ -50,19 +55,52 @@ export const TransactionEditModal = ({
     else setError("Erro ao salvar transação.");
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    const err = await remove(transaction.id);
+    setDeleting(false);
+    if (!err) window.location.reload();
+    else { setConfirming(false); setError(err); }
+  };
+
+  if (confirming) {
+    return (
+      <Modal
+        title="Excluir transação"
+        description={`Tem certeza que deseja excluir "${transaction.title}"? Esta ação não pode ser desfeita.`}
+        onClose={() => setConfirming(false)}
+        actions={
+          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <Button variant="secondary" onClick={() => setConfirming(false)} style={{ padding: "12px 18px", fontSize: "0.9rem" }}>
+              Cancelar
+            </Button>
+            <Button variant="danger" loading={deleting} onClick={handleDelete} style={{ padding: "12px 22px" }}>
+              Excluir
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
+
   return (
     <Modal
       title="Editar transação"
       onClose={onClose}
       actions={
-        <>
-          <Button variant="secondary" onClick={onClose}>
-            Cancelar
+        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+          <Button variant="danger" loading={deleting} onClick={() => setConfirming(true)} style={{ padding: "12px 18px" }}>
+            <Trash size={16} />
           </Button>
-          <Button loading={loading} onClick={handleSave}>
-            Salvar
-          </Button>
-        </>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Button variant="secondary" onClick={onClose} style={{ padding: "12px 18px", fontSize: "0.9rem" }}>
+              Cancelar
+            </Button>
+            <Button loading={loading} onClick={handleSave} style={{ padding: "12px 22px" }}>
+              Salvar
+            </Button>
+          </div>
+        </div>
       }
     >
       {error && <ErrorMessage>{error}</ErrorMessage>}

@@ -16,7 +16,7 @@ export const Categorize = ({
 }: CategorizeProps) => (
   <>
     <InsightItem
-      text="Estas transações são novas. Ao categorizá-las agora, o sistema aprenderá a reconhecê-las automaticamente nas próximas importações."
+      text="Revise as categorias sugeridas e ajuste o que precisar. O sistema aprenderá com suas correções nas próximas importações."
       variant="info"
     />
     <div
@@ -27,9 +27,7 @@ export const Categorize = ({
         gap: 8,
       }}
     >
-      {preview
-        .filter((p) => !p.suggestedCategoryId)
-        .map((p, i) => {
+      {preview.map((p, i) => {
           const state = categorizeState[p.originalDescription ?? p.title] ?? {
             categoryId: "",
             shareWithGroup: false,

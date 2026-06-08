@@ -8,7 +8,6 @@ import {
   Pagination,
   TransactionRow,
   PeriodSelector,
-  TransactionEditModal,
   ExportModal,
 } from "../../../components/ui";
 import { ExportFormat } from "../../../interfaces/enums";
@@ -47,13 +46,10 @@ export const GroupTransactionsPage = () => {
     loading,
     fetchGroupTransactions,
     exportTransactions,
-    update,
   } = useTransactions();
   const { categories } = useCategories();
   const { groupId } = useParams<{ groupId: string }>();
 
-  const [editingTransaction, setEditingTransaction] =
-    useState<TransactionReadDto | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [page, setPage] = useState(1);
   const [from, setFrom] = useState(defaultFrom);
@@ -168,28 +164,10 @@ export const GroupTransactionsPage = () => {
               key={t.id}
               transaction={t}
               isGroupView
-              onClick={() => setEditingTransaction(t)}
             />
           ))
         )}
       </ListCard>
-
-      {editingTransaction && (
-        <TransactionEditModal
-          transaction={editingTransaction}
-          onClose={() => setEditingTransaction(null)}
-          onSave={async (id, dto) => {
-            const errorMsg = await update(id, dto);
-            if (!errorMsg) {
-              showToast("success", "Transação atualizada.");
-              fetchData(from, to, page);
-            } else {
-              showToast("error", errorMsg);
-            }
-            return !errorMsg;
-          }}
-        />
-      )}
 
       {transactions.totalPages > 1 && (
         <Pagination

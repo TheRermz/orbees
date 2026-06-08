@@ -1,7 +1,7 @@
 using Api.Dtos.Transaction;
 using Api.Models.Enums;
-using System.Xml.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Api.Services.ExtractReader
 {
@@ -14,10 +14,20 @@ namespace Api.Services.ExtractReader
                 throw new InvalidOperationException("Arquivo OFX inválido — tag <OFX> não encontrada.");
 
             var xml = content[ofxStart..];
-            var doc = XDocument.Parse(xml);
             var transactions = new List<TransactionPreviewDto>();
 
-            foreach (var trn in doc.Descendants("STMTTRN"))
+            IEnumerable<XElement> trnElements;
+            try
+            {
+                trnElements = XDocument.Parse(xml).Descendants("STMTTRN");
+            }
+            catch (System.Xml.XmlException)
+            {
+                // SGML format (OFX 1.x) — sem closing tags nos containers
+                trnElements = ParseSgmlTransactions(xml);
+            }
+
+            foreach (var trn in trnElements)
             {
                 var amountStr = trn.Element("TRNAMT")?.Value?.Replace(",", ".") ?? "0";
                 if (!decimal.TryParse(amountStr, System.Globalization.NumberStyles.Any,
@@ -27,6 +37,7 @@ namespace Api.Services.ExtractReader
                 var dateStr = trn.Element("DTPOSTED")?.Value ?? "";
                 var date = ParseOFXDate(dateStr);
                 var memo = trn.Element("MEMO")?.Value ?? trn.Element("NAME")?.Value ?? "Transação";
+                var trnType = trn.Element("TRNTYPE")?.Value?.Trim().ToUpperInvariant() ?? "";
 
                 transactions.Add(new TransactionPreviewDto
                 {
@@ -34,29 +45,45 @@ namespace Api.Services.ExtractReader
                     OriginalDescription = memo,
                     Amount = Math.Abs(amount),
                     TransactionDate = date,
-                    Type = amount < 0 ? TransactionType.Despesa : TransactionType.Receita
+                    Type = DetermineType(amount, trnType)
                 });
             }
 
             return transactions;
         }
 
-        private static string ConvertToXml(string content)
+        // Bancos que exportam TRNAMT sempre positivo usam TRNTYPE para indicar débito.
+        // Bancos padrão OFX usam TRNAMT negativo para despesa.
+        private static TransactionType DetermineType(decimal amount, string trnType) =>
+            amount < 0
+            || trnType is "DEBIT" or "ATM" or "FEE" or "SRVCHG" or "PAYMENT"
+                        or "DIRECTDEBIT" or "POS" or "CHECK" or "CASH" or "REPEATPMT"
+                ? TransactionType.Despesa
+                : TransactionType.Receita;
+
+        // Extrai blocos STMTTRN de arquivos SGML (OFX 1.x) via regex,
+        // evitando a necessidade de fechar tags container manualmente.
+        private static IEnumerable<XElement> ParseSgmlTransactions(string sgml)
         {
-            var headerEnd = content.IndexOf("<OFX>", StringComparison.OrdinalIgnoreCase);
-            if (headerEnd < 0)
-                throw new InvalidOperationException("Arquivo OFX inválido — tag <OFX> não encontrada.");
+            var results = new List<XElement>();
+            var matches = Regex.Matches(sgml, @"<STMTTRN>(.*?)(?=<STMTTRN>|$)",
+                RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-            var body = content[headerEnd..];
-
-            body = Regex.Replace(body, @"<([A-Z0-9.]+)>([^<]+)", m =>
+            foreach (Match m in matches)
             {
-                var tag = m.Groups[1].Value;
-                var val = m.Groups[2].Value.Trim();
-                return $"<{tag}>{val}</{tag}>";
-            });
+                var block = Regex.Replace(
+                    m.Groups[1].Value,
+                    @"<([A-Z0-9.]+)>([^\r\n<]+)",
+                    match => $"<{match.Groups[1].Value}>{match.Groups[2].Value.Trim()}</{match.Groups[1].Value}>"
+                );
+                try
+                {
+                    results.Add(XElement.Parse($"<STMTTRN>{block}</STMTTRN>"));
+                }
+                catch { /* bloco malformado — ignorar */ }
+            }
 
-            return body;
+            return results;
         }
 
         private static DateTime ParseOFXDate(string dateStr)
@@ -71,4 +98,3 @@ namespace Api.Services.ExtractReader
         }
     }
 }
-

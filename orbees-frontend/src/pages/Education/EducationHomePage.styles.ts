@@ -10,6 +10,7 @@ export const Content = styled.div`
   padding: 24px 32px 40px;
   max-width: 1100px;
   width: 100%;
+  margin: 0 auto;
 `;
 
 export const Section = styled.section`

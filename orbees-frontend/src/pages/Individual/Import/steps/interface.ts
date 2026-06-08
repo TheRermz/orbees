@@ -17,8 +17,10 @@ export interface PreviewProps {
   selectedBank: number | null;
   loading: boolean;
   needsBankSelector: boolean;
+  titleOverrides: Record<string, string>;
   onBankChange: (id: number) => void;
   onProcessFile: () => void;
+  onTitleChange: (key: string, title: string) => void;
   onBack: () => void;
   onContinue: () => void;
 }

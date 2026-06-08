@@ -1,6 +1,7 @@
 import { CheckCircle, FileText, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "../../../../components/ui";
 import { formatCurrency } from "../../../../helpers/formatters";
+import { TransactionType } from "../../../../interfaces/enums";
 import {
   PreviewCard,
   PreviewHeader,
@@ -11,6 +12,7 @@ import {
   Td,
   Amount,
   CategoryTag,
+  TitleInput,
   FooterActions,
 } from "../ImportPage.styles";
 import type { PreviewProps } from "./interface";
@@ -23,15 +25,13 @@ export const Preview = ({
   selectedBank,
   loading,
   needsBankSelector,
+  titleOverrides,
   onBankChange,
   onProcessFile,
+  onTitleChange,
   onBack,
   onContinue,
 }: PreviewProps) => {
-  const uncategorizedCount = preview.filter(
-    (p) => !p.suggestedCategoryId
-  ).length;
-
   return (
     <>
       {needsBankSelector && !preview.length && (
@@ -78,7 +78,7 @@ export const Preview = ({
             <thead>
               <tr>
                 <Th>Data</Th>
-                <Th>Descrição</Th>
+                <Th>Título da Transação</Th>
                 <Th>Valor</Th>
                 <Th>Categoria</Th>
               </tr>
@@ -89,11 +89,18 @@ export const Preview = ({
                   <Td>
                     {new Date(p.transactionDate).toLocaleDateString("pt-BR")}
                   </Td>
-                  <Td>{p.title}</Td>
                   <Td>
-                    <Amount $positive={p.amount > 0}>
-                      {p.amount > 0 ? "+" : ""}
-                      {formatCurrency(Math.abs(p.amount))}
+                    <TitleInput
+                      value={titleOverrides[p.originalDescription ?? p.title] ?? p.title}
+                      onChange={(e) =>
+                        onTitleChange(p.originalDescription ?? p.title, e.target.value)
+                      }
+                    />
+                  </Td>
+                  <Td>
+                    <Amount $positive={p.type === TransactionType.Receita}>
+                      {p.type === TransactionType.Receita ? "+" : "-"}
+                      {formatCurrency(p.amount)}
                     </Amount>
                   </Td>
                   <Td>
@@ -122,9 +129,7 @@ export const Preview = ({
         </Button>
         {preview.length > 0 && (
           <Button onClick={onContinue}>
-            {uncategorizedCount > 0
-              ? `Categorizar ${uncategorizedCount} transações`
-              : "Continuar"}
+            Revisar e Categorizar
             <ArrowRight size={16} />
           </Button>
         )}

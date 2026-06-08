@@ -187,8 +187,7 @@ export const TransactionsPage = () => {
           onCreate={async (dto) => {
             const errorMsg = await create(dto);
             if (!errorMsg) {
-              showToast("success", "Transação criada.");
-              fetchData(from, to, page);
+              window.location.reload();
             } else {
               showToast("error", errorMsg);
             }
@@ -197,8 +196,7 @@ export const TransactionsPage = () => {
           onCreateBulk={async (dtos) => {
             const errorMsg = await createBulk({ transactions: dtos });
             if (!errorMsg) {
-              showToast("success", "Transações criadas.");
-              fetchData(from, to, page);
+              window.location.reload();
             } else {
               showToast("error", errorMsg);
             }
@@ -214,8 +212,7 @@ export const TransactionsPage = () => {
           onSave={async (id, dto) => {
             const errorMsg = await update(id, dto);
             if (!errorMsg) {
-              showToast("success", "Transação atualizada.");
-              fetchData(from, to, page);
+              window.location.reload();
             } else {
               showToast("error", errorMsg);
             }

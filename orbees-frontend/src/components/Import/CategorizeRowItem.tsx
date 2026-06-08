@@ -4,8 +4,8 @@ import {
   CategorizeRow,
   CategorizeTop,
   TxInfo,
-  TxTitle,
   TxAmount,
+  TitleInput,
   ShareRow,
   Toggle,
   ShareLabel,
@@ -28,7 +28,15 @@ export const CategorizeRowItem = ({
     <CategorizeRow>
       <CategorizeTop>
         <TxInfo>
-          <TxTitle>{p.title}</TxTitle>
+          <TitleInput
+            value={state.title}
+            onChange={(e) =>
+              onChange(p.originalDescription ?? p.title, {
+                ...state,
+                title: e.target.value,
+              })
+            }
+          />
           <TxAmount $positive={p.amount > 0}>
             {formatCurrency(Math.abs(p.amount))}
           </TxAmount>
