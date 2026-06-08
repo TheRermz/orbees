@@ -7,7 +7,7 @@ namespace Api.Services.Interfaces.Transactions
     {
         Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
             Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
-            string? search = null, Guid? categoryId = null, int? type = null);
+            string? search = null, Guid? categoryId = null, int? type = null, bool noCategory = false);
         Task<PagedResultDto<TransactionReadDto>> GetGroupTransactionsAsync(
             Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
             string? search = null, Guid? categoryId = null, int? type = null);

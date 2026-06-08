@@ -70,7 +70,8 @@ export const TransactionsPage = () => {
   const fetchData = useCallback(
     (newFrom: string, newTo: string, newPage: number, newSearch?: string, newCategory?: string, newType?: TransactionTypeFilter) => {
       const typeNum = newType === "income" ? 0 : newType === "expense" ? 1 : undefined;
-      fetchMyTransactions(newPage, PAGE_SIZE, newFrom, newTo, newSearch || undefined, newCategory || undefined, typeNum);
+      const noCategory = newCategory === "__none__";
+      fetchMyTransactions(newPage, PAGE_SIZE, newFrom, newTo, newSearch || undefined, noCategory ? undefined : (newCategory || undefined), typeNum, noCategory);
     },
     [fetchMyTransactions]
   );
@@ -94,12 +95,6 @@ export const TransactionsPage = () => {
     };
     init();
   }, [fetchData]);
-
-  useEffect(() => {
-    fetchData(from, to, 1, search, categoryFilter, typeFilter);
-    setPage(1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, categoryFilter, typeFilter]);
 
   const handleApply = (newFrom: string, newTo: string) => {
     setFrom(newFrom);
@@ -145,15 +140,19 @@ export const TransactionsPage = () => {
       <FiltersBar>
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(v) => { setSearch(v); setPage(1); fetchData(from, to, 1, v, categoryFilter, typeFilter); }}
           placeholder="Buscar transação..."
         />
-        <TypeFilter value={typeFilter} onChange={setTypeFilter} />
+        <TypeFilter
+          value={typeFilter}
+          onChange={(v) => { setTypeFilter(v); setPage(1); fetchData(from, to, 1, search, categoryFilter, v); }}
+        />
         <CategorySelect
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); fetchData(from, to, 1, search, e.target.value, typeFilter); }}
         >
           <option value="">Todas as categorias</option>
+          <option value="__none__">Sem categoria</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}

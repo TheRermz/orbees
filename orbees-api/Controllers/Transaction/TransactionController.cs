@@ -26,9 +26,10 @@ namespace Api.Controllers.Transaction
             [FromQuery] DateTime? to = null,
             [FromQuery] string? search = null,
             [FromQuery] Guid? categoryId = null,
-            [FromQuery] int? type = null)
+            [FromQuery] int? type = null,
+            [FromQuery] bool noCategory = false)
         {
-            var result = await transactionService.GetMyTransactionsAsync(GetUserId(), page, pageSize, from, to, search, categoryId, type);
+            var result = await transactionService.GetMyTransactionsAsync(GetUserId(), page, pageSize, from, to, search, categoryId, type, noCategory);
             return Ok(result);
         }
 

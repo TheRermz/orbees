@@ -12,7 +12,7 @@ namespace Api.Repositories.Interfaces
         Task AddRangeAsync(IEnumerable<Transaction> transactions);
         Task<(IEnumerable<Transaction> Items, int Total)> GetByUserIdPagedAsync(
             Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null,
-            string? search = null, Guid? categoryId = null, int? type = null);
+            string? search = null, Guid? categoryId = null, int? type = null, bool noCategory = false);
         Task<(IEnumerable<Transaction> Items, int Total)> GetByGroupIdPagedAsync(
             Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null,
             string? search = null, Guid? categoryId = null, int? type = null);

@@ -20,9 +20,9 @@ namespace Api.Services.Transactions
 
         public async Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
     Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
-    string? search = null, Guid? categoryId = null, int? type = null)
+    string? search = null, Guid? categoryId = null, int? type = null, bool noCategory = false)
         {
-            var (items, total) = await transactionRepository.GetByUserIdPagedAsync(userId, page, pageSize, from, to, search, categoryId, type);
+            var (items, total) = await transactionRepository.GetByUserIdPagedAsync(userId, page, pageSize, from, to, search, categoryId, type, noCategory);
 
             return new PagedResultDto<TransactionReadDto>
             {
