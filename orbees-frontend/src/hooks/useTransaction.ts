@@ -31,7 +31,7 @@ export const useTransactions = () => {
   const { addNotification } = useNotifications();
 
   const fetchMyTransactions = useCallback(
-    async (page: number, pageSize: number, from?: string, to?: string) => {
+    async (page: number, pageSize: number, from?: string, to?: string, search?: string, categoryId?: string, type?: number) => {
       try {
         setLoading(true);
         setError(null);
@@ -39,7 +39,10 @@ export const useTransactions = () => {
           page,
           pageSize,
           from,
-          to
+          to,
+          search,
+          categoryId,
+          type
         );
         setTransactions(data);
       } catch (err: unknown) {
@@ -57,7 +60,10 @@ export const useTransactions = () => {
       page: number,
       pageSize: number,
       from?: string,
-      to?: string
+      to?: string,
+      search?: string,
+      categoryId?: string,
+      type?: number
     ) => {
       try {
         setLoading(true);
@@ -67,7 +73,10 @@ export const useTransactions = () => {
           page,
           pageSize,
           from,
-          to
+          to,
+          search,
+          categoryId,
+          type
         );
         setTransactions(data);
       } catch (err: unknown) {

@@ -23,9 +23,12 @@ namespace Api.Controllers.Transaction
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] DateTime? from = null,
-            [FromQuery] DateTime? to = null)
+            [FromQuery] DateTime? to = null,
+            [FromQuery] string? search = null,
+            [FromQuery] Guid? categoryId = null,
+            [FromQuery] int? type = null)
         {
-            var result = await transactionService.GetMyTransactionsAsync(GetUserId(), page, pageSize, from, to);
+            var result = await transactionService.GetMyTransactionsAsync(GetUserId(), page, pageSize, from, to, search, categoryId, type);
             return Ok(result);
         }
 
@@ -36,9 +39,12 @@ namespace Api.Controllers.Transaction
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] DateTime? from = null,
-            [FromQuery] DateTime? to = null)
+            [FromQuery] DateTime? to = null,
+            [FromQuery] string? search = null,
+            [FromQuery] Guid? categoryId = null,
+            [FromQuery] int? type = null)
         {
-            var result = await transactionService.GetGroupTransactionsAsync(GetUserId(), groupId, page, pageSize, from, to);
+            var result = await transactionService.GetGroupTransactionsAsync(GetUserId(), groupId, page, pageSize, from, to, search, categoryId, type);
             return Ok(result);
         }
 

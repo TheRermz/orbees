@@ -19,9 +19,10 @@ namespace Api.Services.Transactions
     {
 
         public async Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
-    Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
+    Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
+    string? search = null, Guid? categoryId = null, int? type = null)
         {
-            var (items, total) = await transactionRepository.GetByUserIdPagedAsync(userId, page, pageSize, from, to);
+            var (items, total) = await transactionRepository.GetByUserIdPagedAsync(userId, page, pageSize, from, to, search, categoryId, type);
 
             return new PagedResultDto<TransactionReadDto>
             {
@@ -34,12 +35,13 @@ namespace Api.Services.Transactions
         }
 
         public async Task<PagedResultDto<TransactionReadDto>> GetGroupTransactionsAsync(
-            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
+            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
+            string? search = null, Guid? categoryId = null, int? type = null)
         {
             if (!await groupMemberRepository.IsMemberAsync(userId, groupId))
                 throw new UnauthorizedAccessException("Você não faz parte deste grupo.");
 
-            var (items, total) = await transactionRepository.GetByGroupIdPagedAsync(groupId, page, pageSize, from, to);
+            var (items, total) = await transactionRepository.GetByGroupIdPagedAsync(groupId, page, pageSize, from, to, search, categoryId, type);
 
             return new PagedResultDto<TransactionReadDto>
             {

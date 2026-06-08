@@ -6,9 +6,11 @@ namespace Api.Services.Interfaces.Transactions
     public interface ITransactionService
     {
         Task<PagedResultDto<TransactionReadDto>> GetMyTransactionsAsync(
-            Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null);
+            Guid userId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
+            string? search = null, Guid? categoryId = null, int? type = null);
         Task<PagedResultDto<TransactionReadDto>> GetGroupTransactionsAsync(
-            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null);
+            Guid userId, Guid groupId, int page = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null,
+            string? search = null, Guid? categoryId = null, int? type = null);
         Task<TransactionReadDto> GetByIdAsync(Guid userId, Guid transactionId);
         Task<TransactionReadDto> CreateAsync(Guid userId, TransactionCreateDto dto);
         Task<IEnumerable<TransactionReadDto>> CreateBulkAsync(Guid userId, TransactionBulkCreateDto dto);

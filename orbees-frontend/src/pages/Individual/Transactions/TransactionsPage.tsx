@@ -68,8 +68,9 @@ export const TransactionsPage = () => {
   const [showExportModal, setShowExportModal] = useState(false);
 
   const fetchData = useCallback(
-    (newFrom: string, newTo: string, newPage: number) => {
-      fetchMyTransactions(newPage, PAGE_SIZE, newFrom, newTo);
+    (newFrom: string, newTo: string, newPage: number, newSearch?: string, newCategory?: string, newType?: TransactionTypeFilter) => {
+      const typeNum = newType === "income" ? 0 : newType === "expense" ? 1 : undefined;
+      fetchMyTransactions(newPage, PAGE_SIZE, newFrom, newTo, newSearch || undefined, newCategory || undefined, typeNum);
     },
     [fetchMyTransactions]
   );
@@ -94,11 +95,17 @@ export const TransactionsPage = () => {
     init();
   }, [fetchData]);
 
+  useEffect(() => {
+    fetchData(from, to, 1, search, categoryFilter, typeFilter);
+    setPage(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, categoryFilter, typeFilter]);
+
   const handleApply = (newFrom: string, newTo: string) => {
     setFrom(newFrom);
     setTo(newTo);
     setPage(1);
-    fetchData(newFrom, newTo, 1);
+    fetchData(newFrom, newTo, 1, search, categoryFilter, typeFilter);
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -106,19 +113,7 @@ export const TransactionsPage = () => {
     setShowExportModal(false);
   };
 
-  // filtros locais
-  const filtered = (transactions.items ?? []).filter(
-    (t: TransactionReadDto) => {
-      const matchSearch =
-        !search || t.title.toLowerCase().includes(search.toLowerCase());
-      const matchType =
-        typeFilter === "all" ||
-        (typeFilter === "income" && t.type === 0) ||
-        (typeFilter === "expense" && t.type === 1);
-      const matchCategory = !categoryFilter || t.categoryId === categoryFilter;
-      return matchSearch && matchType && matchCategory;
-    }
-  );
+  const filtered = transactions.items ?? [];
 
   return (
     <Container>
@@ -228,12 +223,12 @@ export const TransactionsPage = () => {
           onPrev={() => {
             const newPage = page - 1;
             setPage(newPage);
-            fetchData(from, to, newPage);
+            fetchData(from, to, newPage, search, categoryFilter, typeFilter);
           }}
           onNext={() => {
             const newPage = page + 1;
             setPage(newPage);
-            fetchData(from, to, newPage);
+            fetchData(from, to, newPage, search, categoryFilter, typeFilter);
           }}
         />
       )}

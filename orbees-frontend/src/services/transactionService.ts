@@ -15,12 +15,15 @@ export const transactionService = {
     page = 1,
     pageSize = 10,
     from?: string,
-    to?: string
+    to?: string,
+    search?: string,
+    categoryId?: string,
+    type?: number
   ): Promise<PagedResultDto<TransactionReadDto>> => {
     const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
       "/transactions",
       {
-        params: { page, pageSize, from, to },
+        params: { page, pageSize, from, to, search: search || undefined, categoryId: categoryId || undefined, type: type ?? undefined },
       }
     );
     return data;
@@ -31,12 +34,15 @@ export const transactionService = {
     page = 1,
     pageSize = 10,
     from?: string,
-    to?: string
+    to?: string,
+    search?: string,
+    categoryId?: string,
+    type?: number
   ): Promise<PagedResultDto<TransactionReadDto>> => {
     const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
       `/transactions/group/${groupId}`,
       {
-        params: { page, pageSize, from, to },
+        params: { page, pageSize, from, to, search: search || undefined, categoryId: categoryId || undefined, type: type ?? undefined },
       }
     );
     return data;

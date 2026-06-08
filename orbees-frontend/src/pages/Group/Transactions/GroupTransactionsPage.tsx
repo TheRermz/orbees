@@ -30,7 +30,6 @@ import {
   EmptyState,
 } from "../../Individual/Transactions/TransactionsPage.styles";
 import type { TransactionTypeFilter } from "../../../components/ui/TypeFilter/interface";
-import type { TransactionReadDto } from "../../../interfaces/transaction";
 import { useParams } from "react-router-dom";
 import { useToast } from "../../../contexts/useToast";
 
@@ -61,9 +60,10 @@ export const GroupTransactionsPage = () => {
   const { showToast } = useToast();
 
   const fetchData = useCallback(
-    (newFrom: string, newTo: string, newPage: number) => {
+    (newFrom: string, newTo: string, newPage: number, newSearch?: string, newCategory?: string, newType?: TransactionTypeFilter) => {
       if (!groupId) return;
-      fetchGroupTransactions(groupId, newPage, PAGE_SIZE, newFrom, newTo);
+      const typeNum = newType === "income" ? 0 : newType === "expense" ? 1 : undefined;
+      fetchGroupTransactions(groupId, newPage, PAGE_SIZE, newFrom, newTo, newSearch || undefined, newCategory || undefined, typeNum);
     },
     [fetchGroupTransactions, groupId]
   );
@@ -88,11 +88,17 @@ export const GroupTransactionsPage = () => {
     init();
   }, [fetchData]);
 
+  useEffect(() => {
+    fetchData(from, to, 1, search, categoryFilter, typeFilter);
+    setPage(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, categoryFilter, typeFilter]);
+
   const handleApply = (newFrom: string, newTo: string) => {
     setFrom(newFrom);
     setTo(newTo);
     setPage(1);
-    fetchData(newFrom, newTo, 1);
+    fetchData(newFrom, newTo, 1, search, categoryFilter, typeFilter);
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -100,19 +106,7 @@ export const GroupTransactionsPage = () => {
     setShowExportModal(false);
   };
 
-  // filtros locais
-  const filtered = (transactions.items ?? []).filter(
-    (t: TransactionReadDto) => {
-      const matchSearch =
-        !search || t.title.toLowerCase().includes(search.toLowerCase());
-      const matchType =
-        typeFilter === "all" ||
-        (typeFilter === "income" && t.type === 0) ||
-        (typeFilter === "expense" && t.type === 1);
-      const matchCategory = !categoryFilter || t.categoryId === categoryFilter;
-      return matchSearch && matchType && matchCategory;
-    }
-  );
+  const filtered = transactions.items ?? [];
 
   return (
     <Container>
@@ -176,12 +170,12 @@ export const GroupTransactionsPage = () => {
           onPrev={() => {
             const newPage = page - 1;
             setPage(newPage);
-            fetchData(from, to, newPage);
+            fetchData(from, to, newPage, search, categoryFilter, typeFilter);
           }}
           onNext={() => {
             const newPage = page + 1;
             setPage(newPage);
-            fetchData(from, to, newPage);
+            fetchData(from, to, newPage, search, categoryFilter, typeFilter);
           }}
         />
       )}

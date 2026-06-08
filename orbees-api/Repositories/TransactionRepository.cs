@@ -84,7 +84,8 @@ namespace Api.Repositories
                 .ToListAsync();
 
         public async Task<(IEnumerable<Transaction> Items, int Total)> GetByUserIdPagedAsync(
-              Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
+              Guid userId, int page, int pageSize, DateTime? from = null, DateTime? to = null,
+              string? search = null, Guid? categoryId = null, int? type = null)
         {
             var utcFrom = from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : (DateTime?)null;
             var utcTo = to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : (DateTime?)null;
@@ -99,7 +100,10 @@ namespace Api.Repositories
                     t.UserId == userId &&
                     t.IsActive &&
                     (utcFrom == null || t.TransactionDate >= utcFrom) &&
-                    (utcTo == null || t.TransactionDate <= utcTo))
+                    (utcTo == null || t.TransactionDate <= utcTo) &&
+                    (search == null || t.Title.ToLower().Contains(search.ToLower())) &&
+                    (categoryId == null || t.CategoryId == categoryId) &&
+                    (type == null || (int)t.Type == type))
                 .OrderByDescending(t => t.TransactionDate);
 
             var total = await query.CountAsync();
@@ -112,7 +116,8 @@ namespace Api.Repositories
         }
 
         public async Task<(IEnumerable<Transaction> Items, int Total)> GetByGroupIdPagedAsync(
-               Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null)
+               Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null,
+               string? search = null, Guid? categoryId = null, int? type = null)
         {
             var utcFrom = from.HasValue ? DateTime.SpecifyKind(from.Value, DateTimeKind.Utc) : (DateTime?)null;
             var utcTo = to.HasValue ? DateTime.SpecifyKind(to.Value, DateTimeKind.Utc) : (DateTime?)null;
@@ -126,7 +131,10 @@ namespace Api.Repositories
                     t.GroupLinkActive &&
                     t.IsActive &&
                     (utcFrom == null || t.TransactionDate >= utcFrom) &&
-                    (utcTo == null || t.TransactionDate <= utcTo))
+                    (utcTo == null || t.TransactionDate <= utcTo) &&
+                    (search == null || t.Title.ToLower().Contains(search.ToLower())) &&
+                    (categoryId == null || t.CategoryId == categoryId) &&
+                    (type == null || (int)t.Type == type))
                 .OrderByDescending(t => t.TransactionDate);
 
             var total = await query.CountAsync();
