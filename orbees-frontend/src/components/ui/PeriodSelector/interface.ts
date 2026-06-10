@@ -3,4 +3,5 @@ export interface PeriodSelectorProps {
   from: string;
   to: string;
   onApply: (from: string, to: string) => void;
+  defaultActiveMonth?: string | null;
 }

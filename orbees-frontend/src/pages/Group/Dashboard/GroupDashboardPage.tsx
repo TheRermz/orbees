@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useGroupDashboard } from "../../../hooks/useGroupDashboard";
 import { useGroups } from "../../../hooks/useGroups";
 import {
   SummaryCard,
-  InsightItem,
   PeriodSelector,
 } from "../../../components/ui";
 import { MemberExpensesLineChart } from "../../../components/Dashboard/MemberExpensesLineChart";
 import { CategoryPieChart } from "../../../components/Dashboard/CategoryPieChart";
 import { formatCurrency } from "../../../helpers/formatters";
-import { getFirstDayOfMonth, getLastDayOfMonth } from "../../../helpers/date";
 import { TrendingUp, TrendingDown, Wallet, AlertCircle } from "lucide-react";
 import {
   Container,
@@ -24,10 +22,10 @@ import {
   ChartCard,
   ChartTitle,
   BottomRow,
-  InsightsCard,
-  InsightsTitle,
   LastTransactionsCard,
+  LastTransactionsHeader,
   LastTransactionsTitle,
+  SectionLink,
   TransactionItem,
   TxDot,
   TxInfo,
@@ -37,12 +35,9 @@ import {
 } from "./GroupDashboardPage.styles";
 import { useToast } from "../../../contexts/useToast";
 
-const now = new Date();
-const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
-const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
-
 export const GroupDashboardPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
+  const navigate = useNavigate();
   const {
     dashboard,
     lastTransactions,
@@ -52,8 +47,8 @@ export const GroupDashboardPage = () => {
   } = useGroupDashboard(groupId!);
   const { members, fetchMembers } = useGroups();
 
-  const [from, setFrom] = useState(defaultFrom);
-  const [to, setTo] = useState(defaultTo);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [memberId, setMemberId] = useState("");
   const availableMonths = dashboard?.availableMonths ?? [];
 
@@ -67,7 +62,7 @@ export const GroupDashboardPage = () => {
     if (!groupId) return;
     fetchMembers(groupId);
     fetchLastTransactions();
-    fetchDashboard(defaultFrom, defaultTo);
+    fetchDashboard();
   }, [fetchDashboard, fetchLastTransactions, fetchMembers, groupId]);
 
   const handleApply = (newFrom: string, newTo: string) => {
@@ -79,7 +74,7 @@ export const GroupDashboardPage = () => {
 
   const handleMemberChange = (newMemberId: string) => {
     setMemberId(newMemberId);
-    fetchDashboard(from, to, newMemberId || undefined);
+    fetchDashboard(from || undefined, to || undefined, newMemberId || undefined);
   };
 
   const s = dashboard?.summary;
@@ -113,11 +108,11 @@ export const GroupDashboardPage = () => {
       </Header>
 
       <PeriodSelector
-        key={`${from}-${to}`}
         availableMonths={availableMonths}
         from={from}
         to={to}
         onApply={handleApply}
+        defaultActiveMonth="all"
       />
 
       <CardsGrid>
@@ -171,22 +166,13 @@ export const GroupDashboardPage = () => {
       </ChartsRow>
 
       <BottomRow>
-        <InsightsCard>
-          <InsightsTitle>Insights do Grupo</InsightsTitle>
-          {(dashboard?.insights ?? []).length === 0 ? (
-            <InsightItem
-              text="Nenhum insight disponível para o período."
-              variant="muted"
-            />
-          ) : (
-            (dashboard?.insights ?? []).map((insight, i) => (
-              <InsightItem key={i} text={insight} variant="info" />
-            ))
-          )}
-        </InsightsCard>
-
         <LastTransactionsCard>
-          <LastTransactionsTitle>Últimas Transações</LastTransactionsTitle>
+          <LastTransactionsHeader>
+            <LastTransactionsTitle>Últimas Transações</LastTransactionsTitle>
+            <SectionLink onClick={() => navigate(`/group/${groupId}/transactions`)}>
+              + ver todas
+            </SectionLink>
+          </LastTransactionsHeader>
           {lastTransactions.map((t) => (
             <TransactionItem key={t.id}>
               <TxDot

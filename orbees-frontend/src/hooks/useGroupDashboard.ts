@@ -5,12 +5,6 @@ import type {
   GroupLastTransactionDto,
 } from "../interfaces/dashboard";
 import { getErrorMessage } from "../helpers/error";
-import { getFirstDayOfMonth, getLastDayOfMonth } from "../helpers/date";
-
-const now = new Date();
-const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
-const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
-
 export const useGroupDashboard = (groupId: string) => {
   const [dashboard, setDashboard] = useState<GroupDashboardResponseDto | null>(
     null
@@ -22,7 +16,7 @@ export const useGroupDashboard = (groupId: string) => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = useCallback(
-    async (from: string, to: string, memberId?: string) => {
+    async (from?: string, to?: string, memberId?: string) => {
       try {
         setLoading(true);
         setError(null);
@@ -58,7 +52,5 @@ export const useGroupDashboard = (groupId: string) => {
     error,
     fetchDashboard,
     fetchLastTransactions,
-    defaultFrom,
-    defaultTo,
   };
 };

@@ -24,8 +24,8 @@ namespace Api.Controllers.Dashboard
         {
             var userId = GetUserId();
 
-            var dateTo = to ?? DateTime.UtcNow;
-            var dateFrom = from ?? new DateTime(dateTo.Year, dateTo.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var dateTo = to ?? new DateTime(DateTime.UtcNow.Year + 1, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+            var dateFrom = from ?? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             var dashboard = await dashboardService.GetSelfDashboardAsync(userId, dateFrom, dateTo);
             return Ok(dashboard);
@@ -48,8 +48,8 @@ namespace Api.Controllers.Dashboard
               [FromQuery] Guid? memberId = null)
         {
             var now = DateTime.UtcNow;
-            var resolvedFrom = from ?? new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var resolvedTo = to ?? new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month), 23, 59, 59, DateTimeKind.Utc);
+            var resolvedFrom = from ?? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var resolvedTo = to ?? new DateTime(now.Year + 1, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
             var result = await dashboardService.GetGroupDashboardAsync(GetUserId(), groupId, resolvedFrom, resolvedTo, memberId);
             return Ok(result);

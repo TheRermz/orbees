@@ -8,6 +8,29 @@ export const Wrapper = styled.div`
   width: 100%;
 `;
 
+export const InputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+export const ToggleButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${theme.colors.textMuted};
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  &:hover {
+    color: ${theme.colors.text};
+  }
+`;
+
 export const Label = styled.label`
   font-size: ${theme.fontSize.xs};
   font-weight: ${theme.fontWeight.semibold};

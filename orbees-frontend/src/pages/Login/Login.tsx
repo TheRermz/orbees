@@ -111,6 +111,7 @@ export const LoginPage = () => {
             label="SENHA"
             type="password"
             placeholder="••••••••"
+            showToggle
             error={errors.password?.message}
             {...register("password", {
               required: "Senha é obrigatória.",

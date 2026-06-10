@@ -58,7 +58,7 @@ export const ChartTitle = styled.h4`
 
 export const BottomRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin: 16px 32px 24px;
 `;
@@ -85,11 +85,31 @@ export const LastTransactionsCard = styled.div`
   padding: 20px 24px;
 `;
 
+export const LastTransactionsHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+`;
+
 export const LastTransactionsTitle = styled.h4`
   font-size: ${theme.fontSize.sm};
   font-weight: ${theme.fontWeight.semibold};
   color: ${theme.colors.text};
-  margin: 0 0 12px;
+  margin: 0;
+`;
+
+export const SectionLink = styled.button`
+  background: none;
+  border: none;
+  color: ${theme.colors.primary};
+  font-size: ${theme.fontSize.sm};
+  font-weight: ${theme.fontWeight.semibold};
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 export const TransactionItem = styled.div`

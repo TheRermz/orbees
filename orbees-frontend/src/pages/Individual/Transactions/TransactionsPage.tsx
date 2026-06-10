@@ -56,8 +56,8 @@ export const TransactionsPage = () => {
   const [editingTransaction, setEditingTransaction] =
     useState<TransactionReadDto | null>(null);
   const [page, setPage] = useState(1);
-  const [from, setFrom] = useState(defaultFrom);
-  const [to, setTo] = useState(defaultTo);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -81,11 +81,10 @@ export const TransactionsPage = () => {
       const dashboard = await dashboardService.getSelfDashboard();
       if (dashboard.availableMonths.length) {
         setAvailableMonths(dashboard.availableMonths);
-        const lastMonth =
-          dashboard.availableMonths[dashboard.availableMonths.length - 1];
-        const { year, month } = parseYearMonth(lastMonth);
-        const newFrom = getFirstDayOfMonth(year, month);
-        const newTo = getLastDayOfMonth(year, month);
+        const first = dashboard.availableMonths[0];
+        const last = dashboard.availableMonths[dashboard.availableMonths.length - 1];
+        const newFrom = getFirstDayOfMonth(...(Object.values(parseYearMonth(first)) as [number, number]));
+        const newTo = getLastDayOfMonth(...(Object.values(parseYearMonth(last)) as [number, number]));
         setFrom(newFrom);
         setTo(newTo);
         fetchData(newFrom, newTo, 1);
@@ -130,11 +129,11 @@ export const TransactionsPage = () => {
       </Header>
 
       <PeriodSelector
-        key={`${from}-${to}`}
         availableMonths={availableMonths}
         from={from}
         to={to}
         onApply={handleApply}
+        defaultActiveMonth="all"
       />
 
       <FiltersBar>

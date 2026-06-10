@@ -56,8 +56,8 @@ export const DashboardPage = () => {
   } = useDashboard();
   const { showToast } = useToast();
 
-  const [from, setFrom] = useState(defaultFrom);
-  const [to, setTo] = useState(defaultTo);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [metric, setMetric] = useState<Metric>("value");
   const [chartType, setChartType] = useState<ChartType>("bar");
 
@@ -70,7 +70,7 @@ export const DashboardPage = () => {
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
-    fetchDashboard(defaultFrom, defaultTo);
+    fetchDashboard();
     fetchLastTransactions();
   }, [fetchDashboard, fetchLastTransactions]);
 
@@ -98,11 +98,11 @@ export const DashboardPage = () => {
     <Container>
       {dashboard && (
         <PeriodSelector
-          key={`${from}-${to}`}
           availableMonths={dashboard?.availableMonths ?? []}
           from={from}
           to={to}
           onApply={handleApply}
+          defaultActiveMonth="all"
         />
       )}
 
