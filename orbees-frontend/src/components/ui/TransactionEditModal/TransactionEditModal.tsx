@@ -60,7 +60,10 @@ export const TransactionEditModal = ({
     const err = await remove(transaction.id);
     setDeleting(false);
     if (!err) window.location.reload();
-    else { setConfirming(false); setError(err); }
+    else {
+      setConfirming(false);
+      setError(err);
+    }
   };
 
   if (confirming) {
@@ -70,11 +73,22 @@ export const TransactionEditModal = ({
         description={`Tem certeza que deseja excluir "${transaction.title}"? Esta ação não pode ser desfeita.`}
         onClose={() => setConfirming(false)}
         actions={
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-            <Button variant="secondary" onClick={() => setConfirming(false)} style={{ padding: "12px 18px", fontSize: "0.9rem" }}>
+          <div
+            style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="secondary"
+              onClick={() => setConfirming(false)}
+              style={{ padding: "12px 18px", fontSize: "0.9rem" }}
+            >
               Cancelar
             </Button>
-            <Button variant="danger" loading={deleting} onClick={handleDelete} style={{ padding: "12px 22px" }}>
+            <Button
+              variant="danger"
+              loading={deleting}
+              onClick={handleDelete}
+              style={{ padding: "12px 22px" }}
+            >
               Excluir
             </Button>
           </div>
@@ -88,15 +102,34 @@ export const TransactionEditModal = ({
       title="Editar transação"
       onClose={onClose}
       actions={
-        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-          <Button variant="danger" loading={deleting} onClick={() => setConfirming(true)} style={{ padding: "12px 18px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <Button
+            variant="danger"
+            loading={deleting}
+            onClick={() => setConfirming(true)}
+            style={{ padding: "12px 18px" }}
+          >
             <Trash size={16} />
           </Button>
           <div style={{ display: "flex", gap: "8px" }}>
-            <Button variant="secondary" onClick={onClose} style={{ padding: "12px 18px", fontSize: "0.9rem" }}>
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              style={{ padding: "12px 18px", fontSize: "0.9rem" }}
+            >
               Cancelar
             </Button>
-            <Button loading={loading} onClick={handleSave} style={{ padding: "12px 22px" }}>
+            <Button
+              loading={loading}
+              onClick={handleSave}
+              style={{ padding: "12px 22px" }}
+            >
               Salvar
             </Button>
           </div>
@@ -141,6 +174,7 @@ export const TransactionEditModal = ({
               setForm((prev) => ({
                 ...prev,
                 categoryId: e.target.value || undefined,
+                removeCategoryId: !e.target.value,
               }))
             }
           >
@@ -165,7 +199,9 @@ export const TransactionEditModal = ({
               setForm((prev) => ({
                 ...prev,
                 groupId: newGroupId || undefined,
+                removeGroupId: !newGroupId,
                 groupCategoryId: undefined,
+                removeGroupCategoryId: !newGroupId,
               }));
             }}
           >
@@ -183,7 +219,9 @@ export const TransactionEditModal = ({
         <Field>
           <FieldRow>
             <Label>CATEGORIA DO GRUPO</Label>
-            <FooterLink onClick={() => navigate("/group/categories")}>
+            <FooterLink
+              onClick={() => navigate(`/group/${selectedGroupId}/categories`)}
+            >
               + Nova categoria
             </FooterLink>
           </FieldRow>
@@ -194,6 +232,7 @@ export const TransactionEditModal = ({
                 setForm((prev) => ({
                   ...prev,
                   groupCategoryId: e.target.value || undefined,
+                  removeGroupCategoryId: !e.target.value,
                 }))
               }
             >

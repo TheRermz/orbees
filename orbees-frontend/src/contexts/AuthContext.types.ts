@@ -14,7 +14,9 @@ export interface AuthStateContextData {
 
 export interface AuthActionsContextData {
   login: (dto: LoginDto) => Promise<AuthResult>;
+  loginWithToken: (token: string) => Promise<AuthResult>;
   register: (dto: RegisterDto) => Promise<AuthResult>;
   forgotPassword: (email: string) => Promise<AuthResult>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }

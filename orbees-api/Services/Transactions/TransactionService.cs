@@ -212,17 +212,29 @@ namespace Api.Services.Transactions
 
             if (dto.Title != null) transaction.Title = dto.Title;
             if (dto.Description != null) transaction.Description = dto.Description;
-            if (dto.CategoryId != null) transaction.CategoryId = dto.CategoryId;
+            if (dto.RemoveCategoryId) transaction.CategoryId = null;
+            else if (dto.CategoryId != null) transaction.CategoryId = dto.CategoryId;
 
             // categoria do grupo só pode ser alterada se o vínculo ainda estiver ativo
-            if (dto.GroupCategoryId != null)
+            if (dto.RemoveGroupCategoryId)
+            {
+                if (!transaction.GroupLinkActive)
+                    throw new InvalidOperationException("O vínculo com o grupo foi encerrado. A categoria do grupo não pode ser alterada.");
+                transaction.GroupCategoryId = null;
+            }
+            else if (dto.GroupCategoryId != null)
             {
                 if (!transaction.GroupLinkActive)
                     throw new InvalidOperationException("O vínculo com o grupo foi encerrado. A categoria do grupo não pode ser alterada.");
                 transaction.GroupCategoryId = dto.GroupCategoryId;
             }
 
-            if (dto.GroupId != null && transaction.GroupId == null)
+            if (dto.RemoveGroupId)
+            {
+                transaction.GroupId = null;
+                transaction.GroupCategoryId = null;
+            }
+            else if (dto.GroupId != null && transaction.GroupId == null)
             {
                 if (!await groupMemberRepository.IsMemberAsync(userId, dto.GroupId.Value))
                     throw new UnauthorizedAccessException("Você não faz parte deste grupo.");
@@ -250,13 +262,7 @@ namespace Api.Services.Transactions
         private async Task<Guid?> SuggestCategoryAsync(Guid userId, string description)
         {
             var similar = await transactionRepository.GetSimilarTransactionsAsync(userId, description, limit: 5);
-            if (!similar.Any()) return null;
-
-            return similar
-                .Where(t => t.CategoryId != null)
-                .GroupBy(t => t.CategoryId)
-                .OrderByDescending(g => g.Count())
-                .FirstOrDefault()?.Key;
+            return similar.FirstOrDefault(t => t.CategoryId != null)?.CategoryId;
         }
 
         private async Task<IEnumerable<TransactionPreviewDto>> SuggestCategoriesAsync(Guid userId, IEnumerable<TransactionPreviewDto> preview)

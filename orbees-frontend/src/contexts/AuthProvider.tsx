@@ -39,6 +39,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const loginWithToken = useCallback(async (token: string): Promise<AuthResult> => {
+    try {
+      tokenStorage.set(token);
+      const me = await userService.getMe();
+      setUser(me);
+      return { success: true };
+    } catch (err: unknown) {
+      tokenStorage.remove();
+      return {
+        success: false,
+        error: getErrorMessage(err, "Erro ao autenticar com Google."),
+      };
+    }
+  }, []);
+
   const register = useCallback(
     async (dto: RegisterDto): Promise<AuthResult> => {
       try {
@@ -69,6 +84,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     []
   );
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await userService.getMe();
+      setUser(me);
+    } catch {
+      // silently ignore — user state stays as-is
+    }
+  }, []);
+
   const logout = useCallback(() => {
     tokenStorage.remove();
     setUser(null);
@@ -77,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthActionsContext.Provider
-      value={{ login, register, forgotPassword, logout }}
+      value={{ login, loginWithToken, register, forgotPassword, logout, refreshUser }}
     >
       <AuthStateContext.Provider
         value={{ user, isAuthenticated: !!user, initializing }}

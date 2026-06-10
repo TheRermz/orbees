@@ -29,6 +29,9 @@ namespace Api.Services.ExtractReader
 
             foreach (var trn in trnElements)
             {
+                var name = trn.Element("NAME")?.Value?.Trim() ?? "";
+                if (IsBalanceEntry(name)) continue;
+
                 var amountStr = trn.Element("TRNAMT")?.Value?.Replace(",", ".") ?? "0";
                 if (!decimal.TryParse(amountStr, System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture, out var amount))
@@ -36,7 +39,9 @@ namespace Api.Services.ExtractReader
 
                 var dateStr = trn.Element("DTPOSTED")?.Value ?? "";
                 var date = ParseOFXDate(dateStr);
-                var memo = trn.Element("MEMO")?.Value ?? trn.Element("NAME")?.Value ?? "Transação";
+                var memo = trn.Element("MEMO")?.Value?.Trim();
+                if (string.IsNullOrEmpty(memo)) memo = name;
+                if (string.IsNullOrEmpty(memo)) memo = "Transação";
                 var trnType = trn.Element("TRNTYPE")?.Value?.Trim().ToUpperInvariant() ?? "";
 
                 transactions.Add(new TransactionPreviewDto
@@ -51,6 +56,15 @@ namespace Api.Services.ExtractReader
 
             return transactions;
         }
+
+        private static readonly HashSet<string> BalanceEntryNames =
+        [
+            "saldo anterior", "saldo do dia", "saldo final", "saldo inicial",
+            "previous balance", "closing balance"
+        ];
+
+        private static bool IsBalanceEntry(string name) =>
+            BalanceEntryNames.Contains(name.ToLowerInvariant());
 
         // Bancos que exportam TRNAMT sempre positivo usam TRNTYPE para indicar débito.
         // Bancos padrão OFX usam TRNAMT negativo para despesa.

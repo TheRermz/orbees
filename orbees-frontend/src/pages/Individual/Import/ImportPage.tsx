@@ -82,12 +82,13 @@ export const ImportPage = () => {
     if (!file || !selectedBank) return;
     const ext = file.name.split(".").pop()?.toLowerCase();
     setLoading(true);
-    if (ext === "xls") {
-      await previewXLS(file, selectedBank);
-    } else {
-      await previewCSV(file, selectedBank);
-    }
+    const success = ext === "xls"
+      ? await previewXLS(file, selectedBank)
+      : await previewCSV(file, selectedBank);
     setLoading(false);
+    if (!success) {
+      showToast("error", "O arquivo enviado não é compatível com os bancos aceitos pelo sistema (Banco do Brasil, Nubank, Santander e Inter).");
+    }
   };
 
   const handleTitleChange = (key: string, title: string) => {

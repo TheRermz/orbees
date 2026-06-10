@@ -45,8 +45,11 @@ export interface TransactionUpdateDto {
   title?: string;
   description?: string;
   categoryId?: string;
+  removeCategoryId?: boolean;
   groupCategoryId?: string;
+  removeGroupCategoryId?: boolean;
   groupId?: string;
+  removeGroupId?: boolean;
 }
 
 export interface TransactionPreviewDto {

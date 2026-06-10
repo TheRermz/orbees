@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { tokenStorage } from "../../helpers/storage";
 import { authService } from "../../services/authService";
+import { useAuthActions } from "../../contexts/useAuthContext";
 
 export const GoogleCallbackPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { loginWithToken } = useAuthActions();
   const code = searchParams.get("code");
 
   useEffect(() => {
@@ -16,14 +17,18 @@ export const GoogleCallbackPage = () => {
 
     authService
       .exchangeCode(code)
-      .then(({ token }) => {
-        tokenStorage.set(token);
-        navigate("/individual/dashboard", { replace: true });
+      .then(({ token }) => loginWithToken(token))
+      .then((result) => {
+        if (result.success) {
+          navigate("/individual/dashboard", { replace: true });
+        } else {
+          navigate("/login?error=google_auth_failed", { replace: true });
+        }
       })
       .catch(() => {
         navigate("/login?error=google_auth_failed", { replace: true });
       });
-  }, [code, navigate]);
+  }, [code, navigate, loginWithToken]);
 
   return null;
 };

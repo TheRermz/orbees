@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { User } from "lucide-react";
 import { useAuthState } from "../../../contexts/useAuthContext";
 import { Button } from "../../../components/ui";
@@ -18,31 +18,50 @@ import {
 } from "../SettingsPage.styles";
 import { useUser } from "../../../hooks/useUser";
 import { useToast } from "../../../contexts/useToast";
+import { useAuthActions } from "../../../contexts/useAuthContext";
 
 export const ProfileTab = () => {
   const { user } = useAuthState();
+  const { refreshUser } = useAuthActions();
   const { updateMe, updateProfilePicture, loading } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fullname, setFullname] = useState(user?.fullname ?? "");
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { showToast } = useToast();
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const pfp = user?.profilePicturePath?.replace("-", "");
-  const pfpUrl = pfp
-    ? `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "")}${pfp}`
-    : null;
+  const pfpUrl = previewUrl
+    ?? (pfp ? `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "")}${pfp}` : null);
 
   const handleSave = async () => {
+    if (pendingPhoto) {
+      const photoError = await updateProfilePicture(pendingPhoto);
+      if (photoError) {
+        showToast("error", photoError);
+        return;
+      }
+      setPendingPhoto(null);
+      setPreviewUrl(null);
+    }
     const errorMsg = await updateMe({ fullname });
-    if (!errorMsg) showToast("success", "Perfil atualizado com sucesso.");
+    if (!errorMsg) window.location.reload();
     else showToast("error", errorMsg);
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const errorMsg = await updateProfilePicture(file);
-    if (!errorMsg) showToast("success", "Foto atualizada com sucesso.");
-    else showToast("error", errorMsg);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPendingPhoto(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    e.target.value = "";
   };
 
   return (

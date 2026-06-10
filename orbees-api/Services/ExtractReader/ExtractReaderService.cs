@@ -209,6 +209,9 @@ namespace Api.Services.ExtractReader
             await csv.ReadAsync();
             csv.ReadHeader();
 
+            if (csv.HeaderRecord == null || csv.HeaderRecord.Length < 6)
+                throw new InvalidOperationException("Arquivo incompatível com o formato do Banco do Brasil.");
+
             while (await csv.ReadAsync())
             {
                 var tipo = csv.GetField(5)?.Trim() ?? "";
@@ -265,6 +268,9 @@ namespace Api.Services.ExtractReader
 
             await csv.ReadAsync();
             csv.ReadHeader();
+
+            if (csv.HeaderRecord == null || csv.HeaderRecord.Length < 4)
+                throw new InvalidOperationException("Arquivo incompatível com o formato do Banco Inter.");
 
             while (await csv.ReadAsync())
             {
