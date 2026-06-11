@@ -1,8 +1,8 @@
 import { LAW_CALLOUT } from "../../../pages/Education/Law/data";
-import { Box, Title } from "./LawCalloutBox.styles";
+import { Box, SourceLink, Title } from "./LawCalloutBox.styles";
 
 export const LawCalloutBox = () => {
-  const { title, body, inlineSource, suffix } = LAW_CALLOUT;
+  const { title, body, inlineSource, suffix, sourceUrl } = LAW_CALLOUT;
 
   return (
     <Box>
@@ -23,7 +23,13 @@ export const LawCalloutBox = () => {
           )
         )}
         <sup style={{ fontSize: "0.6rem", color: "#b45309", marginLeft: 4 }}>
-          {inlineSource}
+          <SourceLink
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener norefeerer"
+          >
+            {inlineSource}
+          </SourceLink>{" "}
         </sup>
         {suffix}
       </p>

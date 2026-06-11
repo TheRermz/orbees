@@ -9,6 +9,7 @@ import {
   FootnoteRow,
   FootnoteText,
   FootnoteSource,
+  FootnoteSourceUrl,
 } from "./CompoundInterest.styles";
 
 export const CompoundInterest = () => {
@@ -47,7 +48,17 @@ export const CompoundInterest = () => {
             <em>{enemy.lines[1].text}</em>
           </Line>
           <FootnoteRow>
-            <FootnoteSource>{enemy.footnoteSource}</FootnoteSource>
+            {enemy.FootnoteSourceUrl ? (
+              <FootnoteSourceUrl
+                href={enemy.FootnoteSourceUrl}
+                target="blank"
+                rel="noopener norefeerer"
+              >
+                {enemy.footnoteSource}
+              </FootnoteSourceUrl>
+            ) : (
+              <FootnoteSource>{enemy.footnoteSource}</FootnoteSource>
+            )}
           </FootnoteRow>
         </SubCard>
       </CardsRow>

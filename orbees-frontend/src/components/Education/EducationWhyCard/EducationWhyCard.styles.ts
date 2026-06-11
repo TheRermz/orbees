@@ -37,7 +37,16 @@ export const Description = styled.p`
   margin: 0;
 `;
 
-export const Source = styled.span`
+export const Source = styled.a`
   font-size: ${theme.fontSize.xs};
   color: ${theme.colors.textLight};
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &::after {
+    content: " ↗";
+  }
 `;

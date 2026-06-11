@@ -11,6 +11,7 @@ export interface WhyCard {
   title: string;
   description: string;
   source?: string;
+  sourceUrl?: string;
   accentColor: string;
 }
 
@@ -28,7 +29,7 @@ export const STAT_CARDS: StatCard[] = [
     description:
       "das famílias brasileiras estão endividadas — maior nível desde nov/2022",
     source: "CNDL / SPC Brasil — PEIC ago/2025",
-    sourceUrl: "https://www.cndl.org.br",
+    sourceUrl: "static.poder360.com.br/2025/09/pesquisa-cnc-inadimplencia.pdf",
     accentColor: "#ef4444",
   },
   {
@@ -36,14 +37,14 @@ export const STAT_CARDS: StatCard[] = [
     description:
       "pontuação média de letramento financeiro (escala 0–100). Apenas 14,3% sabem calcular juros simples",
     source: "Banco Central do Brasil, 2023",
-    sourceUrl: "https://www.bcb.gov.br",
+    sourceUrl: "https://www.bcb.gov.br/detalhenoticia/747/noticia",
     accentColor: "#f59e0b",
   },
   {
-    value: "58,32%",
+    value: "58,3%",
     description:
-      "ao ano: taxa média de juros cobrada dos consumidores — maior desde maio/2023",
-    source: "BCB — PEIC / Taxas de Crédito, 2025",
+      "A taxa média de juros do crédito livre às pessoas físicas atingiu 58,3% a.a. em junho.",
+    source: "Banco Central do Brasil, 2025",
     sourceUrl: "https://www.bcb.gov.br",
     accentColor: "#3b82f6",
   },
@@ -54,31 +55,37 @@ export const WHY_CARDS: WhyCard[] = [
     icon: "ShieldCheck",
     title: "Segurança",
     description:
-      "47,7% dos brasileiros não controlam o próprio orçamento. Sem planejamento, imprevistos viram dívidas.",
-    source: "CNDL, 2020",
+      "56% dos brasileiros não controlam o próprio orçamento. Sem planejamento, imprevistos viram dívidas.",
+    source: "Banco Central do Brasil, 2017",
+    sourceUrl:
+      "https://www.bcb.gov.br/content/cidadaniafinanceira/documentos_cidadania/serie_cidadania/serie_cidadania_5_financeira_pesquisa.pdf",
     accentColor: "#22c55e",
   },
   {
     icon: "TrendingUp",
     title: "Crescimento",
     description:
-      "Investir R$200/mês a 1% a.m. por 20 anos gera mais de R$198.000. Os juros compostos trabalham por você — ou contra.",
+      "Investir não depende de grandes quantias. Pequenos aportes mensais, feitos com constância, podem se transformar em dezenas ou até centenas de milhares de reais ao longo dos anos graças aos juros compostos.",
     accentColor: "#6366f1",
   },
   {
     icon: "CreditCard",
     title: "Liberdade",
     description:
-      "Quem controla o dinheiro decide onde trabalhar, quando parar e como viver. 30,4% das famílias já têm dívidas em atraso.",
-    source: "PEIC ago/2025",
+      "Ter controle das finanças amplia as possibilidades de escolha e reduz a dependência de crédito para lidar com despesas do dia a dia. O planejamento financeiro é um dos pilares do bem-estar financeiro, segundo o Banco Central do Brasil.",
+    source: "Banco Central do Brasil, 2025",
+    sourceUrl:
+      "https://www.bcb.gov.br/content/cidadaniafinanceira/documentos_cidadania/RCF/relatorio_de_cidadania_financeira_2025.pdf",
     accentColor: "#f59e0b",
   },
   {
     icon: "AlertTriangle",
     title: "Realidade brasileira",
     description:
-      "R$ 143 bilhões em crédito em atraso — recorde histórico. O comprometimento médio da renda com dívidas é de 29,3%.",
+      "30,4% das famílias brasileiras possuem contas ou dívidas em atraso, o maior nível da série histórica da pesquisa. O comprometimento médio da renda com dívidas é de 29,3%.",
     source: "PEIC ago/2025",
+    sourceUrl:
+      "https://portal-bucket.azureedge.net/wp-content/2025/09/Relatorio_Peic_ago25.pdf",
     accentColor: "#ef4444",
   },
 ];

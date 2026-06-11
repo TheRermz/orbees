@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { FundamentalsAccordionProps } from "./interface";
 import { EmergencyFundContent } from "./content/EmergencyFundContent";
 import { DebtMethodsContent } from "./content/DebtMethodsContent";
-import { BudgetRoleContent } from "./content/BudgetRoleContent";
 import {
   AccordionBody,
   AccordionHeader,
@@ -24,8 +23,8 @@ export const FundamentalsAccordion = ({
         return <EmergencyFundContent />;
       case "debt_methods":
         return <DebtMethodsContent />;
-      case "budget_role":
-        return <BudgetRoleContent />;
+      // case "budget_role":
+      //   return <BudgetRoleContent />;
     }
   };
 

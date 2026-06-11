@@ -70,3 +70,16 @@ export const FootnoteSource = styled.span`
   font-size: ${theme.fontSize.xs};
   color: ${theme.colors.textLight};
 `;
+
+export const FootnoteSourceUrl = styled.a`
+  font-size: ${theme.fontSize.xs};
+  color: ${theme.colors.textLight};
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &::after {
+    content: " ↗";
+  }
+`;

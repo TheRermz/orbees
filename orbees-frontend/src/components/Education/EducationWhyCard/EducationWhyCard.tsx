@@ -26,7 +26,11 @@ export const EducationWhyCard = ({ card }: EducationWhyCardProps) => {
         <Title>{card.title}</Title>
       </TitleRow>
       <Description>{card.description}</Description>
-      {card.source && <Source>{card.source}</Source>}
+      {card.source && (
+        <Source href={card.sourceUrl} target="blank" rel="noopener noreferrer">
+          {card.source}
+        </Source>
+      )}
     </Card>
   );
 };

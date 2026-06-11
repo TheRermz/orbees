@@ -1,22 +1,24 @@
-import { Lightbulb } from "lucide-react";
 import {
   BodyText,
   ColTitle,
-  InlineSource,
-  TipBox,
+  Source,
   TwoColGrid,
 } from "../FundamentalsAccordion.styles";
 
 export const DebtMethodsContent = () => (
   <>
-    <BodyText>
-      O cartão de crédito é a principal dívida de <strong>63,6%</strong> dos
-      endividados brasileiros, seguido por empréstimos em instituições
-      financeiras (<strong>21,3%</strong>). A taxa média cobrada ao consumidor
-      chegou a <strong>58,32% a.a.</strong> em 2025.{" "}
-      <InlineSource>CNDL / PEIC 2025</InlineSource>
-    </BodyText>
     <TwoColGrid>
+      <div>
+        <ColTitle>Avalanche</ColTitle>
+        <BodyText>
+          Pague o mínimo em todas as dívidas e concentre na dívida com{" "}
+          <em>maior taxa de juros</em> (ex: rotativo do cartão).
+        </BodyText>
+        <BodyText style={{ marginTop: 8 }}>
+          Também chamado de “empilhamento de dívidas”, a ideia dessa tática é
+          pagar a menor quantidade de juros possível e quitar tudo.
+        </BodyText>
+      </div>
       <div>
         <ColTitle>Bola de Neve (Snowball)</ColTitle>
         <BodyText>
@@ -25,36 +27,20 @@ export const DebtMethodsContent = () => (
           próxima.
         </BodyText>
         <BodyText style={{ marginTop: 8 }}>
-          Vantagem: motivação psicológica — você elimina dívidas rapidamente e
-          mantém o foco.
-        </BodyText>
-      </div>
-      <div>
-        <ColTitle>Avalanche</ColTitle>
-        <BodyText>
-          Pague o mínimo em todas as dívidas e concentre na dívida com{" "}
-          <em>maior taxa de juros</em> (ex: rotativo do cartão).
-        </BodyText>
-        <BodyText style={{ marginTop: 8 }}>
-          Vantagem: matematicamente mais eficiente — você paga menos juros no
-          total e quita mais rápido.
+          Essa estratégia funciona da mesma forma que o método avalanche, porém,
+          com uma diferença: aqui, ao invés de organizar seus débitos
+          colocando-os do que tem maior juros para o que tem o menor, você os
+          ordena de acordo com a quantia do saldo pendente, do menor para o
+          maior.
         </BodyText>
       </div>
     </TwoColGrid>
-    <TwoColGrid>
-      <TipBox $color="#22c55e">
-        <Lightbulb size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-        <span>
-          Principais causas de inadimplência: desemprego, redução de renda e
-          descontrole financeiro. <InlineSource>Silva, UFPB, 2021</InlineSource>
-        </span>
-      </TipBox>
-      <TipBox $color="#22c55e">
-        <span>
-          Antes de contrair novo crédito, verifique se a nova taxa é menor que a
-          dívida atual. Use o Serasa Limpa Nome para renegociar.
-        </span>
-      </TipBox>
-    </TwoColGrid>
+    <Source
+      href="https://blog.nubank.com.br/metodo-avalanche-e-bola-de-neve/?utm_source=chatgpt.com"
+      target="blank"
+      rel="noopener norefeerer"
+    >
+      Métodos Avalanche e Bola de neve: afinal, o que é isso?
+    </Source>
   </>
 );

@@ -14,7 +14,8 @@ export const CALLOUT = {
     },
   ] as TextSegment[],
   source: "BCB, 2023",
-  sourceUrl: "https://www.bcb.gov.br",
+  sourceUrl:
+    "https://www.bcb.gov.br/content/cidadaniafinanceira/documentos_cidadania/letramento/relatorio-de-letramento-financeiro.pdf",
 };
 
 export interface Pillar {
@@ -59,8 +60,8 @@ export const RULE_502030 = {
   title: "A Regra 50-30-20",
   subtitle:
     "Um ponto de partida simples para distribuir a renda líquida mensal.",
-  source: "BCB — Educação Financeira",
-  sourceUrl: "https://www.bcb.gov.br/meubolso/planejamento",
+  source: "C6BANK",
+  sourceUrl: "https://www.c6bank.com.br/blog/regra-50-30-20",
   segments: [
     {
       label: "50%",
@@ -84,8 +85,6 @@ export const RULE_502030 = {
       value: 20,
     },
   ],
-  footnote:
-    "Adapte conforme sua realidade. Endividados devem direcionar mais que 20% para quitar dívidas. A regra é um guia, não uma lei.",
 };
 
 export const COMPOUND_INTEREST = {
@@ -104,7 +103,7 @@ export const COMPOUND_INTEREST = {
       },
     ],
     footnote: "Calculado com fórmula M = PMT × ((1+i)ⁿ − 1)/i.",
-    footnoteSource: "Tesouro Direto — Simulador",
+    footnoteSource: "Simulação matemática com juros compostos.",
     accentColor: "#22c55e",
   },
   enemy: {
@@ -118,11 +117,12 @@ export const COMPOUND_INTEREST = {
         endBold: true,
       },
       {
-        text: "Você pagou 131% a mais pelo mesmo valor. Juros sobre juros destroem patrimônio.",
+        text: "No crédito rotativo do cartão, os juros também se acumulam sobre juros anteriores. Por isso, uma dívida que não é quitada rapidamente pode crescer de forma acelerada e comprometer o orçamento familiar.",
         italic: true,
       },
     ],
     footnoteSource: "BCB — Taxas de Juros de Mercado",
+    FootnoteSourceUrl: "https://www.bcb.gov.br/estatisticas/txjuros",
     accentColor: "#ef4444",
   },
 };
@@ -135,8 +135,8 @@ export interface AccordionItem {
 
 export type AccordionContent =
   | { type: "emergency_fund" }
-  | { type: "debt_methods" }
-  | { type: "budget_role" };
+  | { type: "debt_methods" };
+// | { type: "budget_role" };
 
 export const ACCORDIONS: AccordionItem[] = [
   {
@@ -149,11 +149,11 @@ export const ACCORDIONS: AccordionItem[] = [
     title: "Método para sair das dívidas: Bola de Neve vs Avalanche",
     content: { type: "debt_methods" },
   },
-  {
-    id: "budget",
-    title: "O papel do orçamento mensal",
-    content: { type: "budget_role" },
-  },
+  // {
+  //   id: "budget",
+  //   title: "O papel do orçamento mensal",
+  //   content: { type: "budget_role" },
+  // },
 ];
 
 export interface TextSegment {

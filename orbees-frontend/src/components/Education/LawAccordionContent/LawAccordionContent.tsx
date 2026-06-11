@@ -5,6 +5,7 @@ import {
   TwoColGrid,
   InlineSource,
 } from "../../../pages/Education/Law/EducationLawPage.styles";
+import { Source } from "../EducationStatCard/EducationStatCard.styles";
 
 export const CreditContent = () => (
   <TwoColGrid>
@@ -13,18 +14,32 @@ export const CreditContent = () => (
         Como funciona o Score
       </h5>
       <BodyText>
-        O score de crédito (<strong>0 a 1000</strong>) indica a probabilidade de
-        pagar contas em dia. Bureaus como Serasa e SPC calculam com base em:
-        pagamentos em dia, tempo de relacionamento com o mercado, quantidade de
-        dívidas e consultas ao CPF.
-        <InlineSource>Serasa Score</InlineSource>
+        O score de crédito é uma pontuação utilizada por empresas de análise de
+        crédito para estimar o risco de inadimplência. A pontuação é calculada
+        com base em fatores como histórico de pagamentos, dívidas existentes,
+        tempo de relacionamento com o mercado e informações do Cadastro
+        Positivo. <br /> No caso da Serasa, a pontuação varia de 0 a 1000{" "}
+        <InlineSource>
+          <Source
+            href="https://www.serasa.com.br/score/"
+            target="_blank"
+            rel="noopener norefeerer"
+          >
+            Serasa Score
+          </Source>
+        </InlineSource>
+        pontos, sendo que valores mais altos indicam menor risco de
+        inadimplência.{" "}
+        <InlineSource>
+          <Source
+            href="https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12414.htm"
+            target="_blank"
+            rel="noopener norefeerer"
+          >
+            Lei do Cadastro Positivo (Lei nº 12.414/2011)
+          </Source>{" "}
+        </InlineSource>
       </BodyText>
-      <BulletList style={{ marginTop: 10 }}>
-        <BulletItem>0–300: Muito baixo</BulletItem>
-        <BulletItem>301–500: Baixo</BulletItem>
-        <BulletItem>501–700: Bom</BulletItem>
-        <BulletItem>701–1000: Excelente</BulletItem>
-      </BulletList>
     </div>
     <div>
       <h5 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: 10 }}>
@@ -58,25 +73,42 @@ export const LgpdContent = () => (
       <h5 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: 6 }}>
         LGPD{" "}
         <InlineSource style={{ fontSize: "0.65rem" }}>
-          Lei 13.709/2018
+          <Source
+            href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm"
+            target="_blank"
+            rel="noopener norefeerer"
+          >
+            Lei 13.709/2018
+          </Source>
         </InlineSource>
       </h5>
       <BodyText style={{ marginBottom: 10 }}>
-        A Lei Geral de Proteção de Dados garante controle sobre seus dados
-        pessoais. No contexto financeiro:
+        A Lei Geral de Proteção de Dados estabelece regras para a coleta,
+        utilização e compartilhamento de dados pessoais, garantindo mais
+        transparência e controle ao cidadão.
       </BodyText>
       <BulletList>
         <BulletItem>
-          Bancos e fintechs precisam de consentimento explícito para usar seus
-          dados
+          Você pode solicitar acesso, correção e, em determinadas situações,
+          exclusão de seus dados pessoais.
         </BulletItem>
         <BulletItem>
-          Você pode solicitar exclusão, correção e portabilidade dos seus dados
+          Instituições financeiras devem possuir uma base legal válida para
+          tratar seus dados.
         </BulletItem>
         <BulletItem>
-          Violações geram multas de até <strong>2% do faturamento</strong> (máx.
-          R$50 milhões por infração)
-          <InlineSource>Art. 52, LGPD</InlineSource>
+          O descumprimento da LGPD pode gerar sanções administrativas e multas
+          de até <strong>2% do faturamento</strong> da empresa, limitadas a R$
+          50 milhões por infração.
+          <InlineSource>
+            <Source
+              href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm"
+              target="_blank"
+              rel="noopener norefeerer"
+            >
+              Art. 52, LGPD
+            </Source>
+          </InlineSource>
         </BulletItem>
       </BulletList>
     </div>
@@ -84,23 +116,31 @@ export const LgpdContent = () => (
       <h5 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: 6 }}>
         Open Finance Brasil{" "}
         <InlineSource style={{ fontSize: "0.65rem" }}>
-          BCB — Open Finance
+          <Source
+            href="https://www.bcb.gov.br/estabilidadefinanceira/openfinance"
+            target="_blank"
+            rel="noopener norefereer"
+          >
+            BCB — Open Finance
+          </Source>
         </InlineSource>
       </h5>
       <BodyText style={{ marginBottom: 10 }}>
-        Sistema regulado pelo BCB que permite compartilhar dados financeiros
-        entre instituições de forma segura:
+        O Open Finance é um sistema regulado pelo Banco Central que permite o
+        compartilhamento seguro de dados financeiros entre instituições
+        autorizadas.
       </BodyText>
       <BulletList>
         <BulletItem>
-          Você autoriza quais dados compartilha e com quem
+          Você escolhe quais dados compartilhar e com qual instituição.
+        </BulletItem>
+        <BulletItem>O compartilhamento depende de sua autorização.</BulletItem>
+        <BulletItem>
+          Pode facilitar a comparação de produtos financeiros e o acesso a
+          ofertas mais adequadas ao seu perfil.
         </BulletItem>
         <BulletItem>
-          Permite comparar produtos (crédito, seguros) entre bancos
-        </BulletItem>
-        <BulletItem>Facilita portabilidade de salário e de crédito</BulletItem>
-        <BulletItem>
-          Sempre sob seu controle — você pode revogar a qualquer momento
+          A autorização pode ser cancelada a qualquer momento.
         </BulletItem>
       </BulletList>
     </div>
