@@ -140,6 +140,7 @@ namespace Api.Services.Dashboard
         }
 
         public async Task<IEnumerable<LastTransactionDto>> GetLastTransactionsAsync(Guid userId)
+
         {
             var transactions = await transactionRepository.GetByUserIdAsync(userId);
             return transactions
@@ -204,16 +205,42 @@ namespace Api.Services.Dashboard
         }
 
         public async Task<GroupDashboardResponseDto> GetGroupDashboardAsync(
-                Guid userId, Guid groupId, DateTime from, DateTime to, Guid? memberId = null)
+                Guid userId, Guid groupId, DateTime? from = null, DateTime? to = null, Guid? memberId = null)
         {
-            from = DateTime.SpecifyKind(from.Date, DateTimeKind.Utc);
-            to = DateTime.SpecifyKind(to.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            // Fetch everything once — used both for availableMonths and for filtering
+            var allGroupTransactions = (await transactionRepository.GetByGroupIdAsync(groupId)).ToList();
 
-            var allGroupTransactions = (await transactionRepository.GetByGroupIdAsync(groupId, from, to)).ToList();
+            var availableMonths = allGroupTransactions
+                .Select(t => t.TransactionDate.ToString("yyyy-MM"))
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
+
+            // Derive the effective date range from the data when the caller doesn't specify one
+            DateTime resolvedFrom, resolvedTo;
+            if (from.HasValue && to.HasValue)
+            {
+                resolvedFrom = DateTime.SpecifyKind(from.Value.Date, DateTimeKind.Utc);
+                resolvedTo = DateTime.SpecifyKind(to.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            }
+            else if (allGroupTransactions.Count > 0)
+            {
+                resolvedFrom = DateTime.SpecifyKind(allGroupTransactions.Min(t => t.TransactionDate).Date, DateTimeKind.Utc);
+                resolvedTo = DateTime.SpecifyKind(allGroupTransactions.Max(t => t.TransactionDate).Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            }
+            else
+            {
+                resolvedFrom = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+                resolvedTo = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            }
+
+            var filteredGroupTransactions = allGroupTransactions
+                .Where(t => t.TransactionDate >= resolvedFrom && t.TransactionDate <= resolvedTo)
+                .ToList();
 
             var transactions = memberId.HasValue
-                ? allGroupTransactions.Where(t => t.UserId == memberId.Value).ToList()
-                : allGroupTransactions;
+                ? filteredGroupTransactions.Where(t => t.UserId == memberId.Value).ToList()
+                : filteredGroupTransactions;
 
             var totalIncome = transactions.Where(t => t.Type == TransactionType.Receita).Sum(t => t.Amount);
             var totalExpenses = transactions.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount);
@@ -224,7 +251,7 @@ namespace Api.Services.Dashboard
                 .OrderByDescending(t => t.Amount)
                 .FirstOrDefault();
 
-            var insights = BuildGroupInsights(allGroupTransactions, from, to);
+            var insights = BuildGroupInsights(filteredGroupTransactions, resolvedFrom, resolvedTo);
 
 
             var expensesByCategory = transactions
@@ -248,16 +275,9 @@ namespace Api.Services.Dashboard
                 .Take(10)
                 .ToList();
 
-            var memberExpensesChart = BuildMemberExpensesChart(allGroupTransactions, from, to);
+            var memberExpensesChart = BuildMemberExpensesChart(filteredGroupTransactions, resolvedFrom, resolvedTo);
 
-            var allTransactions = await transactionRepository.GetByGroupIdAsync(groupId);
-            var availableMonths = allTransactions
-                .Select(t => t.TransactionDate.ToString("yyyy-MM"))
-                .Distinct()
-                .OrderBy(m => m)
-                .ToList();
-
-            var revenueVsExpenses = BuildRevenueVsExpensesChart(transactions, from, to);
+            var revenueVsExpenses = BuildRevenueVsExpensesChart(transactions, resolvedFrom, resolvedTo);
             var revenueVsExpensesChart = revenueVsExpenses.Select(r => new GroupRevenueVsExpensesChartDto
             {
                 Label = r.Label,
@@ -280,8 +300,8 @@ namespace Api.Services.Dashboard
                 ExpensesByCategoryChart = expensesByCategory,
                 MemberExpensesChart = memberExpensesChart,
                 AvailableMonths = availableMonths,
-                PeriodStart = from,
-                PeriodEnd = to
+                PeriodStart = resolvedFrom,
+                PeriodEnd = resolvedTo
             };
         }
 
@@ -393,15 +413,26 @@ namespace Api.Services.Dashboard
 
                     if (isMultiMonth)
                     {
-                        monthly = memberGroup
+                        var culture = new System.Globalization.CultureInfo("pt-BR");
+
+                        var byMonth = memberGroup
                             .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
-                            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                            .Select(g => new MemberMonthlyExpenseDto
-                            {
-                                Label = new DateTime(g.Key.Year, g.Key.Month, 1)
-                                    .ToString("MMM yy", new System.Globalization.CultureInfo("pt-BR")),
-                                Amount = g.Sum(t => t.Amount)
-                            }).ToList();
+                            .ToDictionary(g => (g.Key.Year, g.Key.Month), g => g.Sum(t => t.Amount));
+
+                        var allMonths = new List<(int Year, int Month)>();
+                        var cur = new DateTime(from.Year, from.Month, 1);
+                        var rangeEnd = new DateTime(to.Year, to.Month, 1);
+                        while (cur <= rangeEnd)
+                        {
+                            allMonths.Add((cur.Year, cur.Month));
+                            cur = cur.AddMonths(1);
+                        }
+
+                        monthly = allMonths.Select(m => new MemberMonthlyExpenseDto
+                        {
+                            Label = new DateTime(m.Year, m.Month, 1).ToString("MMM yy", culture),
+                            Amount = byMonth.TryGetValue(m, out var amt) ? amt : 0
+                        }).ToList();
                     }
                     else
                     {

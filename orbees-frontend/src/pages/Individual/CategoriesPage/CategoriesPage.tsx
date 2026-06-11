@@ -26,7 +26,7 @@ import {
 import { type CategoriesPageProps, DEFAULT_COLOR, DEFAULT_ICON } from "./interface";
 import { useToast } from "../../../contexts/useToast";
 
-export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
+export const CategoriesPage = ({ groupId, canEdit = true }: CategoriesPageProps) => {
   const { categories, create, update, remove } = useCategories(groupId);
   const { showToast } = useToast();
 
@@ -48,6 +48,7 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
   };
 
   const openEdit = (cat: CategoryReadDto) => {
+    if (!canEdit) return;
     setEditing(cat);
     setName(cat.name);
     setColor(cat.color ?? DEFAULT_COLOR);
@@ -102,12 +103,18 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
                 key={cat.id}
                 $color={cat.color ?? "#9ca3af"}
                 $active={editing?.id === cat.id}
-                $disabled={cat.isSystem}
+                $disabled={cat.isSystem || !canEdit}
                 onClick={() => {
                   if (!cat.isSystem)
                     return editing?.id === cat.id ? resetForm() : openEdit(cat);
                 }}
-                title={cat.isSystem ? "Categoria padrão do sistema" : undefined}
+                title={
+                  cat.isSystem
+                    ? "Categoria padrão do sistema"
+                    : !canEdit
+                    ? "Apenas administradores podem editar categorias"
+                    : undefined
+                }
               >
                 {Icon && <Icon size={14} />}
                 {cat.name}
@@ -118,7 +125,15 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
         </ChipsGrid>
       </Section>
 
-      <Section>
+      {!canEdit && (
+        <Section>
+          <SectionTitle style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
+            Apenas administradores podem criar ou editar categorias do grupo.
+          </SectionTitle>
+        </Section>
+      )}
+
+      {canEdit && <Section>
         <SectionTitle>
           {isEditing ? `Editar: ${editing.name}` : "Nova categoria"}
         </SectionTitle>
@@ -182,7 +197,7 @@ export const CategoriesPage = ({ groupId }: CategoriesPageProps) => {
             )}
           </Button>
         </FormActions>
-      </Section>
+      </Section>}
 
       {showDeleteModal && (
         <Modal

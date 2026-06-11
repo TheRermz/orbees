@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/useToast";
 import { useGroups } from "../../../hooks/useGroups";
+import { useGroupActions } from "../../../contexts/useGroupContext";
 import { useState } from "react";
 import {
   Actions,
@@ -22,6 +23,7 @@ export const GroupCreatePage = () => {
   const navigate = useNavigate();
   const { create, loading } = useGroups();
   const { showToast } = useToast();
+  const { refreshGroup } = useGroupActions();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +40,7 @@ export const GroupCreatePage = () => {
     });
 
     if (!errorMsg) {
+      await refreshGroup();
       showToast("success", "Grupo criado com sucesso!");
       navigate("/individual/dashboard");
     } else {

@@ -22,7 +22,7 @@ import {
 } from "./MainLayout.styles";
 import { menuGroups } from "./MenuGroup";
 import { Button, Modal, TopBar } from "../../ui";
-import { groupService } from "../../../services/groupService";
+import { useGroupState } from "../../../contexts/useGroupContext";
 import { ToastContext } from "../../../contexts/ToastContext";
 import { NotificationProvider } from "../../../contexts/NotificationProvider";
 
@@ -36,8 +36,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   const { logout } = useAuthActions();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [groupId, setGroupId] = useState<string | null>(null);
-  const [groupLoaded, setGroupLoaded] = useState(false);
+  const { groupId, groupLoaded } = useGroupState();
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const active = menuGroups.find((g) =>
@@ -52,12 +51,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     );
   };
 
-  useEffect(() => {
-    groupService.getMyGroups().then((groups) => {
-      if (groups.length > 0) setGroupId(groups[0].id);
-      setGroupLoaded(true);
-    });
-  }, []);
 
   const resolvedMenuGroups = menuGroups.map((group) => ({
     ...group,

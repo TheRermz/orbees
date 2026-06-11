@@ -17,6 +17,7 @@ export const ModalBox = styled.div`
   padding: ${theme.spacing.xl};
   width: 100%;
   max-width: 420px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   gap: ${theme.spacing.md};
@@ -48,6 +49,9 @@ export const ModalContent = styled.div`
   color: ${theme.colors.textLight};
   font-size: ${theme.fontSize.sm};
   line-height: 1.7;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 
   h4 {
     color: ${theme.colors.text};

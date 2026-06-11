@@ -55,7 +55,10 @@ namespace Api.Services.Category
             if (dto.GroupId.HasValue)
             {
                 if (!await groupMemberRepository.IsMemberAsync(userId, dto.GroupId.Value))
-                    throw new UnauthorizedAccessException("Você não faz parte deste grupo");
+                    throw new UnauthorizedAccessException("Você não faz parte deste grupo.");
+
+                if (!await groupMemberRepository.IsAdminAsync(userId, dto.GroupId.Value))
+                    throw new UnauthorizedAccessException("Apenas administradores podem criar categorias do grupo.");
             }
 
             var category = new Api.Models.Category

@@ -47,11 +47,7 @@ namespace Api.Controllers.Dashboard
               [FromQuery] DateTime? to = null,
               [FromQuery] Guid? memberId = null)
         {
-            var now = DateTime.UtcNow;
-            var resolvedFrom = from ?? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var resolvedTo = to ?? new DateTime(now.Year + 1, 12, 31, 23, 59, 59, DateTimeKind.Utc);
-
-            var result = await dashboardService.GetGroupDashboardAsync(GetUserId(), groupId, resolvedFrom, resolvedTo, memberId);
+            var result = await dashboardService.GetGroupDashboardAsync(GetUserId(), groupId, from, to, memberId);
             return Ok(result);
         }
 

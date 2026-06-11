@@ -18,7 +18,7 @@ namespace Api.Middlewares
             catch (UnauthorizedAccessException ex)
             {
                 logger.LogWarning(ex, "Erro de autorização.");
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json";
                 await context.Response.WriteAsJsonAsync(new { message = ex.Message });
             }

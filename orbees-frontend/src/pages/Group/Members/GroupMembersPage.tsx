@@ -64,6 +64,8 @@ export const GroupMembersPage = () => {
   const { showToast } = useToast();
 
   const group = groups.find((g) => g.id === groupId);
+  const currentMember = members.find((m) => m.userId === user?.id);
+  const isCurrentUserAdmin = currentMember?.role === "Administrador";
 
   useEffect(() => {
     fetchGroups();
@@ -83,6 +85,7 @@ export const GroupMembersPage = () => {
     if (!roleId) return;
     const errorMsg = await updateMemberRole(groupId, editing.id, roleId);
     if (!errorMsg) {
+      await fetchMembers(groupId);
       showToast("success", "Papel atualizado.");
       setEditing(null);
     } else {
@@ -147,7 +150,7 @@ export const GroupMembersPage = () => {
       <SectionCard style={{ margin: "24px 32px 0" }}>
         <SectionHeader>
           <SectionTitle>Membros do Grupo</SectionTitle>
-          <Button onClick={() => setShowInviteModal(true)}>
+          <Button onClick={() => setShowInviteModal(true)} disabled={!isCurrentUserAdmin}>
             <UserPlus size={16} /> Convidar Membro
           </Button>
         </SectionHeader>
@@ -195,13 +198,15 @@ export const GroupMembersPage = () => {
           onClose={() => setEditing(null)}
           actions={
             <>
-              <RemoveLink onClick={() => setShowRemoveModal(true)}>
-                Remover do grupo
-              </RemoveLink>
+              {isCurrentUserAdmin && (
+                <RemoveLink onClick={() => setShowRemoveModal(true)}>
+                  Remover do grupo
+                </RemoveLink>
+              )}
               <Button variant="secondary" onClick={() => setEditing(null)}>
                 Cancelar
               </Button>
-              <Button loading={loading} onClick={handleUpdateRole}>
+              <Button loading={loading} onClick={handleUpdateRole} disabled={!isCurrentUserAdmin}>
                 Salvar
               </Button>
             </>
@@ -224,6 +229,7 @@ export const GroupMembersPage = () => {
             <ModalSelect
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
+              disabled={!isCurrentUserAdmin}
             >
               {roles.map((r) => (
                 <option key={r.id} value={r.name}>
