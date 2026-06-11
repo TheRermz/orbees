@@ -74,6 +74,7 @@ namespace Api.Services.ExtractReader
             return bank.BankCode switch
             {
                 "033" => ParseSantanderXLS(table),
+                "001" => ParseBBXLS(table),
                 _ => throw new InvalidOperationException($"Leitura de XLS não suportada para o banco {bank.BankName}.")
             };
         }
@@ -125,6 +126,53 @@ namespace Api.Services.ExtractReader
                 {
                     Title = col1,
                     OriginalDescription = col1,
+                    Amount = Math.Abs(amount),
+                    TransactionDate = date,
+                    Type = type
+                });
+            }
+
+            return transactions;
+        }
+
+        // ── Banco do Brasil XLSX ──────────────────────────────────────────────────
+        // Estrutura: cabeçalho na linha 0, transações a partir da linha 1.
+        // Colunas: Data | Lançamento | Detalhes | N° documento | Valor | Tipo Lançamento
+        // Pular linhas sem Tipo (saldo anterior / saldo final) ou valor 0
+        private static IEnumerable<TransactionPreviewDto> ParseBBXLS(DataTable table)
+        {
+            if (table.Columns.Count < 6)
+                throw new InvalidOperationException("Arquivo incompatível com o formato do Banco do Brasil.");
+
+            var transactions = new List<TransactionPreviewDto>();
+
+            for (int i = 1; i < table.Rows.Count; i++)
+            {
+                var row = table.Rows[i];
+
+                var tipo = row[5]?.ToString()?.Trim() ?? "";
+                if (string.IsNullOrEmpty(tipo)) continue;
+
+                var dateStr = row[0]?.ToString()?.Trim() ?? "";
+                if (!DateTime.TryParseExact(dateStr, "dd/MM/yyyy",
+                    new CultureInfo("pt-BR"), DateTimeStyles.None, out var date))
+                    continue;
+
+                var amountStr = row[4]?.ToString()?.Trim() ?? "";
+                if (!TryParseBrazilianDecimal(amountStr, out var amount) || amount == 0)
+                    continue;
+
+                var lancamento = row[1]?.ToString()?.Trim() ?? "Transação";
+                var detalhes = row[2]?.ToString()?.Trim() ?? "";
+                var title = string.IsNullOrWhiteSpace(detalhes) ? lancamento : detalhes;
+                var type = tipo.Equals("Entrada", StringComparison.OrdinalIgnoreCase)
+                    ? TransactionType.Receita
+                    : TransactionType.Despesa;
+
+                transactions.Add(new TransactionPreviewDto
+                {
+                    Title = title,
+                    OriginalDescription = title,
                     Amount = Math.Abs(amount),
                     TransactionDate = date,
                     Type = type

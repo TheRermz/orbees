@@ -165,17 +165,19 @@ namespace Api.Services.Transactions
                 throw new KeyNotFoundException("Conta bancária não encontrada.");
 
             var transactions = new List<Transaction>();
+            var now = DateTime.UtcNow;
 
             foreach (var item in dto.Transactions)
             {
                 var suggestedCategory = await SuggestCategoryAsync(userId, item.OriginalDescription ?? item.Title);
+                var d = item.TransactionDate;
 
                 transactions.Add(new Transaction
                 {
                     Title = item.Title,
                     OriginalDescription = item.OriginalDescription ?? item.Title,
                     Amount = item.Amount,
-                    TransactionDate = DateTime.SpecifyKind(item.TransactionDate, DateTimeKind.Utc),
+                    TransactionDate = new DateTime(d.Year, d.Month, d.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc),
                     Type = item.Type,
                     Origin = TransactionOrigin.OFX,
                     MerchantDocument = item.MerchantDocument,
@@ -212,6 +214,15 @@ namespace Api.Services.Transactions
 
             if (dto.Title != null) transaction.Title = dto.Title;
             if (dto.Description != null) transaction.Description = dto.Description;
+            if (dto.Amount.HasValue) transaction.Amount = dto.Amount.Value;
+            if (dto.TransactionDate.HasValue)
+            {
+                var d = dto.TransactionDate.Value;
+                var existing = transaction.TransactionDate;
+                transaction.TransactionDate = new DateTime(d.Year, d.Month, d.Day,
+                    existing.Hour, existing.Minute, existing.Second, DateTimeKind.Utc);
+            }
+            if (dto.Type.HasValue) transaction.Type = (Api.Models.Enums.TransactionType)dto.Type.Value;
             if (dto.RemoveCategoryId) transaction.CategoryId = null;
             else if (dto.CategoryId != null) transaction.CategoryId = dto.CategoryId;
 

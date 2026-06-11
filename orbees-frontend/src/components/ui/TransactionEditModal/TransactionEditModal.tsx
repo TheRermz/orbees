@@ -11,7 +11,10 @@ import {
   SelectWrapper,
   FooterLink,
   FieldRow,
+  TypeToggle,
+  TypeButton,
 } from "./TransactionEditModal.styles";
+import { TransactionType } from "../../../interfaces/enums";
 import type { TransactionEditModalProps } from "./interface";
 import { Trash } from "lucide-react";
 import { useTransactions } from "../../../hooks/useTransaction";
@@ -36,6 +39,9 @@ export const TransactionEditModal = ({
   const [form, setForm] = useState<TransactionUpdateDto>({
     title: transaction.title,
     description: transaction.description ?? "",
+    amount: transaction.amount,
+    transactionDate: transaction.transactionDate.slice(0, 10),
+    type: transaction.type,
     categoryId: transaction.categoryId ?? undefined,
     groupId: transaction.groupId ?? undefined,
     groupCategoryId: transaction.groupCategoryId ?? undefined,
@@ -157,6 +163,53 @@ export const TransactionEditModal = ({
             setForm((prev) => ({ ...prev, description: e.target.value }))
           }
           as="input"
+        />
+      </Field>
+
+      <FieldRow>
+        <Field style={{ flex: 1 }}>
+          <Label>VALOR (R$)</Label>
+          <Select
+            value={form.amount ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+            }
+            as="input"
+            type="number"
+            min="0"
+            step="0.01"
+          />
+        </Field>
+        <Field style={{ flex: 1 }}>
+          <Label>TIPO</Label>
+          <TypeToggle>
+            <TypeButton
+              $active={form.type === TransactionType.Receita}
+              $type="income"
+              onClick={() => setForm((prev) => ({ ...prev, type: TransactionType.Receita }))}
+            >
+              Receita
+            </TypeButton>
+            <TypeButton
+              $active={form.type === TransactionType.Despesa}
+              $type="expense"
+              onClick={() => setForm((prev) => ({ ...prev, type: TransactionType.Despesa }))}
+            >
+              Despesa
+            </TypeButton>
+          </TypeToggle>
+        </Field>
+      </FieldRow>
+
+      <Field>
+        <Label>DATA</Label>
+        <Select
+          value={form.transactionDate ?? ""}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, transactionDate: e.target.value }))
+          }
+          as="input"
+          type="date"
         />
       </Field>
 

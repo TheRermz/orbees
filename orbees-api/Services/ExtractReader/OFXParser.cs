@@ -80,7 +80,9 @@ namespace Api.Services.ExtractReader
         private static IEnumerable<XElement> ParseSgmlTransactions(string sgml)
         {
             var results = new List<XElement>();
-            var matches = Regex.Matches(sgml, @"<STMTTRN>(.*?)(?=<STMTTRN>|$)",
+            // Lookahead inclui </STMTTRN> para não capturar a closing tag em arquivos
+            // que misturam SGML (campos sem fechamento) com tags container fechadas (Santander)
+            var matches = Regex.Matches(sgml, @"<STMTTRN>(.*?)(?=</STMTTRN>|<STMTTRN>|$)",
                 RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
             foreach (Match m in matches)

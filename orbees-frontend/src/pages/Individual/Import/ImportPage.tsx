@@ -54,8 +54,8 @@ export const ImportPage = () => {
   const handleFile = useCallback(
     async (f: File) => {
       const ext = f.name.split(".").pop()?.toLowerCase();
-      if (ext !== "ofx" && ext !== "csv" && ext !== "xls") {
-        showToast("error", "Formato inválido. Use arquivos .OFX, .CSV ou .XLS.");
+      if (ext !== "ofx" && ext !== "csv" && ext !== "xls" && ext !== "xlsx") {
+        showToast("error", "Formato inválido. Use arquivos .OFX, .CSV, .XLS ou .XLSX.");
         return;
       }
       if (!ALLOWED_MIME[ext].includes(f.type)) {
@@ -82,7 +82,7 @@ export const ImportPage = () => {
     if (!file || !selectedBank) return;
     const ext = file.name.split(".").pop()?.toLowerCase();
     setLoading(true);
-    const success = ext === "xls"
+    const success = ext === "xls" || ext === "xlsx"
       ? await previewXLS(file, selectedBank)
       : await previewCSV(file, selectedBank);
     setLoading(false);
@@ -180,7 +180,7 @@ export const ImportPage = () => {
       <Header>
         <PageTitle>Importar Extrato</PageTitle>
         <PageSubtitle>
-          Faça upload do seu extrato bancário nos formatos OFX, CSV ou XLS
+          Faça upload do seu extrato bancário nos formatos OFX, CSV, XLS ou XLSX
         </PageSubtitle>
       </Header>
 
@@ -214,7 +214,7 @@ export const ImportPage = () => {
             selectedBank={selectedBank}
             loading={loading}
             needsBankSelector={
-              (file?.name.endsWith(".csv") || file?.name.endsWith(".xls")) ?? false
+              (file?.name.endsWith(".csv") || file?.name.endsWith(".xls") || file?.name.endsWith(".xlsx")) ?? false
             }
             titleOverrides={titleOverrides}
             onBankChange={setSelectedBank}

@@ -44,6 +44,9 @@ export interface TransactionCreateDto {
 export interface TransactionUpdateDto {
   title?: string;
   description?: string;
+  amount?: number;
+  transactionDate?: string;
+  type?: number;
   categoryId?: string;
   removeCategoryId?: boolean;
   groupCategoryId?: string;

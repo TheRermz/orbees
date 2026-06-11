@@ -63,3 +63,31 @@ export const FooterLink = styled.button`
     text-decoration: underline;
   }
 `;
+
+export const TypeToggle = styled.div`
+  display: flex;
+  margin-left: 0.75rem;
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.borderRadius.md};
+  overflow: hidden;
+`;
+
+export const TypeButton = styled.button<{
+  $active: boolean;
+  $type: "income" | "expense";
+}>`
+  flex: 1;
+  padding: 8px;
+  border: none;
+  font-size: ${theme.fontSize.xs};
+  font-weight: ${theme.fontWeight.semibold};
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: ${({ $active, $type }) =>
+    $active
+      ? $type === "income"
+        ? "#22c55e"
+        : theme.colors.error
+      : "transparent"};
+  color: ${({ $active }) => ($active ? "#fff" : theme.colors.textMuted)};
+`;

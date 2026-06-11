@@ -36,8 +36,8 @@ export const Upload = ({ loading, onFile }: UploadProps) => {
         <FolderOpen size={48} color="#9ca3af" />
         <DropTitle>Arraste seu extrato aqui</DropTitle>
         <DropSubtitle>
-          Suporta arquivos <strong>OFX</strong>, <strong>CSV</strong> e{" "}
-          <strong>XLS</strong> exportados pelo seu banco
+          Suporta arquivos <strong>OFX</strong>, <strong>CSV</strong>,{" "}
+          <strong>XLS</strong> e <strong>XLSX</strong> exportados pelo seu banco
         </DropSubtitle>
         <Button
           loading={loading}
@@ -56,14 +56,14 @@ export const Upload = ({ loading, onFile }: UploadProps) => {
             <Table2 size={14} /> CSV — Planilha de transações
           </FormatBadge>
           <FormatBadge>
-            <Table2 size={14} /> XLS — Planilha Excel
+            <Table2 size={14} /> XLS / XLSX — Planilha Excel
           </FormatBadge>
         </FormatBadges>
       </DropZone>
       <input
         ref={fileInputRef}
         type="file"
-        accept=".ofx,.csv,.xls"
+        accept=".ofx,.csv,.xls,.xlsx"
         style={{ display: "none" }}
         onChange={(e) => {
           const f = e.target.files?.[0];
