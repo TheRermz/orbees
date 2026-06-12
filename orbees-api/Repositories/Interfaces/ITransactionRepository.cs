@@ -17,5 +17,8 @@ namespace Api.Repositories.Interfaces
             Guid groupId, int page, int pageSize, DateTime? from = null, DateTime? to = null,
             string? search = null, Guid? categoryId = null, int? type = null);
         Task UnlinkCategoryAsync(Guid categoryId);
+        Task<IEnumerable<string>> GetAvailableMonthsByGroupIdAsync(Guid groupId);
+        Task<IEnumerable<Transaction>> GetLastByGroupIdAsync(Guid groupId, int limit);
+        Task<IEnumerable<Dtos.Dashboard.GroupDashboardTransactionDto>> GetGroupDashboardTransactionsAsync(Guid groupId);
     }
 }

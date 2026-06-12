@@ -153,12 +153,12 @@ export const AddTransactionModal = ({
               <FormField>
                 <Label>Valor *</Label>
                 <StyledInput
-                  type="number"
-                  min="0"
-                  max="999999999.99"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={form.amount || ""}
-                  onChange={(e) => updateForm(i, "amount", e.target.value)}
+                  onChange={(e) =>
+                    updateForm(i, "amount", e.target.value.replace(",", "."))
+                  }
                   placeholder="0,00"
                 />
               </FormField>

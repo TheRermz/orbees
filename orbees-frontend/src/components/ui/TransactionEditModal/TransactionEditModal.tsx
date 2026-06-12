@@ -172,12 +172,11 @@ export const TransactionEditModal = ({
           <Select
             value={form.amount ?? ""}
             onChange={(e) =>
-              setForm((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
+              setForm((prev) => ({ ...prev, amount: parseFloat(e.target.value.replace(",", ".")) || 0 }))
             }
             as="input"
-            type="number"
-            min="0"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
           />
         </Field>
         <Field style={{ flex: 1 }}>

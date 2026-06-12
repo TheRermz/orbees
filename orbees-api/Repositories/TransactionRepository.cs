@@ -163,6 +163,50 @@ namespace Api.Repositories
             context.Transactions.Update(entity);
         }
 
+        public async Task<IEnumerable<Api.Dtos.Dashboard.GroupDashboardTransactionDto>> GetGroupDashboardTransactionsAsync(Guid groupId) =>
+            await context.Transactions
+                .AsNoTracking()
+                .Where(t => t.GroupId == groupId && t.GroupLinkActive && t.IsActive)
+                .Select(t => new Api.Dtos.Dashboard.GroupDashboardTransactionDto
+                {
+                    UserId = t.UserId,
+                    UserFullname = t.User != null ? t.User.Fullname : null,
+                    TransactionDate = t.TransactionDate,
+                    Amount = t.Amount,
+                    Type = t.Type,
+                    Title = t.Title,
+                    CategoryId = t.CategoryId,
+                    CategoryName = t.Category != null ? t.Category.Name : null,
+                    CategoryColor = t.Category != null ? t.Category.Color : null,
+                    GroupCategoryId = t.GroupCategoryId,
+                    GroupCategoryName = t.GroupCategory != null ? t.GroupCategory.Name : null,
+                    GroupCategoryColor = t.GroupCategory != null ? t.GroupCategory.Color : null,
+                })
+                .ToListAsync();
+
+        public async Task<IEnumerable<string>> GetAvailableMonthsByGroupIdAsync(Guid groupId)
+        {
+            var months = await context.Transactions
+                .Where(t => t.GroupId == groupId && t.GroupLinkActive && t.IsActive)
+                .Select(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                .Distinct()
+                .OrderBy(m => m.Year)
+                .ThenBy(m => m.Month)
+                .ToListAsync();
+
+            return months.Select(m => $"{m.Year:D4}-{m.Month:D2}");
+        }
+
+        public async Task<IEnumerable<Transaction>> GetLastByGroupIdAsync(Guid groupId, int limit) =>
+            await context.Transactions
+                .Include(t => t.Category)
+                .Include(t => t.GroupCategory)
+                .Include(t => t.User)
+                .Where(t => t.GroupId == groupId && t.GroupLinkActive && t.IsActive)
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(limit)
+                .ToListAsync();
+
         public async Task UnlinkCategoryAsync(Guid categoryId)
         {
             await context.Transactions

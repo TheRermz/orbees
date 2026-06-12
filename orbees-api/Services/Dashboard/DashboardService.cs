@@ -207,8 +207,7 @@ namespace Api.Services.Dashboard
         public async Task<GroupDashboardResponseDto> GetGroupDashboardAsync(
                 Guid userId, Guid groupId, DateTime? from = null, DateTime? to = null, Guid? memberId = null)
         {
-            // Fetch everything once — used both for availableMonths and for filtering
-            var allGroupTransactions = (await transactionRepository.GetByGroupIdAsync(groupId)).ToList();
+            var allGroupTransactions = (await transactionRepository.GetGroupDashboardTransactionsAsync(groupId)).ToList();
 
             var availableMonths = allGroupTransactions
                 .Select(t => t.TransactionDate.ToString("yyyy-MM"))
@@ -216,7 +215,6 @@ namespace Api.Services.Dashboard
                 .OrderBy(m => m)
                 .ToList();
 
-            // Derive the effective date range from the data when the caller doesn't specify one
             DateTime resolvedFrom, resolvedTo;
             if (from.HasValue && to.HasValue)
             {
@@ -259,8 +257,8 @@ namespace Api.Services.Dashboard
                 .GroupBy(t => new
                 {
                     CategoryId = t.GroupCategoryId ?? t.CategoryId,
-                    Name = t.GroupCategory != null ? t.GroupCategory.Name : t.Category?.Name,
-                    Color = t.GroupCategory != null ? t.GroupCategory.Color : t.Category?.Color
+                    Name = t.GroupCategoryName ?? t.CategoryName,
+                    Color = t.GroupCategoryColor ?? t.CategoryColor
                 })
                 .Select(g => new GroupExpensesByCategoryChartDto
                 {
@@ -277,7 +275,7 @@ namespace Api.Services.Dashboard
 
             var memberExpensesChart = BuildMemberExpensesChart(filteredGroupTransactions, resolvedFrom, resolvedTo);
 
-            var revenueVsExpenses = BuildRevenueVsExpensesChart(transactions, resolvedFrom, resolvedTo);
+            var revenueVsExpenses = BuildGroupRevenueVsExpensesChart(transactions, resolvedFrom, resolvedTo);
             var revenueVsExpensesChart = revenueVsExpenses.Select(r => new GroupRevenueVsExpensesChartDto
             {
                 Label = r.Label,
@@ -327,7 +325,7 @@ namespace Api.Services.Dashboard
                 });
         }
 
-        private static List<string> BuildGroupInsights(List<Transaction> transactions, DateTime from, DateTime to)
+        private static List<string> BuildGroupInsights(List<GroupDashboardTransactionDto> transactions, DateTime from, DateTime to)
         {
             var insights = new List<string>();
             var culture = new System.Globalization.CultureInfo("pt-BR");
@@ -338,8 +336,8 @@ namespace Api.Services.Dashboard
             {
                 var byMember = transactions
                     .Where(t => t.Type == TransactionType.Despesa)
-                    .GroupBy(t => new { t.UserId, t.User?.Fullname })
-                    .Select(g => new { g.Key.Fullname, Amount = g.Sum(t => t.Amount) })
+                    .GroupBy(t => new { t.UserId, t.UserFullname })
+                    .Select(g => new { g.Key.UserFullname, Amount = g.Sum(t => t.Amount) })
                     .OrderByDescending(m => m.Amount)
                     .FirstOrDefault();
 
@@ -347,7 +345,7 @@ namespace Api.Services.Dashboard
                 {
                     var pct = (int)Math.Round(byMember.Amount / totalExpenses * 100);
                     if (pct > 50)
-                        insights.Add($"{byMember.Fullname} concentra {pct}% das despesas do grupo no período.");
+                        insights.Add($"{byMember.UserFullname} concentra {pct}% das despesas do grupo no período.");
                 }
             }
 
@@ -355,7 +353,7 @@ namespace Api.Services.Dashboard
             {
                 var topCategory = transactions
                     .Where(t => t.Type == TransactionType.Despesa)
-                    .GroupBy(t => t.GroupCategory?.Name ?? t.Category?.Name ?? "Sem categoria")
+                    .GroupBy(t => t.GroupCategoryName ?? t.CategoryName ?? "Sem categoria")
                     .Select(g => new { Name = g.Key, Amount = g.Sum(t => t.Amount) })
                     .OrderByDescending(c => c.Amount)
                     .FirstOrDefault();
@@ -374,14 +372,14 @@ namespace Api.Services.Dashboard
                 .ToHashSet();
 
             var allMembers = transactions
-                .Select(t => new { t.UserId, t.User?.Fullname })
+                .Select(t => new { t.UserId, t.UserFullname })
                 .DistinctBy(m => m.UserId)
                 .ToList();
 
             foreach (var member in allMembers)
             {
                 if (!membersWithExpenses.Contains(member.UserId))
-                    insights.Add($"{member.Fullname} não registrou despesas no período.");
+                    insights.Add($"{member.UserFullname} não registrou despesas no período.");
             }
 
             var recurrent = transactions
@@ -396,22 +394,37 @@ namespace Api.Services.Dashboard
         }
 
         private static List<MemberExpensesChartDto> BuildMemberExpensesChart(
-            List<Transaction> transactions, DateTime from, DateTime to)
+            List<GroupDashboardTransactionDto> transactions, DateTime from, DateTime to)
         {
             var memberColors = new[] { "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#a855f7", "#14b8a6" };
             var colorIndex = 0;
 
             return transactions
                 .Where(t => t.Type == TransactionType.Despesa)
-                .GroupBy(t => new { t.UserId, t.User?.Fullname })
+                .GroupBy(t => new { t.UserId, t.UserFullname })
                 .Select(memberGroup =>
                 {
                     var color = memberColors[colorIndex++ % memberColors.Length];
-                    var isMultiMonth = from.Month != to.Month || from.Year != to.Year;
+                    var totalMonths = (to.Year - from.Year) * 12 + (to.Month - from.Month);
+                    var isMultiYear = totalMonths > 24;
+                    var isMultiMonth = !isMultiYear && (from.Month != to.Month || from.Year != to.Year);
 
                     List<MemberMonthlyExpenseDto> monthly;
 
-                    if (isMultiMonth)
+                    if (isMultiYear)
+                    {
+                        var byYear = memberGroup
+                            .GroupBy(t => t.TransactionDate.Year)
+                            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+
+                        monthly = Enumerable.Range(from.Year, to.Year - from.Year + 1)
+                            .Select(y => new MemberMonthlyExpenseDto
+                            {
+                                Label = y.ToString(),
+                                Amount = byYear.TryGetValue(y, out var amt) ? amt : 0
+                            }).ToList();
+                    }
+                    else if (isMultiMonth)
                     {
                         var culture = new System.Globalization.CultureInfo("pt-BR");
 
@@ -458,12 +471,73 @@ namespace Api.Services.Dashboard
                     return new MemberExpensesChartDto
                     {
                         MemberId = memberGroup.Key.UserId,
-                        MemberName = memberGroup.Key.Fullname ?? "Desconhecido",
+                        MemberName = memberGroup.Key.UserFullname ?? "Desconhecido",
                         MemberColor = color,
                         MonthlyExpenses = monthly
                     };
                 })
                 .ToList();
+        }
+
+        private static List<RevenueVsExpensesChartDto> BuildGroupRevenueVsExpensesChart(
+            List<GroupDashboardTransactionDto> transactions, DateTime from, DateTime to)
+        {
+            var totalMonths = (to.Year - from.Year) * 12 + (to.Month - from.Month);
+            var isMultiYear = totalMonths > 24;
+            var isMultiMonth = !isMultiYear && (from.Month != to.Month || from.Year != to.Year);
+
+            if (isMultiYear)
+            {
+                return transactions
+                    .GroupBy(t => t.TransactionDate.Year)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new RevenueVsExpensesChartDto
+                    {
+                        Label = g.Key.ToString(),
+                        Income = g.Where(t => t.Type == TransactionType.Receita).Sum(t => t.Amount),
+                        Expenses = g.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount)
+                    })
+                    .ToList();
+            }
+
+            if (isMultiMonth)
+            {
+                return transactions
+                    .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                    .Select(g => new RevenueVsExpensesChartDto
+                    {
+                        Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yy",
+                            new System.Globalization.CultureInfo("pt-BR")),
+                        Income = g.Where(t => t.Type == TransactionType.Receita).Sum(t => t.Amount),
+                        Expenses = g.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount)
+                    })
+                    .ToList();
+            }
+
+            var result = new List<RevenueVsExpensesChartDto>();
+            var weekStart = from.Date;
+            while (weekStart <= to.Date)
+            {
+                var weekEnd = new DateTime(weekStart.Year, weekStart.Month,
+                    Math.Min(weekStart.Day + 6, DateTime.DaysInMonth(weekStart.Year, weekStart.Month)));
+                weekEnd = DateTime.SpecifyKind(weekEnd, DateTimeKind.Utc);
+
+                var weekTx = transactions.Where(t =>
+                    t.TransactionDate.Date >= weekStart.Date &&
+                    t.TransactionDate.Date <= weekEnd.Date).ToList();
+
+                result.Add(new RevenueVsExpensesChartDto
+                {
+                    Label = $"Dias {weekStart.Day}-{weekEnd.Day}",
+                    Income = weekTx.Where(t => t.Type == TransactionType.Receita).Sum(t => t.Amount),
+                    Expenses = weekTx.Where(t => t.Type == TransactionType.Despesa).Sum(t => t.Amount)
+                });
+
+                weekStart = weekEnd.AddDays(1);
+            }
+
+            return result;
         }
 
         private static string FormatVariation(decimal current, decimal previous)
