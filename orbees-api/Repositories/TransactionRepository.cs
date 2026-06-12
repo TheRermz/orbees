@@ -163,6 +163,17 @@ namespace Api.Repositories
             context.Transactions.Update(entity);
         }
 
+        public async Task UnlinkCategoryAsync(Guid categoryId)
+        {
+            await context.Transactions
+                .Where(t => t.CategoryId == categoryId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.CategoryId, (Guid?)null));
+
+            await context.Transactions
+                .Where(t => t.GroupCategoryId == categoryId)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.GroupCategoryId, (Guid?)null));
+        }
+
         public async Task SaveChangesAsync() =>
             await context.SaveChangesAsync();
     }

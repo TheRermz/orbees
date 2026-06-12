@@ -6,7 +6,8 @@ namespace Api.Services.Category
 {
     public class CategoryService(
         ICategoryRepository categoryRepository,
-        IGroupMemberRepository groupMemberRepository
+        IGroupMemberRepository groupMemberRepository,
+        ITransactionRepository transactionRepository
         ) : ICategoryService
     {
         public async Task<IEnumerable<CategoryReadDto>> GetAllForUserAsync(Guid userId, Guid? groupId = null)
@@ -121,6 +122,7 @@ namespace Api.Services.Category
                     throw new UnauthorizedAccessException("Apenas administradores podem deletar categorias.");
             }
 
+            await transactionRepository.UnlinkCategoryAsync(category.Id);
             await categoryRepository.DeleteAsync(category);
             await categoryRepository.SaveChangesAsync();
         }
