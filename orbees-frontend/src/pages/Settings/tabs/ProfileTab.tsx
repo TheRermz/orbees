@@ -23,11 +23,12 @@ import { useAuthActions } from "../../../contexts/useAuthContext";
 export const ProfileTab = () => {
   const { user } = useAuthState();
   const { refreshUser } = useAuthActions();
-  const { updateMe, updateProfilePicture, loading } = useUser();
+  const { updateMe, updateProfilePicture, deleteProfilePicture, loading } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fullname, setFullname] = useState(user?.fullname ?? "");
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [pendingRemovePhoto, setPendingRemovePhoto] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -37,11 +38,19 @@ export const ProfileTab = () => {
   }, [previewUrl]);
 
   const pfp = user?.profilePicturePath?.replace("-", "");
-  const pfpUrl = previewUrl
-    ?? (pfp ? `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "")}${pfp}` : null);
+  const pfpUrl = pendingRemovePhoto
+    ? null
+    : previewUrl ?? (pfp ? `${import.meta.env.VITE_API_BASE_URL?.replace("/api", "")}${pfp}` : null);
 
   const handleSave = async () => {
-    if (pendingPhoto) {
+    if (pendingRemovePhoto) {
+      const removeError = await deleteProfilePicture();
+      if (removeError) {
+        showToast("error", removeError);
+        return;
+      }
+      setPendingRemovePhoto(false);
+    } else if (pendingPhoto) {
       const photoError = await updateProfilePicture(pendingPhoto);
       if (photoError) {
         showToast("error", photoError);
@@ -83,11 +92,28 @@ export const ProfileTab = () => {
             <AvatarHint>JPG, PNG. Recomendado 256×256px.</AvatarHint>
             <Button
               variant="secondary"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                setPendingRemovePhoto(false);
+                fileInputRef.current?.click();
+              }}
               style={{ marginTop: 8 }}
             >
               Alterar foto
             </Button>
+            {(pfp || pendingPhoto) && !pendingRemovePhoto && (
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setPendingPhoto(null);
+                  if (previewUrl) URL.revokeObjectURL(previewUrl);
+                  setPreviewUrl(null);
+                  setPendingRemovePhoto(true);
+                }}
+                style={{ marginTop: 8 }}
+              >
+                Remover foto de perfil
+              </Button>
+            )}
             <input
               ref={fileInputRef}
               type="file"

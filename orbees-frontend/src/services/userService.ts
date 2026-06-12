@@ -35,7 +35,7 @@ export const userService = {
   },
 
   deleteProfilePicture: async (): Promise<void> => {
-    await api.delete("/user/me/picture");
+    await api.delete("/user/me/picture/delete");
   },
 
   deleteMe: async (): Promise<void> => {
