@@ -45,7 +45,8 @@ export const STAT_CARDS: StatCard[] = [
     description:
       "A taxa média de juros do crédito livre às pessoas físicas atingiu 58,3% a.a. em junho.",
     source: "Banco Central do Brasil, 2025",
-    sourceUrl: "https://www.bcb.gov.br",
+    sourceUrl:
+      "https://www.bcb.gov.br/content/estatisticas/hist_estatisticasmonetariascredito/202507_Texto_de_estatisticas_monetarias_e_de_credito.pdf",
     accentColor: "#3b82f6",
   },
 ];
