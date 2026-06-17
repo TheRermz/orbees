@@ -1,5 +1,7 @@
 import {
   BodyText,
+  BulletItem,
+  BulletList,
   ColTitle,
   Source,
   TwoColGrid,
@@ -11,27 +13,27 @@ export const DebtMethodsContent = () => (
       <div>
         <ColTitle>Avalanche</ColTitle>
         <BodyText>
-          Pague o mínimo em todas as dívidas e concentre na dívida com{" "}
-          <em>maior taxa de juros</em> (ex: rotativo do cartão).
-        </BodyText>
-        <BodyText style={{ marginTop: 8 }}>
-          Também chamado de “empilhamento de dívidas”, a ideia dessa tática é
-          pagar a menor quantidade de juros possível e quitar tudo.
+          <BulletList>
+            <BulletItem>Pague o mínimo em todas as dívidas.</BulletItem>
+            <BulletItem>
+              Direcione todo valor extra para a dívida com <em>maior juros</em>.
+            </BulletItem>
+            <BulletItem>Ao quitar, passe para a próxima maior taxa.</BulletItem>
+          </BulletList>
         </BodyText>
       </div>
       <div>
         <ColTitle>Bola de Neve (Snowball)</ColTitle>
-        <BodyText>
-          Pague o mínimo em todas as dívidas e concentre o máximo na{" "}
-          <em>menor dívida</em>. Ao quitá-la, use o valor liberado para a
-          próxima.
-        </BodyText>
         <BodyText style={{ marginTop: 8 }}>
-          Essa estratégia funciona da mesma forma que o método avalanche, porém,
-          com uma diferença: aqui, ao invés de organizar seus débitos
-          colocando-os do que tem maior juros para o que tem o menor, você os
-          ordena de acordo com a quantia do saldo pendente, do menor para o
-          maior.
+          <BulletList>
+            <BulletItem>Pague o mínimo em todas as dívidas.</BulletItem>
+            <BulletItem>
+              Direcione todo valor extra para a dívida com <em>menor saldo</em>.
+            </BulletItem>
+            <BulletItem>
+              Ao quitar, passe para a próxima menor dívida.
+            </BulletItem>
+          </BulletList>
         </BodyText>
       </div>
     </TwoColGrid>
