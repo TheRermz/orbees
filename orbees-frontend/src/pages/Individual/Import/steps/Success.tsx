@@ -43,10 +43,10 @@ export const Success = ({ result, onReset }: SuccessProps) => {
 
       {result.shared > 0 && (
         <SharedInfo>
-          <Users size={18} />
+          <Users size={24} />
           <span>
             <strong>
-              {result.shared} transação
+              {result.shared} transaç
               {result.shared > 1
                 ? "ões foram compartilhadas"
                 : " foi compartilhada"}

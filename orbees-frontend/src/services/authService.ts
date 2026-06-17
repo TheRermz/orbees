@@ -12,7 +12,7 @@ export const authService = {
   },
 
   confirmEmail: async (token: string): Promise<void> => {
-    await api.get(`/auth/confirm-email?token=${token}`);
+    await api.get("/auth/confirm-email", { params: { token } });
   },
 
   forgotPassword: async (email: string): Promise<void> => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { authService } from "../../services/authService";
 import { getErrorMessage } from "../../helpers/error";
@@ -17,9 +17,11 @@ export const ConfirmEmailPage = () => {
   const [errorMsg, setErrorMsg] = useState(
     token ? "" : "Token inválido ou ausente."
   );
+  const hasConfirmed = useRef(false);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || hasConfirmed.current) return;
+    hasConfirmed.current = true;
 
     authService
       .confirmEmail(token)

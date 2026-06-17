@@ -134,7 +134,7 @@ namespace Api.Repositories
                     (utcFrom == null || t.TransactionDate >= utcFrom) &&
                     (utcTo == null || t.TransactionDate <= utcTo) &&
                     (search == null || t.Title.ToLower().Contains(search.ToLower())) &&
-                    (categoryId == null || t.CategoryId == categoryId) &&
+                    (categoryId == null || t.GroupCategoryId == categoryId) &&
                     (type == null || (int)t.Type == type))
                 .OrderByDescending(t => t.TransactionDate);
 

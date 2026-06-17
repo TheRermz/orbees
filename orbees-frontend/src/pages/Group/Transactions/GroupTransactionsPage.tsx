@@ -31,7 +31,6 @@ import {
 } from "../../Individual/Transactions/TransactionsPage.styles";
 import type { TransactionTypeFilter } from "../../../components/ui/TypeFilter/interface";
 import { useParams } from "react-router-dom";
-import { useToast } from "../../../contexts/useToast";
 
 const PAGE_SIZE = 10;
 
@@ -40,14 +39,10 @@ const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const GroupTransactionsPage = () => {
-  const {
-    transactions,
-    loading,
-    fetchGroupTransactions,
-    exportTransactions,
-  } = useTransactions();
-  const { categories } = useCategories();
   const { groupId } = useParams<{ groupId: string }>();
+  const { transactions, loading, fetchGroupTransactions, exportTransactions } =
+    useTransactions();
+  const { categories } = useCategories(groupId);
 
   const [showExportModal, setShowExportModal] = useState(false);
   const [page, setPage] = useState(1);
@@ -57,26 +52,48 @@ export const GroupTransactionsPage = () => {
   const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
-  const { showToast } = useToast();
 
   const fetchData = useCallback(
-    (newFrom: string, newTo: string, newPage: number, newSearch?: string, newCategory?: string, newType?: TransactionTypeFilter) => {
+    (
+      newFrom: string,
+      newTo: string,
+      newPage: number,
+      newSearch?: string,
+      newCategory?: string,
+      newType?: TransactionTypeFilter
+    ) => {
       if (!groupId) return;
-      const typeNum = newType === "income" ? 0 : newType === "expense" ? 1 : undefined;
-      fetchGroupTransactions(groupId, newPage, PAGE_SIZE, newFrom, newTo, newSearch || undefined, newCategory || undefined, typeNum);
+      const typeNum =
+        newType === "income" ? 0 : newType === "expense" ? 1 : undefined;
+      fetchGroupTransactions(
+        groupId,
+        newPage,
+        PAGE_SIZE,
+        newFrom,
+        newTo,
+        newSearch || undefined,
+        newCategory || undefined,
+        typeNum
+      );
     },
     [fetchGroupTransactions, groupId]
   );
 
   useEffect(() => {
     const init = async () => {
-      const dashboard = await dashboardService.getSelfDashboard();
+      if (!groupId) return;
+      const dashboard = await dashboardService.getGroupDashboard(groupId);
       if (dashboard.availableMonths.length) {
         setAvailableMonths(dashboard.availableMonths);
         const first = dashboard.availableMonths[0];
-        const last = dashboard.availableMonths[dashboard.availableMonths.length - 1];
-        const newFrom = getFirstDayOfMonth(...(Object.values(parseYearMonth(first)) as [number, number]));
-        const newTo = getLastDayOfMonth(...(Object.values(parseYearMonth(last)) as [number, number]));
+        const last =
+          dashboard.availableMonths[dashboard.availableMonths.length - 1];
+        const newFrom = getFirstDayOfMonth(
+          ...(Object.values(parseYearMonth(first)) as [number, number])
+        );
+        const newTo = getLastDayOfMonth(
+          ...(Object.values(parseYearMonth(last)) as [number, number])
+        );
         setFrom(newFrom);
         setTo(newTo);
         fetchData(newFrom, newTo, 1);
@@ -85,12 +102,12 @@ export const GroupTransactionsPage = () => {
       }
     };
     init();
-  }, [fetchData]);
+  }, [fetchData, groupId]);
 
   useEffect(() => {
     fetchData(from, to, 1, search, categoryFilter, typeFilter);
     setPage(1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, categoryFilter, typeFilter]);
 
   const handleApply = (newFrom: string, newTo: string) => {
@@ -114,7 +131,10 @@ export const GroupTransactionsPage = () => {
           <PageTitle>Transações</PageTitle>
           <PageSubtitle>Histórico completo de movimentações</PageSubtitle>
         </HeaderLeft>
-        <ExportButton onClick={() => setShowExportModal(true)} disabled={loading}>
+        <ExportButton
+          onClick={() => setShowExportModal(true)}
+          disabled={loading}
+        >
           <Download size={16} />
           {loading ? "Exportando..." : "Exportar"}
         </ExportButton>
@@ -153,11 +173,7 @@ export const GroupTransactionsPage = () => {
           <EmptyState>Nenhuma transação encontrada.</EmptyState>
         ) : (
           filtered.map((t) => (
-            <TransactionRow
-              key={t.id}
-              transaction={t}
-              isGroupView
-            />
+            <TransactionRow key={t.id} transaction={t} isGroupView />
           ))
         )}
       </ListCard>

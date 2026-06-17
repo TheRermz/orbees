@@ -1,8 +1,10 @@
-import { HOLERITE_ROWS } from "../../../pages/Education/Law/data";
+import {
+  HOLERITE_ROWS,
+  LAW_REFERENCES,
+} from "../../../pages/Education/Law/data";
 import {
   BodyText,
   CardSource,
-  InlineSource,
   Table,
   TableBody,
   TableHead,
@@ -11,13 +13,20 @@ import {
   Th,
   Tr,
 } from "../../../pages/Education/Law/EducationLawPage.styles";
+import { SourceLink } from "../Fundamentals/CalloutBox/CalloutBox.styles";
 
 export const HoleriteContent = () => (
   <>
     <BodyText>
       O holerite discrimina sua remuneração e todos os descontos. Guarde-os —
       são documentos essenciais.
-      <InlineSource>CLT, Art. 464</InlineSource>
+      <SourceLink
+        href={LAW_REFERENCES[3].url}
+        rel="noopener norefeerer"
+        target="_blank"
+      >
+        CLT, Art. 464
+      </SourceLink>
     </BodyText>
     <Table>
       <TableHead>
