@@ -38,7 +38,7 @@ export const DebtMethodsContent = () => (
       </div>
     </TwoColGrid>
     <Source
-      href="https://blog.nubank.com.br/metodo-avalanche-e-bola-de-neve/?utm_source=chatgpt.com"
+      href="https://blog.nubank.com.br/metodo-avalanche-e-bola-de-neve/"
       target="blank"
       rel="noopener norefeerer"
     >
