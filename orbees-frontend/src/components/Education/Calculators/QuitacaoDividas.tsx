@@ -184,7 +184,7 @@ export const QuitacaoDividas = () => {
             <FieldInput
               type="number"
               min="0"
-              placeholder="Ex: 500"
+              placeholder="Ex: Digite um valor extra além do mínimo"
               value={extra}
               onChange={(e) => setExtra(e.target.value)}
             />

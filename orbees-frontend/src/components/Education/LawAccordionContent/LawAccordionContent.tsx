@@ -41,29 +41,6 @@ export const CreditContent = () => (
         </InlineSource>
       </BodyText>
     </div>
-    <div>
-      <h5 style={{ fontWeight: 700, fontSize: "0.875rem", marginBottom: 10 }}>
-        Armadilhas do crédito
-      </h5>
-      <BulletList>
-        <BulletItem>
-          <strong>Rotativo do cartão:</strong> até 400% a.a.{" "}
-          <InlineSource>BCB</InlineSource> — nunca pague só o mínimo
-        </BulletItem>
-        <BulletItem>
-          <strong>Cheque especial:</strong> taxa similar ao rotativo. Use apenas
-          em emergências extremas
-        </BulletItem>
-        <BulletItem>
-          <strong>Parcelamento com juros:</strong> veja o custo total, não
-          apenas a parcela
-        </BulletItem>
-        <BulletItem>
-          <strong>Empréstimo para pagar dívida:</strong> só vale se a nova taxa
-          for menor que a dívida atual
-        </BulletItem>
-      </BulletList>
-    </div>
   </TwoColGrid>
 );
 

@@ -30,7 +30,13 @@ export const CltContent = () => {
                   )
                 : card.description}
             </BodyText>
-            <CardSource>{card.source}</CardSource>
+            <CardSource
+              href={card.sourceLink}
+              target="_blank"
+              rel="noopener norefeerer"
+            >
+              {card.source}
+            </CardSource>
           </CltCard>
         ))}
       </CardsGrid>

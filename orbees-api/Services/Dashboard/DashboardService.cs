@@ -1,9 +1,7 @@
-using Api.Models;
 using Api.Dtos.Dashboard;
 using Api.Models.Enums;
 using Api.Repositories.Interfaces;
 using Api.Services.Interfaces.Dashboard;
-using Serilog;
 
 namespace Api.Services.Dashboard
 {
@@ -31,14 +29,18 @@ namespace Api.Services.Dashboard
 
             var expensesByCategory = transactions
                 .Where(t => t.Type == TransactionType.Despesa && t.CategoryId != null)
-                .GroupBy(t => new { t.CategoryId, t.Category?.Name, t.Category?.Color })
-                .Select(g => new
+                .GroupBy(t => t.CategoryId)
+                .Select(g =>
                 {
-                    g.Key.CategoryId,
-                    Name = g.Key.Name ?? "Sem categoria",
-                    Color = g.Key.Color,
-                    Amount = g.Sum(t => t.Amount),
-                    Count = g.Count()
+                    var first = g.First();
+                    return new
+                    {
+                        CategoryId = g.Key,
+                        Name = first.Category?.Name ?? "Sem categoria",
+                        Color = first.Category?.Color,
+                        Amount = g.Sum(t => t.Amount),
+                        Count = g.Count()
+                    };
                 })
                 .OrderByDescending(g => g.Amount)
                 .ThenByDescending(g => g.Count)
@@ -254,26 +256,35 @@ namespace Api.Services.Dashboard
 
             var expensesByCategory = transactions
                 .Where(t => t.Type == TransactionType.Despesa)
-                .GroupBy(t => new
+                .GroupBy(t => t.GroupCategoryId ?? t.CategoryId)
+                .Select(g =>
                 {
-                    CategoryId = t.GroupCategoryId ?? t.CategoryId,
-                    Name = t.GroupCategoryName ?? t.CategoryName,
-                    Color = t.GroupCategoryColor ?? t.CategoryColor
-                })
-                .Select(g => new GroupExpensesByCategoryChartDto
-                {
-                    CategoryId = g.Key.CategoryId,
-                    CategoryName = g.Key.Name ?? "Sem categoria",
-                    CategoryColor = g.Key.Color,
-                    Amount = g.Sum(t => t.Amount),
-                    TransactionCount = g.Count(),
-                    Percentage = totalExpenses > 0 ? (int)Math.Round(g.Sum(t => t.Amount) / totalExpenses * 100) : 0
+                    var first = g.First();
+                    return new GroupExpensesByCategoryChartDto
+                    {
+                        CategoryId = g.Key,
+                        CategoryName = first.GroupCategoryName ?? first.CategoryName ?? "Sem categoria",
+                        CategoryColor = first.GroupCategoryColor ?? first.CategoryColor,
+                        Amount = g.Sum(t => t.Amount),
+                        TransactionCount = g.Count(),
+                        Percentage = totalExpenses > 0 ? (int)Math.Round(g.Sum(t => t.Amount) / totalExpenses * 100) : 0
+                    };
                 })
                 .OrderByDescending(c => c.Amount)
                 .Take(10)
                 .ToList();
 
-            var memberExpensesChart = BuildMemberExpensesChart(filteredGroupTransactions, resolvedFrom, resolvedTo);
+            var expensesOnly = filteredGroupTransactions.Where(t => t.Type == TransactionType.Despesa).ToList();
+            DateTime expensesFrom = resolvedFrom;
+            DateTime expensesTo = resolvedTo;
+
+            if (!from.HasValue && !to.HasValue && expensesOnly.Any())
+            {
+                expensesFrom = DateTime.SpecifyKind(expensesOnly.Min(t => t.TransactionDate).Date, DateTimeKind.Utc);
+                expensesTo = DateTime.SpecifyKind(expensesOnly.Max(t => t.TransactionDate).Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            }
+
+            var memberExpensesChart = BuildMemberExpensesChart(filteredGroupTransactions, expensesFrom, expensesTo);
 
             var revenueVsExpenses = BuildGroupRevenueVsExpensesChart(transactions, resolvedFrom, resolvedTo);
             var revenueVsExpensesChart = revenueVsExpenses.Select(r => new GroupRevenueVsExpensesChartDto

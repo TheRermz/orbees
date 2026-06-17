@@ -29,7 +29,8 @@ export const STAT_CARDS: StatCard[] = [
     description:
       "das famílias brasileiras estão endividadas — maior nível desde nov/2022",
     source: "CNDL / SPC Brasil — PEIC ago/2025",
-    sourceUrl: "static.poder360.com.br/2025/09/pesquisa-cnc-inadimplencia.pdf",
+    sourceUrl:
+      "https://static.poder360.com.br/2025/09/pesquisa-cnc-inadimplencia.pdf",
     accentColor: "#ef4444",
   },
   {

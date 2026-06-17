@@ -65,97 +65,6 @@ export const LAW_ACCORDIONS: LawAccordion[] = [
   { id: "lgpd", title: "LGPD e Open Finance — seus dados financeiros" },
 ];
 
-export interface HoleriteRow {
-  item: string;
-  description: string;
-  type: "income" | "deduction" | "total" | "neutral";
-  source?: string;
-}
-
-export const HOLERITE_ROWS: HoleriteRow[] = [
-  {
-    item: "Salário base",
-    description: "Valor contratado em sua Carteira de Trabalho e Previdência",
-    type: "income",
-    source: "Art. 464 - DL5452",
-  },
-  {
-    item: "Hora extra",
-    description: "Adicional mínimo de 50%.",
-    type: "income",
-    source: "Art. 59 - DL5452",
-  },
-  {
-    item: "Adicional",
-    description:
-      "Adicional noturno, insalubridade e periculosidade possuem previsão específica na CLT.",
-    type: "income",
-    source:
-      "Art. 73 - DL5452 | Art. 192 - L6514 | Art. 193 Parágrafo 1 - L6514",
-  },
-  {
-    item: "INSS",
-    description:
-      "Contribuição previdenciária calculada conforme tabela progressiva vigente do INSS.",
-    type: "deduction",
-    source: "Meu Imposto de Renda",
-  },
-  {
-    item: "IRRF",
-    description:
-      "Imposto de Renda descontado diretamente na folha de pagamento conforme tabela vigente da Receita Federal.",
-    type: "deduction",
-    source: "Receita Federal",
-  },
-  {
-    item: "Vale-transporte",
-    description: "Desconto de até 6% do salário bruto",
-    type: "deduction",
-    source: "Lei 7418",
-  },
-  {
-    item: "Salário líquido",
-    description:
-      "Valor recebido pelo trabalhador após todos os descontos legais e benefícios aplicáveis.",
-    type: "total",
-  },
-];
-
-export interface CltCard {
-  title: string;
-  description: string;
-  source: string;
-  bold?: string;
-}
-
-export const CLT_CARDS: CltCard[] = [
-  {
-    title: "Férias",
-    description:
-      "30 dias após 12 meses de trabalho (período aquisitivo). Recebe o salário + ⅓ constitucional obrigatório. Pode vender até 10 dias (abono pecuniário).",
-    source: "CLT, Art. 129–153",
-  },
-  {
-    title: "13º Salário",
-    description:
-      "Pago em duas parcelas: até 30/11 (1ª) e até 20/12 (2ª). Proporcional ao tempo trabalhado no ano. Incide INSS e IRRF na 2ª parcela.",
-    source: "Lei 4.090/1962",
-  },
-  {
-    title: "FGTS",
-    description:
-      "8% do salário bruto depositado mensalmente pelo empregador. Pode sacar em demissão sem justa causa, compra de imóvel, aposentadoria e situações específicas.",
-    source: "Lei 5.107/1966 | Lei 8.036/1990",
-  },
-  {
-    title: "Rescisão sem justa causa",
-    description:
-      "Quando o empregador encerra o contrato sem justa causa, o trabalhador tem direito ao saldo de salário, aviso prévio, férias vencidas e proporcionais acrescidas de 1/3 constitucional, 13º salário proporcional, saque do FGTS e multa de 40% sobre o saldo do FGTS. O aviso prévio é de no mínimo 30 dias, acrescido de 3 dias por ano completo trabalhado, limitado a 90 dias.",
-    source: "CLT, Art. 477–481",
-    bold: "40%",
-  },
-];
-
 export interface Reference {
   author: string;
   title: string;
@@ -248,5 +157,107 @@ export const LAW_REFERENCES: Reference[] = [
     title: "O que é Open Finance.",
     url: "https://www.bcb.gov.br/estabilidadefinanceira/openfinance",
     display: "bcb.gov.br",
+  },
+];
+
+export interface CltCard {
+  title: string;
+  description: string;
+  source: string;
+  bold?: string;
+  sourceLink?: string;
+}
+
+export const CLT_CARDS: CltCard[] = [
+  {
+    title: "Férias",
+    description:
+      "30 dias após 12 meses de trabalho (período aquisitivo). Recebe o salário + ⅓ constitucional obrigatório. Pode vender até 10 dias (abono pecuniário).",
+    source: "CLT, Art. 129–153",
+    sourceLink: LAW_REFERENCES[3].url,
+  },
+  {
+    title: "13º Salário",
+    description:
+      "Pago em duas parcelas: até 30/11 (1ª) e até 20/12 (2ª). Proporcional ao tempo trabalhado no ano. Incide INSS e IRRF na 2ª parcela.",
+    source: "Lei 4.090/1962",
+    sourceLink: LAW_REFERENCES[6].url,
+  },
+  {
+    title: "FGTS",
+    description:
+      "8% do salário bruto depositado mensalmente pelo empregador. Pode sacar em demissão sem justa causa, compra de imóvel, aposentadoria e situações específicas.",
+    source: "Lei 5.107/1966 | Lei 8.036/1990",
+    sourceLink: LAW_REFERENCES[7].url,
+  },
+  {
+    title: "Rescisão sem justa causa",
+    description:
+      "Quando o empregador encerra o contrato sem justa causa, o trabalhador tem direito ao saldo de salário, aviso prévio, férias vencidas e proporcionais acrescidas de 1/3 constitucional, 13º salário proporcional, saque do FGTS e multa de 40% sobre o saldo do FGTS. O aviso prévio é de no mínimo 30 dias, acrescido de 3 dias por ano completo trabalhado, limitado a 90 dias.",
+    source: "CLT, Art. 477–481",
+    sourceLink: LAW_REFERENCES[5].url,
+    bold: "40%",
+  },
+];
+
+export interface HoleriteRow {
+  item: string;
+  description: string;
+  type: "income" | "deduction" | "total" | "neutral";
+  source?: string;
+  sourceLink?: string;
+}
+
+export const HOLERITE_ROWS: HoleriteRow[] = [
+  {
+    item: "Salário base",
+    description: "Valor contratado em sua Carteira de Trabalho e Previdência",
+    type: "income",
+    source: "Art. 464 - DL5452",
+    sourceLink: LAW_REFERENCES[3].url,
+  },
+  {
+    item: "Hora extra",
+    description: "Adicional mínimo de 50%.",
+    type: "income",
+    source: "Art. 59 - DL5452",
+    sourceLink: LAW_REFERENCES[3].url,
+  },
+  {
+    item: "Adicional",
+    description:
+      "Adicional noturno, insalubridade e periculosidade possuem previsão específica na CLT.",
+    type: "income",
+    source: "Art. 73 - DL5452",
+    sourceLink: LAW_REFERENCES[3].url,
+  },
+  {
+    item: "INSS",
+    description:
+      "Contribuição previdenciária calculada conforme tabela progressiva vigente do INSS.",
+    type: "deduction",
+    source: "Meu Imposto de Renda",
+    sourceLink: LAW_REFERENCES[1].url,
+  },
+  {
+    item: "IRRF",
+    description:
+      "Imposto de Renda descontado diretamente na folha de pagamento conforme tabela vigente da Receita Federal.",
+    type: "deduction",
+    source: "Receita Federal",
+    sourceLink: LAW_REFERENCES[1].url,
+  },
+  {
+    item: "Vale-transporte",
+    description: "Desconto de até 6% do salário bruto",
+    type: "deduction",
+    source: "Lei 7418",
+    sourceLink: LAW_REFERENCES[3].url,
+  },
+  {
+    item: "Salário líquido",
+    description:
+      "Valor recebido pelo trabalhador após todos os descontos legais e benefícios aplicáveis.",
+    type: "total",
   },
 ];

@@ -9,6 +9,7 @@ import type {
   PagedResultDto,
 } from "../interfaces/transaction";
 import { ExportFormat } from "../interfaces/enums";
+import { addStartOfDay, addEndOfDay } from "../helpers/date";
 
 export const transactionService = {
   getMyTransactions: async (
@@ -24,7 +25,16 @@ export const transactionService = {
     const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
       "/transactions",
       {
-        params: { page, pageSize, from, to, search: search || undefined, categoryId: categoryId || undefined, type: type ?? undefined, noCategory: noCategory || undefined },
+        params: {
+          page,
+          pageSize,
+          from: from ? addStartOfDay(from) : undefined,
+          to: to ? addEndOfDay(to) : undefined,
+          search: search || undefined,
+          categoryId: categoryId || undefined,
+          type: type ?? undefined,
+          noCategory: noCategory || undefined
+        },
       }
     );
     return data;
@@ -43,7 +53,15 @@ export const transactionService = {
     const { data } = await api.get<PagedResultDto<TransactionReadDto>>(
       `/transactions/group/${groupId}`,
       {
-        params: { page, pageSize, from, to, search: search || undefined, categoryId: categoryId || undefined, type: type ?? undefined },
+        params: {
+          page,
+          pageSize,
+          from: from ? addStartOfDay(from) : undefined,
+          to: to ? addEndOfDay(to) : undefined,
+          search: search || undefined,
+          categoryId: categoryId || undefined,
+          type: type ?? undefined
+        },
       }
     );
     return data;
@@ -140,7 +158,12 @@ export const transactionService = {
     groupId?: string
   ) => {
     const response = await api.get("/transactions/export", {
-      params: { format, from, to, groupId },
+      params: {
+        format,
+        from: from ? addStartOfDay(from) : undefined,
+        to: to ? addEndOfDay(to) : undefined,
+        groupId
+      },
       responseType: "blob",
       validateStatus: (status) => status === 200 || status === 202,
     });

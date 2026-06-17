@@ -1,8 +1,8 @@
 import { HOLERITE_ROWS } from "../../../pages/Education/Law/data";
 import {
   BodyText,
+  CardSource,
   InlineSource,
-  SourceBadge,
   Table,
   TableBody,
   TableHead,
@@ -32,7 +32,16 @@ export const HoleriteContent = () => (
             <Td $type={row.type}>{row.item}</Td>
             <TdDesc>
               {row.description}
-              {row.source && <SourceBadge> {row.source}</SourceBadge>}
+              {row.source && (
+                <CardSource
+                  href={row.sourceLink}
+                  target="_blank"
+                  rel="noopener norefeerer"
+                >
+                  {" "}
+                  {row.source}
+                </CardSource>
+              )}
             </TdDesc>
           </Tr>
         ))}

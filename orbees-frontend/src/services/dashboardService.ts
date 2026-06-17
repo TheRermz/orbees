@@ -5,6 +5,7 @@ import type {
   GroupLastTransactionDto,
   LastTransactionDto,
 } from "../interfaces/dashboard";
+import { addStartOfDay, addEndOfDay } from "../helpers/date";
 
 export const dashboardService = {
   getSelfDashboard: async (
@@ -12,7 +13,10 @@ export const dashboardService = {
     to?: string
   ): Promise<DashboardResponseDto> => {
     const { data } = await api.get<DashboardResponseDto>("/dashboard/self", {
-      params: { from, to },
+      params: {
+        from: from ? addStartOfDay(from) : undefined,
+        to: to ? addEndOfDay(to) : undefined,
+      },
     });
     return data;
   },
@@ -31,7 +35,11 @@ export const dashboardService = {
     memberId?: string
   ): Promise<GroupDashboardResponseDto> => {
     const { data } = await api.get(`/dashboard/group/${groupId}`, {
-      params: { from, to, memberId },
+      params: {
+        from: from ? addStartOfDay(from) : undefined,
+        to: to ? addEndOfDay(to) : undefined,
+        memberId,
+      },
     });
     return data;
   },

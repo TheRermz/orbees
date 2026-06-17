@@ -1,14 +1,17 @@
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
-export { PageInnerContainer as Container, PageTitleLarge as PageTitle, PageSubtitle } from "../../../styles/pageLayout";
+export {
+  PageInnerContainer as Container,
+  PageTitleLarge as PageTitle,
+  PageSubtitle,
+} from "../../../styles/pageLayout";
 
 export const Header = styled.div`
   padding: 24px 32px 20px;
   background-color: ${theme.colors.background};
   border-bottom: 1px solid ${theme.colors.border};
 `;
-
 
 export const Content = styled.div`
   display: flex;
@@ -249,10 +252,15 @@ export const CardTitle = styled.h5`
   margin: 0;
 `;
 
-export const CardSource = styled.span`
-  font-size: ${theme.fontSize.xs};
+export const CardSource = styled.a`
   color: ${theme.colors.textLight};
-  margin-top: auto;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+  &::after {
+    content: " ↗";
+  }
 `;
 
 export const SubAccordionWrapper = styled.div`
