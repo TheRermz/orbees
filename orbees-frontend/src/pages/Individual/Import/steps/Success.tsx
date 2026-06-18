@@ -49,7 +49,7 @@ export const Success = ({ result, onReset }: SuccessProps) => {
               {result.shared} transaç
               {result.shared > 1
                 ? "ões foram compartilhadas"
-                : " foi compartilhada"}
+                : "ão foi compartilhada"}
             </strong>{" "}
             com o grupo <strong>{result.groupName}</strong> e já aparecem em
             Controle em Grupo {">"} Transações.

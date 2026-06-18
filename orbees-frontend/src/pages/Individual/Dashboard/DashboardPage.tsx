@@ -9,7 +9,6 @@ import {
   PeriodSelector,
 } from "../../../components/ui";
 import { formatCurrency } from "../../../helpers/formatters";
-import { getFirstDayOfMonth, getLastDayOfMonth } from "../../../helpers/date";
 import {
   Container,
   SummaryGrid,
@@ -39,10 +38,6 @@ import { useToast } from "../../../contexts/useToast";
 
 type Metric = "value" | "qty";
 type ChartType = "bar" | "pie";
-
-const now = new Date();
-const defaultFrom = getFirstDayOfMonth(now.getFullYear(), now.getMonth() + 1);
-const defaultTo = getLastDayOfMonth(now.getFullYear(), now.getMonth() + 1);
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
@@ -91,7 +86,11 @@ export const DashboardPage = () => {
   );
 
   if (loading && !dashboard) {
-    return <Container><LoadingWrapper>Carregando...</LoadingWrapper></Container>;
+    return (
+      <Container>
+        <LoadingWrapper>Carregando...</LoadingWrapper>
+      </Container>
+    );
   }
 
   return (
