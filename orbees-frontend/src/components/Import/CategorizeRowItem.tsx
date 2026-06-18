@@ -14,6 +14,7 @@ import {
 } from "../../pages/Individual/Import/ImportPage.styles";
 import { useCategories } from "../../hooks/useCategories";
 import { formatCurrency } from "../../helpers/formatters";
+import { TransactionType } from "../../interfaces/enums";
 
 export const CategorizeRowItem = ({
   preview: p,
@@ -36,8 +37,11 @@ export const CategorizeRowItem = ({
                 title: e.target.value,
               })
             }
+            style={{
+              width: "200%",
+            }}
           />
-          <TxAmount $positive={p.amount > 0}>
+          <TxAmount $positive={p.type === TransactionType.Receita}>
             {formatCurrency(Math.abs(p.amount))}
           </TxAmount>
         </TxInfo>

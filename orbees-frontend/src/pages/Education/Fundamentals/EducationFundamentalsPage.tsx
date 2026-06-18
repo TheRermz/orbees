@@ -8,7 +8,6 @@ import {
   Container,
   Header,
   PageTitle,
-  PageSubtitle,
   Content,
   Section,
   SectionTitle,
@@ -19,10 +18,6 @@ export const EducationFundamentalsPage = () => {
     <Container>
       <Header>
         <PageTitle>Fundamentos</PageTitle>
-        <PageSubtitle>
-          Os conceitos essenciais que toda pessoa deveria aprender antes dos 25
-          anos
-        </PageSubtitle>
       </Header>
 
       <Content>

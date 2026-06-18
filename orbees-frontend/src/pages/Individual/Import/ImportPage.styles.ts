@@ -1,7 +1,11 @@
 import styled from "styled-components";
 import { theme } from "../../../styles/theme";
 
-export { PageInnerContainer as Container, PageTitle, PageSubtitleSpaced as PageSubtitle } from "../../../styles/pageLayout";
+export {
+  PageInnerContainer as Container,
+  PageTitle,
+  PageSubtitleSpaced as PageSubtitle,
+} from "../../../styles/pageLayout";
 
 export const Header = styled.div`
   padding: 24px 32px 0;

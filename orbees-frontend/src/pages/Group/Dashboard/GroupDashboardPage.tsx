@@ -2,10 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGroupDashboard } from "../../../hooks/useGroupDashboard";
 import { useGroups } from "../../../hooks/useGroups";
-import {
-  SummaryCard,
-  PeriodSelector,
-} from "../../../components/ui";
+import { SummaryCard, PeriodSelector } from "../../../components/ui";
 import { MemberExpensesLineChart } from "../../../components/Dashboard/MemberExpensesLineChart";
 import { CategoryPieChart } from "../../../components/Dashboard/CategoryPieChart";
 import { formatCurrency } from "../../../helpers/formatters";
@@ -74,7 +71,11 @@ export const GroupDashboardPage = () => {
 
   const handleMemberChange = (newMemberId: string) => {
     setMemberId(newMemberId);
-    fetchDashboard(from || undefined, to || undefined, newMemberId || undefined);
+    fetchDashboard(
+      from || undefined,
+      to || undefined,
+      newMemberId || undefined
+    );
   };
 
   const s = dashboard?.summary;
@@ -168,11 +169,18 @@ export const GroupDashboardPage = () => {
       <BottomRow>
         <LastTransactionsCard>
           <LastTransactionsHeader>
-            <LastTransactionsTitle>Últimas Transações</LastTransactionsTitle>
-            <SectionLink onClick={() => navigate(`/group/${groupId}/transactions`)}>
+            <LastTransactionsTitle>
+              Transações (5 últimas)
+            </LastTransactionsTitle>
+            <SectionLink
+              onClick={() => navigate(`/group/${groupId}/transactions`)}
+            >
               + ver todas
             </SectionLink>
           </LastTransactionsHeader>
+          <span style={{ fontSize: "0.75rem", color: "#aaa" }}>
+            independente do período selecionado
+          </span>
           {lastTransactions.map((t) => (
             <TransactionItem key={t.id}>
               <TxDot

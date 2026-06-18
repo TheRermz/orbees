@@ -28,23 +28,23 @@ export const Categorize = ({
       }}
     >
       {preview.map((p, i) => {
-          const state = categorizeState[p.originalDescription ?? p.title] ?? {
-            categoryId: "",
-            shareWithGroup: false,
-            groupId: groups[0]?.id ?? "",
-            groupCategoryId: "",
-          };
-          return (
-            <CategorizeRowItem
-              key={i}
-              preview={p}
-              state={state}
-              categories={categories}
-              groups={groups}
-              onChange={onStateChange}
-            />
-          );
-        })}
+        const state = categorizeState[p.originalDescription ?? p.title] ?? {
+          categoryId: "",
+          shareWithGroup: false,
+          groupId: groups[0]?.id ?? "",
+          groupCategoryId: "",
+        };
+        return (
+          <CategorizeRowItem
+            key={i}
+            preview={p}
+            state={state}
+            categories={categories}
+            groups={groups}
+            onChange={onStateChange}
+          />
+        );
+      })}
     </div>
     <FooterActions>
       <Button variant="secondary" onClick={onBack}>
